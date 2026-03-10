@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }} - BetterViz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f1419;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
+        .page-header {
+            background: #1a1f26;
+            border-bottom: 1px solid #2d3640;
+            padding: 32px 40px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { opacity: 0.8; }
+        .page-header h1 {
+            font-size: 26px;
+            color: #e8e8e8;
+            margin-bottom: 8px;
+        }
+        .page-header p {
+            color: #8899a6;
+            font-size: 14px;
+        }
+        .gallery {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 10px;
+            padding: 24px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card:hover {
+            border-color: #4ecdc4;
+            transform: translateY(-2px);
+        }
+        .card-icon { font-size: 26px; }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e8e8e8;
+        }
+        .card-desc {
+            font-size: 13px;
+            color: #8899a6;
+            line-height: 1.55;
+            flex: 1;
+        }
+        .card-cta {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+        .page-footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #2d3640;
+            margin-top: 20px;
+        }
+        .page-footer a {
+            color: #8899a6;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .page-footer a:hover { color: #4ecdc4; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <a class="back-link" href="/">← Full Editor</a>
+        <h1>📊 Example Datasets</h1>
+        <p>Explore pre-loaded datasets in the interactive multi-dimensional visualizer</p>
+    </div>
+    <div class="gallery">
+        {{ range .Pages }}
+        <a class="card" href="{{ .Permalink }}">
+            <div class="card-icon">📈</div>
+            <div class="card-title">{{ .Title }}</div>
+            <div class="card-desc">{{ .Description }}</div>
+            <div class="card-cta">Explore →</div>
+        </a>
+        {{ end }}
+    </div>
+    <div class="page-footer">
+        <a href="/">Open Full Editor — upload and explore your own CSV</a>
+    </div>
+</body>
+</html>
