@@ -1970,7 +1970,10 @@
         // MEDIA COLUMN DETECTION
         // ============================================================
         function isMediaUrlColumn(headerName) {
-            return MEDIA_URL_PATTERNS.some(p => p.test(headerName));
+            if (MEDIA_URL_PATTERNS.some(p => p.test(headerName))) return true;
+            // Plain "audio", "image", "video" often contain URLs
+            const dn = (parseColumnPrefix(headerName) || {}).displayName || headerName;
+            return /^(audio|image|img|video)$/i.test(dn);
         }
         
         function isMediaMetaColumn(headerName) {
@@ -3594,7 +3597,21 @@
             });
         }
         
+        function toYouTubeEmbedUrl(url) {
+            if (!url) return null;
+            const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/i);
+            if (!m) return null;
+            const vid = m[1];
+            const t = url.match(/[?&]t=(\d+)/);
+            const start = t ? `?start=${t[1]}` : '';
+            return `https://www.youtube.com/embed/${vid}${start}`;
+        }
+        
         function generateMediaHTML(type, url, altText) {
+            const ytEmbed = toYouTubeEmbedUrl(url);
+            if (ytEmbed) {
+                return `<iframe src="${ytEmbed}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
             switch (type) {
                 case 'image':
                     return `<img src="${url}" alt="${altText}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22250%22><rect fill=%22%23333%22 width=%22100%%22 height=%22100%%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23666%22 text-anchor=%22middle%22>Image unavailable</text></svg>'">`;

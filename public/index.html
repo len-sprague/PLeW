@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta name="generator" content="Hugo 0.156.0"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+	<meta name="generator" content="Hugo 0.157.0"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Dimensional Data Visualizer - Full Editor</title>
@@ -685,22 +685,6 @@
             box-shadow: 0 0 0 2px #ffd93d;
         }
         
-        .data-point.has-media::after {
-            content: '▶';
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-size: 5px;
-            background: #ff6b6b;
-            color: white;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
         .data-point.shape-circle { border-radius: 50%; }
         .data-point.shape-square { border-radius: 2px; }
         .data-point.shape-diamond { 
@@ -1109,6 +1093,393 @@
         .edit-hint li {
             margin: 3px 0;
         }
+        
+         
+        .dummy-settings {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .dummy-settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .dummy-settings-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+        
+        .dummy-count-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(78, 205, 196, 0.15);
+            color: #4ecdc4;
+            border-radius: 10px;
+        }
+        
+        .dummy-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        .dummy-setting-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row input[type="checkbox"] {
+            accent-color: #4ecdc4;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row input[type="color"] {
+            width: 28px;
+            height: 22px;
+            border: 1px solid #3d4650;
+            border-radius: 4px;
+            background: #1a1f26;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .dummy-setting-row input[type="range"] {
+            width: 80px;
+            accent-color: #4ecdc4;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row select {
+            background: #1a1f26;
+            color: #aaa;
+            border: 1px solid #3d4650;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        
+        .dummy-info-text {
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        
+         
+        .data-point.dummy-point {
+            border: 1.5px dashed rgba(255,255,255,0.4);
+            cursor: default;
+        }
+        
+        .data-point.dummy-point:hover {
+            transform: scale(1.3);
+            cursor: default;
+        }
+        
+        .data-point.dummy-point.hidden-dummy {
+            display: none;
+        }
+        
+         
+        .changelog-section {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .changelog-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .changelog-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+        
+        .changelog-count-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+            border-radius: 10px;
+        }
+        
+        .changelog-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .changelog-actions .btn {
+            flex: 1;
+            margin-top: 0;
+            padding: 6px 10px;
+            font-size: 0.7rem;
+        }
+        
+        .changelog-preview {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 8px;
+            border-top: 1px solid #2d3640;
+            padding-top: 8px;
+        }
+        
+        .changelog-entry {
+            font-size: 0.65rem;
+            color: #999;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(45, 54, 64, 0.5);
+            line-height: 1.4;
+        }
+        
+        .changelog-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .changelog-entry .field-name {
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+        
+        .changelog-entry .old-val {
+            color: #ff6b6b;
+            text-decoration: line-through;
+        }
+        
+        .changelog-entry .new-val {
+            color: #6bcb77;
+        }
+        
+        .changelog-entry .log-time {
+            color: #555;
+            font-size: 0.6rem;
+        }
+        
+        .changelog-empty {
+            font-size: 0.65rem;
+            color: #555;
+            text-align: center;
+            padding: 8px 0;
+        }
+        
+         
+        .media-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .media-tab {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .media-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ddd;
+        }
+        
+        .media-tab.active {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+            color: #4ecdc4;
+        }
+        
+        .media-panel {
+            display: none;
+        }
+        
+        .media-panel.active {
+            display: block;
+        }
+        
+         
+        .undo-redo-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .undo-redo-btn {
+            background: #2d3640;
+            border: 1px solid #3d4650;
+            color: #aaa;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .undo-redo-btn:hover:not(:disabled) {
+            background: #3d4650;
+            color: #e8e8e8;
+            border-color: #4ecdc4;
+        }
+        
+        .undo-redo-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .undo-redo-btn .badge {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+            font-size: 0.6rem;
+            padding: 1px 5px;
+            border-radius: 8px;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+         
+        .legend-row.interactive {
+            cursor: pointer;
+            padding: 5px 6px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        
+        .legend-row.interactive:hover {
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .legend-swatch.editable {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        
+        .legend-swatch.editable:hover {
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.2);
+        }
+        
+        .legend-shape-btn {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 2px;
+            transition: all 0.15s ease;
+        }
+        
+        .legend-shape-btn:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .legend-edit-hint {
+            font-size: 0.6rem;
+            color: #555;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+         
+        .color-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .color-picker-wrapper input[type="color"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+         
+        .context-menu-divider {
+            height: 1px;
+            background: #3d4650;
+            margin: 10px 0;
+        }
+        
+        .shape-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .shape-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: #1a1f26;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        
+        .shape-option:hover {
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        .shape-option.selected {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.15);
+        }
+        
+        .shape-option .shape-preview {
+            width: 14px;
+            height: 14px;
+        }
+        
+         
+        .shape-selector-popup {
+            position: fixed;
+            background: #232a33;
+            border: 1px solid #3d4650;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+        }
+        
+        .shape-selector-popup.visible {
+            display: block;
+        }
+        
+        .shape-selector-popup .shape-grid {
+            gap: 6px;
+        }
     </style>
 </head>
 <body>
@@ -1117,8 +1488,9 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-content">
                 <h1>📊 Data Editor</h1>
-                <p class="subtitle">Drag points to reclassify • Right-click to change color</p>
-                
+                <p class="subtitle">Drag points to reclassify • Right-click to change color/shape</p>
+                <p style="margin-top:8px;"><a href="/examples/" style="color:#4ecdc4;text-decoration:none;font-size:12px;">View example datasets →</a></p>
+
                 <div class="section">
                     <div class="section-title">Data Input</div>
                     <div class="file-drop" id="fileDrop">
@@ -1127,15 +1499,83 @@
                         <input type="file" class="file-input" id="fileInput" accept=".csv">
                     </div>
                     <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
-                    <div class="sample-data-info">Linguistics dataset with audio</div>
+                    <div class="sample-data-info">Linguistics dataset with audio (audio_url column)</div>
                 </div>
                 
                 
                 <div class="changes-indicator" id="changesIndicator">
                     <div class="changes-count" id="changesCount">0 changes made</div>
+                    <div class="undo-redo-group" style="margin-bottom: 8px;">
+                        <button class="undo-redo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">
+                            ↩ Undo <span class="badge" id="undoCount">0</span>
+                        </button>
+                        <button class="undo-redo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Shift+Z)">
+                            ↪ Redo <span class="badge" id="redoCount">0</span>
+                        </button>
+                    </div>
                     <div class="changes-actions">
                         <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                         <button class="btn btn-warning btn-small" onclick="resetAllChanges()">↩️ Reset All</button>
+                    </div>
+                </div>
+                
+                
+                <div class="section" id="changeLogSection" style="display: none;">
+                    <div class="section-title">
+                        <span>Change Log</span>
+                    </div>
+                    <div class="changelog-section">
+                        <div class="changelog-header">
+                            <span class="changelog-title">Recorded Changes</span>
+                            <span class="changelog-count-badge" id="changeLogCountBadge">0</span>
+                        </div>
+                        <div class="changelog-actions">
+                            <button class="btn btn-secondary btn-small" onclick="downloadChangeLog('csv')">📋 CSV</button>
+                            <button class="btn btn-secondary btn-small" onclick="downloadChangeLog('json')">📋 JSON</button>
+                            <button class="btn btn-warning btn-small" onclick="clearChangeLog()">🗑️ Clear</button>
+                        </div>
+                        <div class="changelog-preview" id="changeLogPreview">
+                            <div class="changelog-empty">No changes recorded yet</div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="section" id="dummySection" style="display: none;">
+                    <div class="section-title">
+                        <span>Anchor Points</span>
+                    </div>
+                    <div class="dummy-settings" id="dummySettings">
+                        <div class="dummy-settings-header">
+                            <span class="dummy-settings-title">Value Preservers</span>
+                            <span class="dummy-count-badge" id="dummyCountBadge">0 anchors</span>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <label>
+                                <input type="checkbox" id="dummyVisible" checked onchange="updateDummySettings()">
+                                Show on chart
+                            </label>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Color</span>
+                            <input type="color" id="dummyColor" value="#555555" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Opacity</span>
+                            <input type="range" id="dummyOpacity" min="0.05" max="1" step="0.05" value="0.3" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Shape</span>
+                            <select id="dummyShape" onchange="updateDummySettings()">
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="diamond" selected>Diamond</option>
+                                <option value="triangle">Triangle</option>
+                            </select>
+                        </div>
+                        <div class="dummy-info-text">
+                            Anchor points preserve dimension values when all real data leaves a category. They are appended to exported CSVs with alphabetical IDs and auto-detected on re-upload.
+                        </div>
                     </div>
                 </div>
                 
@@ -1152,7 +1592,9 @@
                         <ul>
                             <li>Drag dimensions to reorder axes</li>
                             <li>Drag data points to reclassify</li>
-                            <li>Right-click points to change color</li>
+                            <li>Right-click points to change color/shape</li>
+                            <li>Click legend swatches to customize colors/shapes</li>
+                            <li><kbd style="background:#1a1f26;padding:1px 4px;border-radius:3px;font-size:0.65rem;">Ctrl+Z</kbd> undo &nbsp; <kbd style="background:#1a1f26;padding:1px 4px;border-radius:3px;font-size:0.65rem;">Ctrl+Shift+Z</kbd> redo</li>
                         </ul>
                     </div>
                     
@@ -1222,7 +1664,7 @@
     
     
     <div class="keyboard-hint">
-        <kbd>B</kbd> sidebar • <kbd>Right-click</kbd> change color • <kbd>Drag</kbd> reclassify
+        <kbd>B</kbd> sidebar • <kbd>Right-click</kbd> change color/shape • <kbd>Drag</kbd> reclassify • <kbd>Ctrl+Z</kbd> undo • <kbd>Ctrl+Shift+Z</kbd> redo
     </div>
     
     
@@ -1233,6 +1675,18 @@
         <div class="context-menu-title">Change Color Value</div>
         <div class="color-grid" id="colorGrid"></div>
         <div class="context-menu-label" id="colorLabel"></div>
+        <div class="context-menu-divider" id="shapeMenuDivider" style="display:none;"></div>
+        <div id="shapeMenuSection" style="display:none;">
+            <div class="context-menu-title">Change Shape Value</div>
+            <div class="shape-grid" id="shapeGrid"></div>
+            <div class="context-menu-label" id="shapeLabel"></div>
+        </div>
+    </div>
+    
+    
+    <div class="shape-selector-popup" id="shapeSelectorPopup">
+        <div class="context-menu-title">Choose Shape</div>
+        <div class="shape-grid" id="shapeSelectorGrid"></div>
     </div>
     
     
@@ -1266,18 +1720,107 @@
             { key: 'shape', label: 'Shape', class: 'encoding-shape' }
         ];
         
-        const RESERVED_COLUMNS = ['media_type', 'media_url', 'description', 'title', 'name'];
+        const RESERVED_COLUMNS = ['description', 'title', 'name'];
+        
+        
+        const DESC_LIKE_COLUMNS = ['gloss', 'glossing', 'transcription', 'transcript', 'translation', 'meaning', 'orthography', 'description', 'text', 'sentence'];
+        
+        
+        const COLUMN_PREFIXES = { 'dim::': 'dim', 'med::': 'med', 'desc::': 'desc', 'res::': 'res' };
+        
+        function parseColumnPrefix(header) {
+            for (const [prefix, type] of Object.entries(COLUMN_PREFIXES)) {
+                if (header.startsWith(prefix)) {
+                    return { type, displayName: header.slice(prefix.length), key: header };
+                }
+            }
+            return null;
+        }
+        
+        function getDisplayName(header) {
+            const parsed = parseColumnPrefix(header);
+            return parsed ? parsed.displayName : header;
+        }
+        
+        function dimKey(dim) {
+            return dim.key != null ? dim.key : dim.name;
+        }
+        
+        function shouldExcludeFromTooltip(key) {
+            const parsed = parseColumnPrefix(key);
+            if (parsed && (parsed.type === 'res' || parsed.type === 'desc' || parsed.type === 'med')) return true;
+            const dn = getDisplayName(key);
+            if (RESERVED_COLUMNS.some(rc => dn.toLowerCase().includes(rc))) return true;
+            if (DESC_LIKE_COLUMNS.includes(dn.toLowerCase())) return true;
+            return isMediaRelatedColumn(key);
+        }
+        
+        function shouldExcludeFromModalTable(key) {
+            const parsed = parseColumnPrefix(key);
+            if (parsed && (parsed.type === 'res' || parsed.type === 'med')) return true;
+            const dn = getDisplayName(key);
+            if (RESERVED_COLUMNS.some(rc => dn.toLowerCase() === rc)) return true;
+            return isMediaRelatedColumn(key);
+        }
+        
+        function getModalTitleFromRow(row) {
+            for (const key of Object.keys(row)) {
+                if (key.startsWith('_')) continue;
+                const dn = getDisplayName(key);
+                if (dn.toLowerCase() === 'title' || dn.toLowerCase() === 'name') return row[key];
+            }
+            return row.title || row.name || row.Name || row.Title || `Record #${(row._index ?? -1) + 1}`;
+        }
+        
+        
+        const MEDIA_URL_PATTERNS = [
+            /^(audio|image|img|photo|picture|video|media|thumbnail|thumb|poster|clip|sound|track)[-_]?(url|file|src|path|link|href)$/i,
+            /^(url|file|src|path|link|href)[-_]?(audio|image|img|photo|picture|video|media|thumbnail|thumb)$/i
+        ];
+        const MEDIA_META_PATTERNS = [
+            /^media[-_]?type$/i,
+            /^(audio|image|video)[-_]?type$/i
+        ];
+        
+        const MEDIA_TYPE_HINTS = {
+            audio: 'audio', sound: 'audio', track: 'audio',
+            image: 'image', img: 'image', photo: 'image', picture: 'image', thumbnail: 'image', thumb: 'image', poster: 'image',
+            video: 'video', clip: 'video',
+            media: 'auto'
+        };
         
         
         
         
-        let originalData = null;  
-        let currentData = null;   
+        let originalData = null;
+        let currentData = null;
         let allDimensions = null;
         let userDimensionOrder = [];
         let enabledDimensions = new Set();
         let encodings = null;
-        let modifiedRows = new Set();  
+        let modifiedRows = new Set();
+        let changeLog = [];
+        let csvHeaders = [];
+        let mediaColumns = [];
+        
+        
+        let dummyRows = [];
+        let dummySettings = {
+            visible: true,
+            color: '#555555',
+            opacity: 0.3,
+            shape: 'diamond'
+        };
+        let preservedDimValues = {};
+        
+        
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_UNDO = 100;
+        
+        
+        let customColorMap = {};   
+        let customShapeMap = {};   
         
         
         let draggedDimensionItem = null;
@@ -1314,7 +1857,18 @@
             }
             if (e.key === 'Escape') {
                 closeContextMenu();
+                closeShapeSelectorPopup();
                 closeModal();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                redo();
             }
         });
         
@@ -1372,8 +1926,19 @@
             currentData.forEach(row => {
                 const values = headers.map(h => {
                     let val = row[h] ?? '';
-                    
                     if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            
+            dummyRows.forEach(row => {
+                const values = headers.map(h => {
+                    let val = row[h] ?? '';
+                    if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
                         val = '"' + val.replace(/"/g, '""') + '"';
                     }
                     return val;
@@ -1405,27 +1970,568 @@
         
         
         
+        function isMediaUrlColumn(headerName) {
+            if (MEDIA_URL_PATTERNS.some(p => p.test(headerName))) return true;
+            
+            const dn = (parseColumnPrefix(headerName) || {}).displayName || headerName;
+            return /^(audio|image|img|video)$/i.test(dn);
+        }
+        
+        function isMediaMetaColumn(headerName) {
+            return MEDIA_META_PATTERNS.some(p => p.test(headerName));
+        }
+        
+        function isMediaRelatedColumn(headerName) {
+            const parsed = parseColumnPrefix(headerName);
+            if (parsed && parsed.type === 'med') return true;
+            return isMediaUrlColumn(headerName) || isMediaMetaColumn(headerName);
+        }
+        
+        function detectMediaColumns(headers) {
+            const cols = [];
+            headers.forEach(h => {
+                const parsed = parseColumnPrefix(h);
+                const colKey = parsed ? parsed.key : h;
+                const displayName = parsed ? parsed.displayName : h;
+                const lower = displayName.toLowerCase();
+                
+                if (parsed && parsed.type === 'med') {
+                    let detectedType = 'auto';
+                    for (const [fragment, type] of Object.entries(MEDIA_TYPE_HINTS)) {
+                        if (lower.includes(fragment)) { detectedType = type; break; }
+                    }
+                    cols.push({ column: colKey, type: detectedType });
+                } else if (isMediaUrlColumn(h)) {
+                    
+                    const lower = h.toLowerCase();
+                    let detectedType = 'auto';
+                    for (const [fragment, type] of Object.entries(MEDIA_TYPE_HINTS)) {
+                        if (lower.includes(fragment)) {
+                            detectedType = type;
+                            break;
+                        }
+                    }
+                    cols.push({ column: colKey, type: detectedType });
+                }
+            });
+            return cols;
+        }
+        
+        function inferMediaTypeFromUrl(url) {
+            if (!url) return 'unknown';
+            const lower = url.toLowerCase();
+            if (/\.(jpe?g|png|gif|webp|svg|bmp|ico|tiff?)(\?|$)/i.test(lower)) return 'image';
+            if (/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(lower)) return 'video';
+            if (/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?|$)/i.test(lower)) return 'audio';
+            return 'unknown';
+        }
+        
+        function getRowMedia(row) {
+            
+            const media = [];
+            
+            
+            mediaColumns.forEach(mc => {
+                const url = row[mc.column];
+                if (!url || url.trim() === '') return;
+                
+                let type = mc.type;
+                if (type === 'auto') {
+                    type = inferMediaTypeFromUrl(url);
+                }
+                
+                const baseLabel = getDisplayName(mc.column).replace(/[-_](url|file|src|path|link|href)$/i, '').replace(/[-_]/g, ' ');
+                media.push({ type: type, url: url.trim(), label: baseLabel || 'media' });
+            });
+            
+            
+            if (row.media_type && row.media_url && !mediaColumns.some(mc => mc.column === 'media_url')) {
+                media.push({
+                    type: row.media_type,
+                    url: row.media_url.trim(),
+                    label: row.media_type
+                });
+            }
+            
+            return media;
+        }
+        
+        function rowHasMedia(row) {
+            return getRowMedia(row).length > 0;
+        }
+        
+        
+        
+        
+        function logChange(rowIndex, field, oldValue, newValue) {
+            changeLog.push({
+                rowId: getRowDisplayId(rowIndex),
+                rowIndex: rowIndex,
+                field: field,
+                oldValue: oldValue,
+                newValue: newValue,
+                timestamp: new Date().toISOString()
+            });
+            updateChangeLogUI();
+        }
+        
+        function getRowDisplayId(rowIndex) {
+            if (!currentData || !currentData[rowIndex]) return `#${rowIndex}`;
+            const row = currentData[rowIndex];
+            const idKey = csvHeaders[0];
+            return row[idKey] !== undefined ? row[idKey] : `#${rowIndex}`;
+        }
+        
+        function clearChangeLog() {
+            changeLog = [];
+            updateChangeLogUI();
+        }
+        
+        function updateChangeLogUI() {
+            const section = document.getElementById('changeLogSection');
+            const badge = document.getElementById('changeLogCountBadge');
+            const preview = document.getElementById('changeLogPreview');
+            
+            if (changeLog.length === 0) {
+                section.style.display = currentData ? 'block' : 'none';
+                badge.textContent = '0';
+                preview.innerHTML = '<div class="changelog-empty">No changes recorded yet</div>';
+                return;
+            }
+            
+            section.style.display = 'block';
+            badge.textContent = changeLog.length;
+            
+            
+            const recent = changeLog.slice(-20).reverse();
+            preview.innerHTML = recent.map(entry => {
+                const time = new Date(entry.timestamp);
+                const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                return `
+                    <div class="changelog-entry">
+                        <span class="log-time">${timeStr}</span>
+                        Row <strong>${entry.rowId}</strong>: 
+                        <span class="field-name">${entry.field}</span> 
+                        <span class="old-val">${entry.oldValue}</span> → 
+                        <span class="new-val">${entry.newValue}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function downloadChangeLog(format) {
+            if (changeLog.length === 0) {
+                alert('No changes to export');
+                return;
+            }
+            
+            let content, mimeType, extension;
+            
+            if (format === 'json') {
+                content = JSON.stringify(changeLog, null, 2);
+                mimeType = 'application/json';
+                extension = 'json';
+            } else {
+                
+                const csvHeaders = ['rowId', 'rowIndex', 'field', 'oldValue', 'newValue', 'timestamp'];
+                let csv = csvHeaders.join(',') + '\n';
+                changeLog.forEach(entry => {
+                    const values = csvHeaders.map(h => {
+                        let val = String(entry[h] ?? '');
+                        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                            val = '"' + val.replace(/"/g, '""') + '"';
+                        }
+                        return val;
+                    });
+                    csv += values.join(',') + '\n';
+                });
+                content = csv;
+                mimeType = 'text/csv';
+                extension = 'csv';
+            }
+            
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `change_log.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        
+        
+        
+        function getAlphaLabel(index) {
+            let label = '';
+            let n = index;
+            do {
+                label = String.fromCharCode(97 + (n % 26)) + label;
+                n = Math.floor(n / 26) - 1;
+            } while (n >= 0);
+            return label;
+        }
+        
+        function isAlphaLabel(str) {
+            return typeof str === 'string' && /^[a-z]+$/.test(str.trim());
+        }
+        
+        function detectExistingDummies(data, headers) {
+            if (data.length === 0) return { realData: data, existingDummies: [] };
+            
+            const idKey = headers[0];
+            const existingDummies = [];
+            let splitIndex = data.length;
+            
+            
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (isAlphaLabel(data[i][idKey])) {
+                    splitIndex = i;
+                } else {
+                    break;
+                }
+            }
+            
+            const realData = data.slice(0, splitIndex);
+            const dummies = data.slice(splitIndex);
+            
+            
+            dummies.forEach(row => { row._isDummy = true; });
+            
+            return { realData, existingDummies: dummies };
+        }
+        
+        function generateDummyRows(dimensions, headers) {
+            if (dimensions.length === 0) return [];
+            
+            const maxCard = Math.max(...dimensions.map(d => d.cardinality));
+            const idKey = headers[0];
+            const dummies = [];
+            
+            for (let i = 0; i < maxCard; i++) {
+                const row = { _isDummy: true };
+                row[idKey] = getAlphaLabel(i);
+                
+                
+                dimensions.forEach(dim => {
+                    row[dimKey(dim)] = dim.uniqueValues[i % dim.uniqueValues.length];
+                });
+                
+                
+                headers.forEach(h => {
+                    if (!(h in row) && !h.startsWith('_')) {
+                        row[h] = '';
+                    }
+                });
+                
+                dummies.push(row);
+            }
+            
+            return dummies;
+        }
+        
+        function validateAnchors(existingDummies, dimensions, headers) {
+            
+            
+            
+            if (existingDummies.length === 0) {
+                return { valid: false, reason: 'no_anchors' };
+            }
+            
+            if (dimensions.length === 0) {
+                return { valid: true, reason: 'no_dimensions' };
+            }
+            
+            
+            const requiredCount = Math.max(...dimensions.map(d => d.cardinality));
+            if (existingDummies.length !== requiredCount) {
+                return { 
+                    valid: false, 
+                    reason: `count_mismatch: need ${requiredCount}, have ${existingDummies.length}` 
+                };
+            }
+            
+            
+            for (const dim of dimensions) {
+                const anchorValuesForDim = new Set(
+                    existingDummies.map(row => row[dimKey(dim)]).filter(v => v !== undefined && v !== '')
+                );
+                
+                for (const val of dim.uniqueValues) {
+                    if (!anchorValuesForDim.has(val)) {
+                        return { 
+                            valid: false, 
+                            reason: `missing_value: "${val}" in dimension "${dim.name}"` 
+                        };
+                    }
+                }
+            }
+            
+            
+            const dimNames = new Set(dimensions.map(d => d.name));
+            const idKey = headers[0];
+            const anchorDataKeys = Object.keys(existingDummies[0]).filter(k => 
+                !k.startsWith('_') && k !== idKey && !shouldExcludeFromTooltip(k)
+            );
+            
+            
+            
+            
+            
+            for (const dimName of dimNames) {
+                if (!anchorDataKeys.includes(dimName)) {
+                    
+                    const hasColumn = existingDummies[0].hasOwnProperty(dimName);
+                    if (!hasColumn) {
+                        return { 
+                            valid: false, 
+                            reason: `missing_dimension_column: "${dimName}" not in anchor rows` 
+                        };
+                    }
+                }
+            }
+            
+            return { valid: true, reason: 'anchors_match' };
+        }
+        
+        function mergeValueSpaces(realDimensions, existingDummies, headers) {
+            
+            
+            const merged = realDimensions.map(dim => {
+                const realValues = new Set(dim.uniqueValues);
+                
+                
+                existingDummies.forEach(row => {
+                    const val = row[dimKey(dim)];
+                    if (val !== undefined && val !== '') {
+                        realValues.add(val);
+                    }
+                });
+                
+                const mergedValues = [...realValues].sort();
+                return {
+                    name: dim.name,
+                    key: dim.key,
+                    uniqueValues: mergedValues,
+                    cardinality: mergedValues.length
+                };
+            });
+            
+            return merged;
+        }
+        
+        function updateDummySettings() {
+            dummySettings.visible = document.getElementById('dummyVisible').checked;
+            dummySettings.color = document.getElementById('dummyColor').value;
+            dummySettings.opacity = parseFloat(document.getElementById('dummyOpacity').value);
+            dummySettings.shape = document.getElementById('dummyShape').value;
+            updateVisualization();
+        }
+        
+        function renderDummySettingsUI() {
+            const section = document.getElementById('dummySection');
+            const badge = document.getElementById('dummyCountBadge');
+            
+            if (dummyRows.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            badge.textContent = `${dummyRows.length} anchor${dummyRows.length !== 1 ? 's' : ''}`;
+            
+            
+            document.getElementById('dummyVisible').checked = dummySettings.visible;
+            document.getElementById('dummyColor').value = dummySettings.color;
+            document.getElementById('dummyOpacity').value = dummySettings.opacity;
+            document.getElementById('dummyShape').value = dummySettings.shape;
+        }
+        
+        
+        
+        
         function updateChangesIndicator() {
             const indicator = document.getElementById('changesIndicator');
             const countEl = document.getElementById('changesCount');
             
-            if (modifiedRows.size > 0) {
+            const hasChanges = modifiedRows.size > 0;
+            const hasHistory = undoStack.length > 0 || redoStack.length > 0;
+            
+            if (hasChanges || hasHistory) {
                 indicator.classList.add('visible');
-                countEl.textContent = `${modifiedRows.size} change${modifiedRows.size > 1 ? 's' : ''} made`;
+                if (hasChanges) {
+                    countEl.textContent = `${modifiedRows.size} change${modifiedRows.size > 1 ? 's' : ''} made`;
+                } else {
+                    countEl.textContent = `No active changes (history available)`;
+                    countEl.style.color = '#888';
+                }
             } else {
                 indicator.classList.remove('visible');
+            }
+            
+            if (hasChanges) {
+                countEl.style.color = '#ff6b6b';
             }
         }
         
         function resetAllChanges() {
             if (!originalData) return;
+            if (!confirm('Reset all changes? All your modifications will be reverted and cannot be undone. Are you sure you want to continue?')) return;
             
             
             currentData = JSON.parse(JSON.stringify(originalData));
+            
+            currentData.forEach((row, i) => { row._index = i; });
             modifiedRows.clear();
+            changeLog = [];
+            undoStack = [];
+            redoStack = [];
             
             updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
             updateVisualization();
+        }
+        
+        
+        
+        
+        
+        
+        function pushUndoAction(action) {
+            undoStack.push(action);
+            if (undoStack.length > MAX_UNDO) undoStack.shift();
+            redoStack = []; 
+            updateUndoRedoUI();
+        }
+        
+        function undo() {
+            if (undoStack.length === 0) return;
+            
+            const action = undoStack.pop();
+            const reverseChanges = [];
+            
+            
+            action.changes.forEach(change => {
+                const row = currentData[change.rowIndex];
+                if (!row) return;
+                
+                const currentVal = row[change.field];
+                row[change.field] = change.oldValue;
+                reverseChanges.push({
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: currentVal,
+                    newValue: change.oldValue
+                });
+                
+                
+                const orig = originalData[change.rowIndex];
+                if (orig) {
+                    const stillModified = Object.keys(orig).some(k => 
+                        !k.startsWith('_') && orig[k] !== row[k]
+                    );
+                    if (stillModified) {
+                        modifiedRows.add(change.rowIndex);
+                    } else {
+                        modifiedRows.delete(change.rowIndex);
+                    }
+                }
+            });
+            
+            
+            const timestamp = new Date().toISOString();
+            action.changes.forEach(change => {
+                changeLog.push({
+                    rowId: getRowDisplayId(change.rowIndex),
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: change.newValue,
+                    newValue: change.oldValue,
+                    timestamp: timestamp
+                });
+            });
+            
+            redoStack.push({ type: action.type, changes: action.changes });
+            
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        function redo() {
+            if (redoStack.length === 0) return;
+            
+            const action = redoStack.pop();
+            
+            
+            action.changes.forEach(change => {
+                const row = currentData[change.rowIndex];
+                if (!row) return;
+                
+                row[change.field] = change.newValue;
+                modifiedRows.add(change.rowIndex);
+            });
+            
+            
+            const timestamp = new Date().toISOString();
+            action.changes.forEach(change => {
+                changeLog.push({
+                    rowId: getRowDisplayId(change.rowIndex),
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: change.oldValue,
+                    newValue: change.newValue,
+                    timestamp: timestamp
+                });
+            });
+            
+            undoStack.push({ type: action.type, changes: action.changes });
+            
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        function updateUndoRedoUI() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            const undoCount = document.getElementById('undoCount');
+            const redoCount = document.getElementById('redoCount');
+            
+            if (undoBtn) {
+                undoBtn.disabled = undoStack.length === 0;
+                undoCount.textContent = undoStack.length;
+            }
+            if (redoBtn) {
+                redoBtn.disabled = redoStack.length === 0;
+                redoCount.textContent = redoStack.length;
+            }
+        }
+        
+        
+        
+        
+        function getColorForValue(encodings, value) {
+            if (customColorMap[value]) return customColorMap[value];
+            if (!encodings.color) return COLORS[0];
+            const idx = encodings.color.uniqueValues.indexOf(value);
+            return COLORS[idx % COLORS.length];
+        }
+        
+        function getShapeForValue(encodings, value) {
+            if (customShapeMap[value]) return customShapeMap[value];
+            if (!encodings.shape) return 'circle';
+            const idx = encodings.shape.uniqueValues.indexOf(value);
+            return SHAPES[idx % SHAPES.length];
+        }
+        
+        function closeShapeSelectorPopup() {
+            document.getElementById('shapeSelectorPopup').classList.remove('visible');
         }
         
         
@@ -1433,27 +2539,31 @@
         
         function analyzeDimensions(headers, data) {
             const validHeaders = headers.filter((header, idx) => {
-                const headerLower = header.toLowerCase();
+                const parsed = parseColumnPrefix(header);
+                const displayName = parsed ? parsed.displayName : header;
+                const headerLower = displayName.toLowerCase();
                 
-                if (RESERVED_COLUMNS.some(rc => headerLower.includes(rc))) {
-                    return false;
+                if (parsed) {
+                    if (parsed.type === 'dim') return true;
+                    if (parsed.type === 'med' || parsed.type === 'desc' || parsed.type === 'res') return false;
                 }
+                
+                if (RESERVED_COLUMNS.some(rc => headerLower.includes(rc))) return false;
+                if (isMediaRelatedColumn(header)) return false;
+                if (DESC_LIKE_COLUMNS.includes(headerLower)) return false;
                 
                 const values = data.map(row => row[header]);
                 const uniqueCount = new Set(values).size;
-                
-                const isIdColumn = (idx === 0 && headerLower.includes('id')) || 
-                                   uniqueCount === data.length;
-                
+                const isIdColumn = (idx === 0 && headerLower.includes('id')) || uniqueCount === data.length;
                 return !isIdColumn;
             });
             
             const dims = validHeaders.map(header => {
                 const values = data.map(row => row[header]);
                 const uniqueValues = [...new Set(values)].sort();
-                
                 return {
-                    name: header,
+                    name: getDisplayName(header),
+                    key: header,
                     uniqueValues,
                     cardinality: uniqueValues.length
                 };
@@ -1637,28 +2747,39 @@
             if (!row) return;
             
             
-            let changed = false;
+            const timestamp = new Date().toISOString();
+            const undoChanges = [];
             
-            if (encodings.panelX && row[encodings.panelX.name] !== panelXVal) {
-                row[encodings.panelX.name] = panelXVal;
-                changed = true;
+            if (encodings.panelX && row[dimKey(encodings.panelX)] !== panelXVal) {
+                const oldVal = row[dimKey(encodings.panelX)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelX), oldValue: oldVal, newValue: panelXVal });
+                row[dimKey(encodings.panelX)] = panelXVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.panelX), oldValue: oldVal, newValue: panelXVal, timestamp });
             }
-            if (encodings.panelY && row[encodings.panelY.name] !== panelYVal) {
-                row[encodings.panelY.name] = panelYVal;
-                changed = true;
+            if (encodings.panelY && row[dimKey(encodings.panelY)] !== panelYVal) {
+                const oldVal = row[dimKey(encodings.panelY)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal });
+                row[dimKey(encodings.panelY)] = panelYVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal, timestamp });
             }
-            if (encodings.innerX && row[encodings.innerX.name] !== innerXVal) {
-                row[encodings.innerX.name] = innerXVal;
-                changed = true;
+            if (encodings.innerX && row[dimKey(encodings.innerX)] !== innerXVal) {
+                const oldVal = row[dimKey(encodings.innerX)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal });
+                row[dimKey(encodings.innerX)] = innerXVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal, timestamp });
             }
-            if (encodings.innerY && row[encodings.innerY.name] !== innerYVal) {
-                row[encodings.innerY.name] = innerYVal;
-                changed = true;
+            if (encodings.innerY && row[dimKey(encodings.innerY)] !== innerYVal) {
+                const oldVal = row[dimKey(encodings.innerY)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal });
+                row[dimKey(encodings.innerY)] = innerYVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal, timestamp });
             }
             
-            if (changed) {
+            if (undoChanges.length > 0) {
+                pushUndoAction({ type: 'drag-reclassify', changes: undoChanges });
                 modifiedRows.add(draggedRowIndex);
                 updateChangesIndicator();
+                updateChangeLogUI();
                 updateVisualization();
             }
         }
@@ -1669,34 +2790,87 @@
         function showContextMenu(e, rowIndex) {
             e.preventDefault();
             
-            if (!encodings.color) {
-                return; 
-            }
+            const hasColor = !!encodings.color;
+            const hasShape = !!encodings.shape;
+            
+            if (!hasColor && !hasShape) return; 
             
             contextMenuRowIndex = rowIndex;
             const menu = document.getElementById('contextMenu');
-            const grid = document.getElementById('colorGrid');
-            const label = document.getElementById('colorLabel');
+            const colorGrid = document.getElementById('colorGrid');
+            const colorLabel = document.getElementById('colorLabel');
+            const shapeSection = document.getElementById('shapeMenuSection');
+            const shapeDivider = document.getElementById('shapeMenuDivider');
+            const shapeGrid = document.getElementById('shapeGrid');
+            const shapeLabel = document.getElementById('shapeLabel');
             
             const row = currentData[rowIndex];
-            const currentValue = row[encodings.color.name];
             
             
-            grid.innerHTML = '';
-            encodings.color.uniqueValues.forEach((value, idx) => {
-                const option = document.createElement('div');
-                option.className = `color-option ${value === currentValue ? 'selected' : ''}`;
-                option.style.backgroundColor = COLORS[idx % COLORS.length];
-                option.title = value;
-                option.onclick = () => changeColor(value);
-                grid.appendChild(option);
-            });
+            if (hasColor) {
+                const currentColorValue = row[dimKey(encodings.color)];
+                colorGrid.innerHTML = '';
+                colorGrid.parentElement.querySelector('.context-menu-title').style.display = '';
+                colorGrid.style.display = '';
+                colorLabel.style.display = '';
+                
+                encodings.color.uniqueValues.forEach((value, idx) => {
+                    const option = document.createElement('div');
+                    option.className = `color-option ${value === currentColorValue ? 'selected' : ''}`;
+                    option.style.backgroundColor = getColorForValue(encodings, value);
+                    option.title = value;
+                    option.onclick = () => changeColor(value);
+                    colorGrid.appendChild(option);
+                });
+                
+                colorLabel.textContent = `Current: ${currentColorValue}`;
+            } else {
+                colorGrid.innerHTML = '';
+                colorGrid.parentElement.querySelector('.context-menu-title').style.display = 'none';
+                colorGrid.style.display = 'none';
+                colorLabel.style.display = 'none';
+            }
             
-            label.textContent = `Current: ${currentValue}`;
+            
+            if (hasShape) {
+                const currentShapeValue = row[dimKey(encodings.shape)];
+                shapeDivider.style.display = hasColor ? '' : 'none';
+                shapeSection.style.display = '';
+                shapeGrid.innerHTML = '';
+                
+                encodings.shape.uniqueValues.forEach((value, idx) => {
+                    const shape = getShapeForValue(encodings, value);
+                    const option = document.createElement('div');
+                    option.className = `shape-option ${value === currentShapeValue ? 'selected' : ''}`;
+                    option.title = value;
+                    option.onclick = () => changeShape(value);
+                    
+                    const preview = document.createElement('div');
+                    preview.className = `data-point shape-${shape} shape-preview`;
+                    preview.style.backgroundColor = '#aaa';
+                    preview.style.width = '14px';
+                    preview.style.height = '14px';
+                    preview.style.cursor = 'pointer';
+                    option.appendChild(preview);
+                    
+                    const label = document.createElement('div');
+                    label.style.cssText = 'font-size:0.55rem;color:#888;margin-top:2px;text-align:center;';
+                    label.textContent = value.length > 6 ? value.slice(0, 6) + '…' : value;
+                    option.style.cssText += 'flex-direction:column;height:auto;width:auto;min-width:40px;padding:6px;';
+                    option.appendChild(label);
+                    
+                    shapeGrid.appendChild(option);
+                });
+                
+                shapeLabel.textContent = `Current: ${currentShapeValue}`;
+            } else {
+                shapeDivider.style.display = 'none';
+                shapeSection.style.display = 'none';
+            }
             
             
-            const x = Math.min(e.clientX, window.innerWidth - 200);
-            const y = Math.min(e.clientY, window.innerHeight - 200);
+            const x = Math.min(e.clientX, window.innerWidth - 220);
+            const y = Math.min(e.clientY, window.innerHeight - 300);
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
             menu.classList.add('visible');
@@ -1711,11 +2885,43 @@
             if (contextMenuRowIndex === null || !encodings.color) return;
             
             const row = currentData[contextMenuRowIndex];
-            const oldValue = row[encodings.color.name];
+            const field = dimKey(encodings.color);
+            const oldValue = row[field];
             
             if (oldValue !== newValue) {
-                row[encodings.color.name] = newValue;
+                row[field] = newValue;
                 modifiedRows.add(contextMenuRowIndex);
+                
+                pushUndoAction({
+                    type: 'color-change',
+                    changes: [{ rowIndex: contextMenuRowIndex, field, oldValue, newValue }]
+                });
+                
+                logChange(contextMenuRowIndex, field, oldValue, newValue);
+                updateChangesIndicator();
+                updateVisualization();
+            }
+            
+            closeContextMenu();
+        }
+        
+        function changeShape(newValue) {
+            if (contextMenuRowIndex === null || !encodings.shape) return;
+            
+            const row = currentData[contextMenuRowIndex];
+            const field = dimKey(encodings.shape);
+            const oldValue = row[field];
+            
+            if (oldValue !== newValue) {
+                row[field] = newValue;
+                modifiedRows.add(contextMenuRowIndex);
+                
+                pushUndoAction({
+                    type: 'shape-change',
+                    changes: [{ rowIndex: contextMenuRowIndex, field, oldValue, newValue }]
+                });
+                
+                logChange(contextMenuRowIndex, field, oldValue, newValue);
                 updateChangesIndicator();
                 updateVisualization();
             }
@@ -1727,6 +2933,9 @@
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.context-menu') && !e.target.closest('.data-point')) {
                 closeContextMenu();
+            }
+            if (!e.target.closest('.shape-selector-popup') && !e.target.closest('.legend-shape-btn')) {
+                closeShapeSelectorPopup();
             }
         });
         
@@ -1834,14 +3043,43 @@
             container.innerHTML = '';
             
             encodings.color.uniqueValues.forEach((value, idx) => {
+                const color = getColorForValue(encodings, value);
                 const row = document.createElement('div');
-                row.className = 'legend-row';
-                row.innerHTML = `
-                    <div class="legend-swatch" style="background: ${COLORS[idx % COLORS.length]}"></div>
-                    <span>${value}</span>
-                `;
+                row.className = 'legend-row interactive';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'color-picker-wrapper';
+                
+                const swatch = document.createElement('div');
+                swatch.className = 'legend-swatch editable';
+                swatch.style.background = color;
+                swatch.title = `Click to change color for "${value}"`;
+                
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = color;
+                picker.addEventListener('input', (e) => {
+                    customColorMap[value] = e.target.value;
+                    swatch.style.background = e.target.value;
+                    updateVisualization();
+                });
+                
+                wrapper.appendChild(swatch);
+                wrapper.appendChild(picker);
+                
+                const label = document.createElement('span');
+                label.textContent = value;
+                
+                row.appendChild(wrapper);
+                row.appendChild(label);
                 container.appendChild(row);
             });
+            
+            
+            const hint = document.createElement('div');
+            hint.className = 'legend-edit-hint';
+            hint.textContent = 'Click swatches to customize colors';
+            container.appendChild(hint);
         }
         
         function updateShapeLegend(encodings) {
@@ -1857,17 +3095,81 @@
             container.innerHTML = '';
             
             encodings.shape.uniqueValues.forEach((value, idx) => {
-                const shape = SHAPES[idx % SHAPES.length];
+                const shape = getShapeForValue(encodings, value);
                 const row = document.createElement('div');
-                row.className = 'legend-row';
-                row.innerHTML = `
+                row.className = 'legend-row interactive';
+                
+                const shapeBtn = document.createElement('div');
+                shapeBtn.className = 'legend-shape-btn';
+                shapeBtn.title = `Click to change shape for "${value}" (current: ${shape})`;
+                shapeBtn.innerHTML = `
                     <div class="legend-shape">
                         <div class="data-point shape-${shape}" style="background: #888; width: 10px; height: 10px;"></div>
                     </div>
-                    <span>${value}</span>
                 `;
+                
+                shapeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showShapeSelectorPopup(e, value);
+                });
+                
+                const label = document.createElement('span');
+                label.textContent = `${value} (${shape})`;
+                label.style.fontSize = '0.75rem';
+                
+                row.appendChild(shapeBtn);
+                row.appendChild(label);
                 container.appendChild(row);
             });
+            
+            
+            const hint = document.createElement('div');
+            hint.className = 'legend-edit-hint';
+            hint.textContent = 'Click shapes to customize assignments';
+            container.appendChild(hint);
+        }
+        
+        function showShapeSelectorPopup(e, dimensionValue) {
+            const popup = document.getElementById('shapeSelectorPopup');
+            const grid = document.getElementById('shapeSelectorGrid');
+            
+            grid.innerHTML = '';
+            
+            const currentShape = getShapeForValue(encodings, dimensionValue);
+            
+            SHAPES.forEach(shapeName => {
+                const option = document.createElement('div');
+                option.className = `shape-option ${shapeName === currentShape ? 'selected' : ''}`;
+                option.title = shapeName;
+                option.style.cssText = 'flex-direction:column;height:auto;width:auto;min-width:50px;padding:8px;';
+                
+                const preview = document.createElement('div');
+                preview.className = `data-point shape-${shapeName}`;
+                preview.style.cssText = 'background:#aaa;width:14px;height:14px;cursor:pointer;';
+                option.appendChild(preview);
+                
+                const label = document.createElement('div');
+                label.style.cssText = 'font-size:0.6rem;color:#888;margin-top:4px;text-align:center;';
+                label.textContent = shapeName;
+                option.appendChild(label);
+                
+                option.addEventListener('click', () => {
+                    customShapeMap[dimensionValue] = shapeName;
+                    closeShapeSelectorPopup();
+                    updateShapeLegend(encodings);
+                    updateVisualization();
+                });
+                
+                grid.appendChild(option);
+            });
+            
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = Math.min(rect.right + 10, window.innerWidth - 250);
+            const y = Math.min(rect.top, window.innerHeight - 120);
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            popup.classList.add('visible');
         }
         
         function updateFloatingLegend(encodings) {
@@ -1877,9 +3179,25 @@
             if (encodings && encodings.color) {
                 html += `<div style="margin-bottom: 8px;"><strong style="font-size: 0.65rem; color: #888;">${encodings.color.name}</strong></div>`;
                 encodings.color.uniqueValues.forEach((value, idx) => {
+                    const color = getColorForValue(encodings, value);
                     html += `
                         <div class="legend-row">
-                            <div class="legend-swatch" style="background: ${COLORS[idx % COLORS.length]}"></div>
+                            <div class="legend-swatch" style="background: ${color}"></div>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            if (encodings && encodings.shape) {
+                html += `<div style="margin: 10px 0 8px 0;"><strong style="font-size: 0.65rem; color: #888;">${encodings.shape.name}</strong></div>`;
+                encodings.shape.uniqueValues.forEach((value, idx) => {
+                    const shape = getShapeForValue(encodings, value);
+                    html += `
+                        <div class="legend-row">
+                            <div class="legend-shape">
+                                <div class="data-point shape-${shape}" style="background: #888; width: 10px; height: 10px;"></div>
+                            </div>
                             <span>${value}</span>
                         </div>
                     `;
@@ -1895,13 +3213,16 @@
         function renderVisualization(data, encodings) {
             const container = document.getElementById('vizContainer');
             
-            const mediaCount = data.filter(row => row.media_type && row.media_url).length;
+            
+            const renderData = dummySettings.visible ? [...data, ...dummyRows] : data;
+            
             const activeDims = getActiveDimensions();
             
             document.getElementById('vizHeader').style.display = 'flex';
             document.getElementById('vizTitle').textContent = 'Data Editor';
             document.getElementById('vizStats').textContent = 
-                `${data.length} records • ${modifiedRows.size} modified`;
+                `${data.length} records • ${modifiedRows.size} modified` +
+                (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
             
             const panelXValues = encodings.panelX?.uniqueValues || ['All'];
             const panelYValues = encodings.panelY?.uniqueValues || ['All'];
@@ -1935,7 +3256,7 @@
                 grid.appendChild(rowLabel);
                 
                 panelXValues.forEach(xVal => {
-                    const panel = createPanel(data, encodings, xVal, yVal);
+                    const panel = createPanel(renderData, encodings, xVal, yVal);
                     grid.appendChild(panel);
                 });
             });
@@ -1957,15 +3278,17 @@
             let panelData = data;
             
             if (encodings.panelX) {
-                panelData = panelData.filter(row => row[encodings.panelX.name] === panelXVal);
+                panelData = panelData.filter(row => row[dimKey(encodings.panelX)] === panelXVal);
             }
             if (encodings.panelY) {
-                panelData = panelData.filter(row => row[encodings.panelY.name] === panelYVal);
+                panelData = panelData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
             }
             
             const title = document.createElement('div');
             title.className = 'panel-title';
-            title.textContent = `${panelData.length} items`;
+            const realCount = panelData.filter(r => !r._isDummy).length;
+            const dummyCount = panelData.filter(r => r._isDummy).length;
+            title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             panel.appendChild(title);
             
             const innerXValues = encodings.innerX?.uniqueValues || ['All'];
@@ -2034,10 +3357,10 @@
             let cellData = panelData;
             
             if (encodings.innerX && allInnerXVals.length > 1) {
-                cellData = cellData.filter(row => row[encodings.innerX.name] === innerXVal);
+                cellData = cellData.filter(row => row[dimKey(encodings.innerX)] === innerXVal);
             }
             if (encodings.innerY && allInnerYVals.length > 1) {
-                cellData = cellData.filter(row => row[encodings.innerY.name] === innerYVal);
+                cellData = cellData.filter(row => row[dimKey(encodings.innerY)] === innerYVal);
             }
             
             
@@ -2057,32 +3380,64 @@
         function createDataPoint(row, encodings) {
             const point = document.createElement('div');
             point.className = 'data-point';
-            point.draggable = true;
             
+            const isDummy = row._isDummy === true;
             const rowIndex = row._index;
-            const isModified = modifiedRows.has(rowIndex);
+            const isModified = !isDummy && modifiedRows.has(rowIndex);
+            
+            
+            if (isDummy) {
+                point.classList.add('dummy-point');
+                point.draggable = false;
+                point.style.backgroundColor = dummySettings.color;
+                point.style.opacity = dummySettings.opacity;
+                point.classList.add(`shape-${dummySettings.shape}`);
+                
+                if (!dummySettings.visible) {
+                    point.classList.add('hidden-dummy');
+                }
+                
+                
+                point.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    const displayFields = Object.keys(row)
+                        .filter(k => !k.startsWith('_') && !shouldExcludeFromTooltip(k))
+                        .slice(0, 5);
+                    let html = `<div style="color: #888; font-size: 0.7rem; margin-bottom: 4px;">⚓ Anchor Point</div>`;
+                    html += displayFields.map(key => 
+                        `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
+                    ).join('<br>');
+                    html += `<div class="tooltip-hint">Preserves dimension values in export</div>`;
+                    tooltip.innerHTML = html;
+                    tooltip.classList.add('visible');
+                    moveTooltip(e);
+                });
+                point.addEventListener('mouseleave', hideTooltip);
+                point.addEventListener('mousemove', moveTooltip);
+                
+                return point;
+            }
+            
+            
+            point.draggable = true;
             
             if (isModified) {
                 point.classList.add('modified');
             }
             
-            const hasMedia = row.media_type && row.media_url;
-            if (hasMedia) {
-                point.classList.add('has-media');
-            }
+            const hasMedia = rowHasMedia(row);
             
             
             if (encodings.color) {
-                const colorIdx = encodings.color.uniqueValues.indexOf(row[encodings.color.name]);
-                point.style.backgroundColor = COLORS[colorIdx % COLORS.length];
+                point.style.backgroundColor = getColorForValue(encodings, row[dimKey(encodings.color)]);
             } else {
                 point.style.backgroundColor = COLORS[0];
             }
             
             
             if (encodings.shape) {
-                const shapeIdx = encodings.shape.uniqueValues.indexOf(row[encodings.shape.name]);
-                point.classList.add(`shape-${SHAPES[shapeIdx % SHAPES.length]}`);
+                const shape = getShapeForValue(encodings, row[dimKey(encodings.shape)]);
+                point.classList.add(`shape-${shape}`);
             } else {
                 point.classList.add('shape-circle');
             }
@@ -2112,11 +3467,11 @@
             const tooltip = document.getElementById('tooltip');
             
             const displayFields = Object.keys(row)
-                .filter(k => !k.startsWith('_') && !RESERVED_COLUMNS.includes(k.toLowerCase()))
+                .filter(k => !k.startsWith('_') && !shouldExcludeFromTooltip(k))
                 .slice(0, 5);
             
             let html = displayFields.map(key => 
-                `<strong>${key}:</strong> ${row[key]}`
+                `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
             ).join('<br>');
             
             if (isModified) {
@@ -2125,9 +3480,12 @@
             
             html += `<div class="tooltip-hint">`;
             if (hasMedia) {
-                const mediaIcon = row.media_type === 'video' ? '🎬' : 
-                                  row.media_type === 'audio' ? '🎵' : '📷';
-                html += `${mediaIcon} Click to view • `;
+                const media = getRowMedia(row);
+                const icons = media.map(m => 
+                    m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷'
+                );
+                const uniqueIcons = [...new Set(icons)].join('');
+                html += `${uniqueIcons} Click to view • `;
             }
             html += `Drag to move • Right-click for color</div>`;
             
@@ -2160,26 +3518,24 @@
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
             
-            const titleField = row.title || row.name || row.Name || row.Title || `Record #${row._index + 1}`;
-            modalTitle.textContent = titleField;
+            modalTitle.textContent = getModalTitleFromRow(row);
             
             let tableHTML = '<table class="data-table">';
             
             Object.keys(row).forEach(key => {
                 if (key.startsWith('_')) return;
-                if (RESERVED_COLUMNS.some(rc => key.toLowerCase() === rc)) return;
+                if (shouldExcludeFromModalTable(key)) return;
                 
                 let valueHTML = row[key];
                 
-                if (encodings.color && key === encodings.color.name) {
-                    const colorIdx = encodings.color.uniqueValues.indexOf(row[key]);
-                    const color = COLORS[colorIdx % COLORS.length];
+                if (encodings.color && key === dimKey(encodings.color)) {
+                    const color = getColorForValue(encodings, row[key]);
                     valueHTML = `<span class="data-tag" style="background: ${color}33; color: ${color}">${row[key]}</span>`;
                 }
                 
                 tableHTML += `
                     <tr>
-                        <td>${key}</td>
+                        <td>${getDisplayName(key)}</td>
                         <td>${valueHTML}</td>
                     </tr>
                 `;
@@ -2187,40 +3543,85 @@
             
             tableHTML += '</table>';
             
-            const hasMedia = row.media_type && row.media_url;
             
-            if (hasMedia) {
-                const mediaIcon = row.media_type === 'video' ? '🎬' : 
-                                  row.media_type === 'audio' ? '🎵' : '📷';
-                const mediaLabel = row.media_type.charAt(0).toUpperCase() + row.media_type.slice(1);
+            const media = getRowMedia(row);
+            
+            if (media.length > 0) {
+                tableHTML += `<div class="media-section">`;
+                tableHTML += `<div class="media-section-title"><span class="icon">🎛️</span> Media (${media.length})</div>`;
                 
-                tableHTML += `
-                    <div class="media-section">
-                        <div class="media-section-title">
-                            <span class="icon">${mediaIcon}</span>
-                            ${mediaLabel} Content
-                        </div>
-                        <div class="media-container ${row.media_type === 'audio' ? 'audio-container' : ''}">
-                            ${generateMediaHTML(row)}
-                        </div>
-                    </div>
-                `;
+                if (media.length > 1) {
+                    
+                    tableHTML += `<div class="media-tabs">`;
+                    media.forEach((m, idx) => {
+                        const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
+                        const label = m.label.charAt(0).toUpperCase() + m.label.slice(1);
+                        tableHTML += `<button class="media-tab ${idx === 0 ? 'active' : ''}" 
+                            onclick="switchMediaTab(this, ${idx})">${icon} ${label}</button>`;
+                    });
+                    tableHTML += `</div>`;
+                    
+                    media.forEach((m, idx) => {
+                        tableHTML += `<div class="media-panel ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
+                            <div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                                ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    
+                    const m = media[0];
+                    const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
+                    tableHTML += `<div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                        ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                    </div>`;
+                }
+                
+                tableHTML += `</div>`;
             }
             
             modalBody.innerHTML = tableHTML;
             document.getElementById('modalOverlay').classList.add('active');
         }
         
-        function generateMediaHTML(row) {
-            switch (row.media_type) {
+        function switchMediaTab(btn, idx) {
+            const section = btn.closest('.media-section');
+            section.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
+            section.querySelectorAll('.media-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            section.querySelector(`.media-panel[data-media-idx="${idx}"]`).classList.add('active');
+            
+            
+            section.querySelectorAll('video, audio').forEach(el => {
+                el.pause();
+                el.currentTime = 0;
+            });
+        }
+        
+        function toYouTubeEmbedUrl(url) {
+            if (!url) return null;
+            const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/i);
+            if (!m) return null;
+            const vid = m[1];
+            const t = url.match(/[?&]t=(\d+)/);
+            const start = t ? `?start=${t[1]}` : '';
+            return `https://www.youtube.com/embed/${vid}${start}`;
+        }
+        
+        function generateMediaHTML(type, url, altText) {
+            const ytEmbed = toYouTubeEmbedUrl(url);
+            if (ytEmbed) {
+                return `<iframe src="${ytEmbed}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
+            switch (type) {
                 case 'image':
-                    return `<img src="${row.media_url}" alt="${row.title || 'Image'}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22250%22><rect fill=%22%23333%22 width=%22100%%22 height=%22100%%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23666%22 text-anchor=%22middle%22>Image unavailable</text></svg>'">`;
+                    return `<img src="${url}" alt="${altText}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22250%22><rect fill=%22%23333%22 width=%22100%%22 height=%22100%%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23666%22 text-anchor=%22middle%22>Image unavailable</text></svg>'">`;
                 case 'video':
-                    return `<video controls autoplay muted><source src="${row.media_url}" type="video/mp4"></video>`;
+                    return `<video controls muted><source src="${url}" type="video/mp4"></video>`;
                 case 'audio':
-                    return `<div class="audio-icon">🎵</div><audio controls autoplay><source src="${row.media_url}" type="audio/wav"><source src="${row.media_url}" type="audio/mpeg"></audio>`;
+                    return `<div class="audio-icon">🎵</div><audio controls><source src="${url}" type="audio/wav"><source src="${url}" type="audio/mpeg"></audio>`;
                 default:
-                    return `<div class="no-media">Unknown media type</div>`;
+                    return `<div class="no-media">Unknown media type: ${type}</div>`;
             }
         }
         
@@ -2277,18 +3678,68 @@
         
         function processCSV(text) {
             const { headers, data } = parseCSV(text);
+            csvHeaders = headers;
             
             
-            originalData = JSON.parse(JSON.stringify(data));
-            currentData = data;
+            mediaColumns = detectMediaColumns(headers);
+            console.log('Detected media columns:', mediaColumns);
+            
+            
+            const { realData, existingDummies } = detectExistingDummies(data, headers);
+            
+            
+            const realDimensions = analyzeDimensions(headers, realData);
+            
+            
+            const mergedDimensions = existingDummies.length > 0
+                ? mergeValueSpaces(realDimensions, existingDummies, headers)
+                : realDimensions;
+            
+            
+            allDimensions = mergedDimensions;
+            
+            
+            preservedDimValues = {};
+            allDimensions.forEach(dim => {
+                preservedDimValues[dim.name] = [...dim.uniqueValues];
+            });
+            
+            
+            if (existingDummies.length > 0) {
+                const validation = validateAnchors(existingDummies, allDimensions, headers);
+                
+                if (validation.valid) {
+                    console.log('Anchors validated: keeping existing anchors.');
+                    dummyRows = existingDummies;
+                } else {
+                    console.log(`Anchors outdated (${validation.reason}): regenerating.`);
+                    dummyRows = generateDummyRows(allDimensions, headers);
+                }
+            } else {
+                dummyRows = generateDummyRows(allDimensions, headers);
+            }
+            
+            
+            realData.forEach((row, i) => { row._index = i; });
+            
+            
+            originalData = JSON.parse(JSON.stringify(realData));
+            currentData = realData;
             modifiedRows.clear();
+            changeLog = [];
+            undoStack = [];
+            redoStack = [];
+            customColorMap = {};
+            customShapeMap = {};
             
-            allDimensions = analyzeDimensions(headers, data);
             userDimensionOrder = allDimensions.map(d => d.name);
             enabledDimensions = new Set(userDimensionOrder);
             
             renderDimensionList();
+            renderDummySettingsUI();
             updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
             updateVisualization();
         }
         
@@ -2296,68 +3747,68 @@
         
         
         function loadSampleData() {
-            const sampleCSV = `ID,Function,Intonation,Focus,Canonical,Surprise,media_type,media_url
-1,Genuine,Rising,0,0,0,audio,/kourosh/01_00_10_Genuine.wav
-2,Offer,Rising,0,0,0,audio,/kourosh/01_00_2_Offer.wav
-3,Rhetorical,Rising,1,0,1,audio,/kourosh/02_20_4_Rhetorical.wav
-4,Offer,Rising,0,1,0,audio,/kourosh/02_20_6_Offer.wav
-5,Confirmation,Rising,0,0,1,audio,/kourosh/02_20_8_Confirmation.wav
-6,Confirmation,Rising,0,0,0,audio,/kourosh/02_50_2_Confirmation.wav
-7,Genuine,Neutral,0,1,0,audio,/kourosh/02_50_6_Genuine.wav
-8,Genuine,Rising,0,1,1,audio,/kourosh/03_27_8_Genuine.wav
-9,Confirmation,Rising,1,1,1,audio,/kourosh/05_15_4_Confirmation.wav
-11,Genuine,Rising,0,1,0,audio,/kourosh/06_15_4_Genuine.wav
-13,Genuine,Neutral,0,1,0,audio,/kourosh/07_26_10_Genuine.wav
-14,Confirmation,Rising,1,1,1,audio,/kourosh/07_26_4_Confirmation.wav
-15,Echo,Rising,0,1,0,audio,/kourosh/07_55_4_Echo.wav
-16,Echo,Rising,1,1,1,audio,/kourosh/09_01_2_Echo.wav
-17,Offer,Neutral,0,0,0,audio,/kourosh/09_01_4_Offer.wav
-18,Confirmation,Neutral,1,0,0,audio,/kourosh/09_10_2_Confirmation.wav
-19,Genuine,Rising,0,1,0,audio,/kourosh/10_00_4_Genuine.wav
-20,Echo,Rising,0,1,0,audio,/kourosh/10_00_8_Echo.wav
-21,Confirmation,Rising,0,1,0,audio,/kourosh/10_07_10_Confirmation.wav
-22,Echo,Rising,1,1,1,audio,/kourosh/10_07_2_Echo.wav
-23,Genuine,Rising,0,0,0,audio,/kourosh/10_07_8_Genuine.wav
-24,Genuine,Rising,1,0,0,audio,/kourosh/11_29_2_Genuine.wav
-25,Rhetorical,Neutral,0,1,0,audio,/kourosh/11_29_4_Rhetorical.wav
-26,Confirmation,Rising,0,1,0,audio,/kourosh/13_59_10_Confirmation.wav
-27,Request,Rising,0,1,0,audio,/kourosh/13_59_4_Request.wav
-28,Genuine,Rising,1,1,0,audio,/kourosh/14_21_10_Genuine.wav
-29,Confirmation,Rising,0,1,0,audio,/kourosh/14_21_12_Confirmation.wav
-30,Confirmation,Neutral,1,0,0,audio,/kourosh/14_21_14_Confirmation.wav
-31,Request,Rising,0,0,0,audio,/kourosh/14_21_8_Request.wav
-33,Confirmation,Rising,0,1,0,audio,/kourosh/15_21_4_Confirmation.wav
-34,Confirmation,Rising,1,1,1,audio,/kourosh/16_05_4_Confirmation.wav
-35,Confirmation,Neutral,0,1,0,audio,/kourosh/16_20_10_Confirmation.wav
-36,Echo,Rising,0,1,0,audio,/kourosh/16_20_14_Echo.wav
-37,Confirmation,Rising,1,1,1,audio,/kourosh/16_20_2_Confirmation.wav
-38,Rhetorical,Rising,0,0,0,audio,/kourosh/16_20_4_Rhetorical.wav
-39,Confirmation,Rising,1,0,1,audio,/kourosh/16_20_6_Confirmation.wav
-40,Genuine,Rising,0,1,0,audio,/kourosh/16_20_8_Genuine.wav
-41,Request,Rising,0,0,0,audio,/kourosh/17_00_8_Request.wav
-42,Request,Rising,1,1,1,audio,/kourosh/17_30_10_Request.wav
-43,Confirmation,Rising,0,1,0,audio,/kourosh/17_30_4_Confirmation.wav
-44,Confirmation,Rising,1,0,1,audio,/kourosh/17_55_2_Confirmation.wav
-45,Echo,Rising,1,0,1,audio,/kourosh/17_55_4_Echo.wav
-46,Genuine,Rising,0,1,0,audio,/kourosh/19_54_10_Genuine.wav
-47,Genuine,Rising,0,0,0,audio,/kourosh/19_54_14_Genuine.wav
-48,Confirmation,Rising,0,1,0,audio,/kourosh/19_54_2_Confirmation.wav
-49,Request,Neutral,0,1,0,audio,/kourosh/19_54_4_Request.wav
-50,Confirmation,Rising,0,1,0,audio,/kourosh/19_54_6_Confirmation.wav
-51,Rhetorical,Rising,0,0,1,audio,/kourosh/20_57_2_Rhetorical.wav
-52,Genuine,Neutral,0,1,0,audio,/kourosh/20_57_4_Genuine.wav
-53,Echo,Rising,0,0,1,audio,/kourosh/36_59_10_Echo.wav
-54,Confirmation,Rising,0,1,0,audio,/kourosh/36_59_12_Confirmation.wav
-55,Echo,Rising,0,1,1,audio,/kourosh/36_59_4_Echo.wav
-56,Echo,Rising,0,1,1,audio,/kourosh/36_59_6_Echo.wav
-57,Rhetorical,Rising,0,0,1,audio,/kourosh/36_59_8_Rhetorical.wav
-58,Offer,Rising,0,0,0,audio,/kourosh/38_27_2_Offer.wav
-59,Offer,Rising,0,0,0,audio,/kourosh/38_27_6_Offer.wav
-60,Offer,Rising,0,1,0,audio,/kourosh/39_50_2_Offer.wav
-61,Request,Rising,0,1,0,audio,/kourosh/39_50_8_Request.wav
-62,Confirmation,Rising,1,1,1,audio,/kourosh/43_45_4_Confirmation.wav
-63,Confirmation,Rising,1,0,1,audio,/kourosh/44_45_2_Confirmation.wav
-64,Offer,Neutral,0,1,0,audio,/kourosh/44_45_8_Offer.wav`;
+            const sampleCSV = `ID,Function,Intonation,Focus,Canonical,Surprise,audio_url
+1,Genuine,Rising,0,0,0,/kourosh/01_00_10_Genuine.wav
+2,Offer,Rising,0,0,0,/kourosh/01_00_2_Offer.wav
+3,Rhetorical,Rising,1,0,1,/kourosh/02_20_4_Rhetorical.wav
+4,Offer,Rising,0,1,0,/kourosh/02_20_6_Offer.wav
+5,Confirmation,Rising,0,0,1,/kourosh/02_20_8_Confirmation.wav
+6,Confirmation,Rising,0,0,0,/kourosh/02_50_2_Confirmation.wav
+7,Genuine,Neutral,0,1,0,/kourosh/02_50_6_Genuine.wav
+8,Genuine,Rising,0,1,1,/kourosh/03_27_8_Genuine.wav
+9,Confirmation,Rising,1,1,1,/kourosh/05_15_4_Confirmation.wav
+11,Genuine,Rising,0,1,0,/kourosh/06_15_4_Genuine.wav
+13,Genuine,Neutral,0,1,0,/kourosh/07_26_10_Genuine.wav
+14,Confirmation,Rising,1,1,1,/kourosh/07_26_4_Confirmation.wav
+15,Echo,Rising,0,1,0,/kourosh/07_55_4_Echo.wav
+16,Echo,Rising,1,1,1,/kourosh/09_01_2_Echo.wav
+17,Offer,Neutral,0,0,0,/kourosh/09_01_4_Offer.wav
+18,Confirmation,Neutral,1,0,0,/kourosh/09_10_2_Confirmation.wav
+19,Genuine,Rising,0,1,0,/kourosh/10_00_4_Genuine.wav
+20,Echo,Rising,0,1,0,/kourosh/10_00_8_Echo.wav
+21,Confirmation,Rising,0,1,0,/kourosh/10_07_10_Confirmation.wav
+22,Echo,Rising,1,1,1,/kourosh/10_07_2_Echo.wav
+23,Genuine,Rising,0,0,0,/kourosh/10_07_8_Genuine.wav
+24,Genuine,Rising,1,0,0,/kourosh/11_29_2_Genuine.wav
+25,Rhetorical,Neutral,0,1,0,/kourosh/11_29_4_Rhetorical.wav
+26,Confirmation,Rising,0,1,0,/kourosh/13_59_10_Confirmation.wav
+27,Request,Rising,0,1,0,/kourosh/13_59_4_Request.wav
+28,Genuine,Rising,1,1,0,/kourosh/14_21_10_Genuine.wav
+29,Confirmation,Rising,0,1,0,/kourosh/14_21_12_Confirmation.wav
+30,Confirmation,Neutral,1,0,0,/kourosh/14_21_14_Confirmation.wav
+31,Request,Rising,0,0,0,/kourosh/14_21_8_Request.wav
+33,Confirmation,Rising,0,1,0,/kourosh/15_21_4_Confirmation.wav
+34,Confirmation,Rising,1,1,1,/kourosh/16_05_4_Confirmation.wav
+35,Confirmation,Neutral,0,1,0,/kourosh/16_20_10_Confirmation.wav
+36,Echo,Rising,0,1,0,/kourosh/16_20_14_Echo.wav
+37,Confirmation,Rising,1,1,1,/kourosh/16_20_2_Confirmation.wav
+38,Rhetorical,Rising,0,0,0,/kourosh/16_20_4_Rhetorical.wav
+39,Confirmation,Rising,1,0,1,/kourosh/16_20_6_Confirmation.wav
+40,Genuine,Rising,0,1,0,/kourosh/16_20_8_Genuine.wav
+41,Request,Rising,0,0,0,/kourosh/17_00_8_Request.wav
+42,Request,Rising,1,1,1,/kourosh/17_30_10_Request.wav
+43,Confirmation,Rising,0,1,0,/kourosh/17_30_4_Confirmation.wav
+44,Confirmation,Rising,1,0,1,/kourosh/17_55_2_Confirmation.wav
+45,Echo,Rising,1,0,1,/kourosh/17_55_4_Echo.wav
+46,Genuine,Rising,0,1,0,/kourosh/19_54_10_Genuine.wav
+47,Genuine,Rising,0,0,0,/kourosh/19_54_14_Genuine.wav
+48,Confirmation,Rising,0,1,0,/kourosh/19_54_2_Confirmation.wav
+49,Request,Neutral,0,1,0,/kourosh/19_54_4_Request.wav
+50,Confirmation,Rising,0,1,0,/kourosh/19_54_6_Confirmation.wav
+51,Rhetorical,Rising,0,0,1,/kourosh/20_57_2_Rhetorical.wav
+52,Genuine,Neutral,0,1,0,/kourosh/20_57_4_Genuine.wav
+53,Echo,Rising,0,0,1,/kourosh/36_59_10_Echo.wav
+54,Confirmation,Rising,0,1,0,/kourosh/36_59_12_Confirmation.wav
+55,Echo,Rising,0,1,1,/kourosh/36_59_4_Echo.wav
+56,Echo,Rising,0,1,1,/kourosh/36_59_6_Echo.wav
+57,Rhetorical,Rising,0,0,1,/kourosh/36_59_8_Rhetorical.wav
+58,Offer,Rising,0,0,0,/kourosh/38_27_2_Offer.wav
+59,Offer,Rising,0,0,0,/kourosh/38_27_6_Offer.wav
+60,Offer,Rising,0,1,0,/kourosh/39_50_2_Offer.wav
+61,Request,Rising,0,1,0,/kourosh/39_50_8_Request.wav
+62,Confirmation,Rising,1,1,1,/kourosh/43_45_4_Confirmation.wav
+63,Confirmation,Rising,1,0,1,/kourosh/44_45_2_Confirmation.wav
+64,Offer,Neutral,0,1,0,/kourosh/44_45_8_Offer.wav`;
             
             processCSV(sampleCSV);
         }

@@ -1,5 +1,5 @@
 # PLeW
-(Previously called "better-viz")
+(previously betterviz)
 
 Interactive multi-dimensional data visualizer. Load CSV data, map dimensions to axes, and explore in a grid of scatter plots.
 

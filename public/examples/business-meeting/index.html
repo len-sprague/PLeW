@@ -1,0 +1,3710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Meeting: AI Strategy - BetterViz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f1419;
+            color: #e8e8e8;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+         
+        .sidebar {
+            width: 350px;
+            background: #1a1f26;
+            border-right: 1px solid #2d3640;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+        
+        .sidebar-content {
+            width: 310px;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        
+        .sidebar.collapsed .sidebar-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+         
+        .sidebar-toggle {
+            position: fixed;
+            left: 350px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 60px;
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 12px;
+            z-index: 100;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .sidebar-toggle:hover {
+            background: #232a33;
+            color: #4ecdc4;
+        }
+        
+        .sidebar-toggle .arrow {
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.collapsed + .sidebar-toggle {
+            left: 0;
+        }
+        
+        .sidebar.collapsed + .sidebar-toggle .arrow {
+            transform: rotate(180deg);
+        }
+        
+         
+        .floating-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed ~ .main-area .floating-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .floating-btn {
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #e8e8e8;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .floating-btn:hover {
+            background: #232a33;
+            border-color: #4ecdc4;
+        }
+        
+        .floating-btn .icon {
+            font-size: 1.1rem;
+        }
+        
+         
+        .floating-legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 31, 38, 0.95);
+            border: 1px solid #2d3640;
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 90;
+            max-width: 220px;
+            max-height: 300px;
+            overflow-y: auto;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar.collapsed ~ .main-area .floating-legend {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .floating-legend-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        
+        .floating-legend-toggle {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+        
+        .floating-legend-toggle:hover {
+            color: #aaa;
+        }
+        
+        .floating-legend.minimized {
+            padding: 10px 15px;
+        }
+        
+        .floating-legend.minimized .floating-legend-content {
+            display: none;
+        }
+        
+        .floating-legend.minimized .floating-legend-title {
+            margin-bottom: 0;
+        }
+        
+        .sidebar h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #4ecdc4;
+        }
+        
+        .sidebar .subtitle {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .section-btn {
+            background: none;
+            border: none;
+            color: #4ecdc4;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .section-btn:hover {
+            background: rgba(78, 205, 196, 0.2);
+        }
+        
+         
+        .file-drop {
+            border: 2px dashed #3d4650;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+        }
+        
+        .file-drop:hover, .file-drop.dragover {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .file-drop-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .file-drop-text {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4ecdc4;
+            color: #0f1419;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #3dbdb5;
+        }
+        
+        .btn-secondary {
+            background: #2d3640;
+            color: #e8e8e8;
+        }
+        
+        .btn-secondary:hover {
+            background: #3d4650;
+        }
+        
+        .btn-success {
+            background: #6bcb77;
+        }
+        
+        .btn-success:hover {
+            background: #5ab868;
+        }
+        
+        .btn-warning {
+            background: #ffd93d;
+            color: #0f1419;
+        }
+        
+        .btn-warning:hover {
+            background: #f0ca2e;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            width: auto;
+            margin-top: 0;
+        }
+        
+         
+        .changes-indicator {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .changes-indicator.visible {
+            display: block;
+        }
+        
+        .changes-count {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #ff6b6b;
+            margin-bottom: 8px;
+        }
+        
+        .changes-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .changes-actions .btn {
+            flex: 1;
+            margin-top: 0;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+        
+         
+        .dimension-list {
+            list-style: none;
+        }
+        
+        .dimension-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            background: #232a33;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            gap: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .dimension-item:hover {
+            background: #2a323d;
+        }
+        
+        .dimension-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .dimension-item.drag-over {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .dimension-item.disabled {
+            opacity: 0.4;
+            background: #1a1f26;
+        }
+        
+        .dimension-item.disabled .dimension-encoding {
+            display: none;
+        }
+        
+        .drag-handle {
+            color: #555;
+            cursor: grab;
+            font-size: 0.9rem;
+            padding: 0 2px;
+            user-select: none;
+        }
+        
+        .drag-handle:hover {
+            color: #888;
+        }
+        
+        .dimension-toggle {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #4ecdc4;
+        }
+        
+        .dimension-rank {
+            width: 20px;
+            height: 20px;
+            background: #4ecdc4;
+            color: #0f1419;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .dimension-item.disabled .dimension-rank {
+            background: #3d4650;
+            color: #888;
+        }
+        
+        .dimension-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .dimension-name {
+            font-weight: 500;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .dimension-meta {
+            font-size: 0.65rem;
+            color: #888;
+        }
+        
+        .dimension-encoding {
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            background: #2d3640;
+            border-radius: 4px;
+            color: #aaa;
+            white-space: nowrap;
+        }
+        
+        .encoding-panel-x { background: #ff6b6b33; color: #ff6b6b; }
+        .encoding-panel-y { background: #ffd93d33; color: #ffd93d; }
+        .encoding-inner-x { background: #6bcb7733; color: #6bcb77; }
+        .encoding-inner-y { background: #4d96ff33; color: #4d96ff; }
+        .encoding-color { background: #9b59b633; color: #c39bd3; }
+        .encoding-shape { background: #e67e2233; color: #e67e22; }
+        
+         
+        .legend-section {
+            margin-top: 10px;
+        }
+        
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            font-size: 0.75rem;
+        }
+        
+        .legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        
+        .legend-shape {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+         
+        .info-box {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #888;
+            line-height: 1.5;
+        }
+        
+        .info-box code {
+            background: #1a1f26;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #4ecdc4;
+        }
+        
+         
+        .main-area {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2d3640;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .viz-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .viz-stats {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .viz-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+         
+        .panel-grid-container {
+            overflow: auto;
+            padding-bottom: 40px;
+        }
+        
+        .panel-grid {
+            display: inline-grid;
+            gap: 12px;
+            padding: 10px;
+        }
+        
+        .panel-row-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #888;
+            padding: 6px 4px;
+            background: #1a1f26;
+            border-radius: 6px;
+            max-height: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .panel-col-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #888;
+            padding: 4px 6px;
+            background: #1a1f26;
+            border-radius: 6px;
+            text-align: center;
+            word-break: break-word;
+        }
+        
+        .panel {
+            background: #1a1f26;
+            border-radius: 10px;
+            padding: 10px;
+            min-width: 100px;
+            position: relative;
+        }
+        
+        .panel-title {
+            font-size: 0.6rem;
+            color: #555;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        
+         
+        .inner-grid {
+            display: grid;
+            gap: 1px;
+            background: #2d3640;
+            border-radius: 6px;
+            overflow: hidden;
+            min-height: 60px;
+        }
+        
+        .inner-cell {
+            background: #232a33;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: flex-start;
+            gap: 3px;
+            padding: 6px;
+            min-height: 30px;
+            min-width: 30px;
+            transition: all 0.2s ease;
+        }
+        
+        .inner-cell.drop-target {
+            background: rgba(78, 205, 196, 0.2);
+            box-shadow: inset 0 0 0 2px #4ecdc4;
+        }
+        
+         
+        .inner-axis-label {
+            font-size: 0.55rem;
+            color: #555;
+            text-align: center;
+            padding: 2px;
+            background: #1a1f26;
+        }
+        
+        .inner-axis-label.x-header {
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .inner-axis-label.y-header {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .corner-cell {
+            background: #1a1f26;
+        }
+        
+         
+        .data-point {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: grab;
+            transition: all 0.15s ease;
+            position: relative;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+        
+        .data-point:hover {
+            transform: scale(1.4);
+            z-index: 10;
+            border-color: white;
+        }
+        
+        .data-point.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .data-point.modified {
+            box-shadow: 0 0 0 2px #ffd93d;
+        }
+        
+        .data-point.shape-circle { border-radius: 50%; }
+        .data-point.shape-square { border-radius: 2px; }
+        .data-point.shape-diamond { 
+            border-radius: 2px;
+            transform: rotate(45deg);
+        }
+        .data-point.shape-diamond:hover {
+            transform: rotate(45deg) scale(1.4);
+        }
+        .data-point.shape-triangle {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid currentColor;
+            background: transparent !important;
+        }
+        
+         
+        .panel-axis-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+            font-size: 0.5rem;
+            color: #666;
+        }
+        
+        .panel-axis-label {
+            background: #232a33;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+         
+        .tooltip {
+            position: fixed;
+            background: #232a33;
+            border: 1px solid #3d4650;
+            border-radius: 10px;
+            padding: 12px 15px;
+            max-width: 280px;
+            z-index: 500;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            font-size: 0.8rem;
+        }
+        
+        .tooltip.visible {
+            opacity: 1;
+        }
+        
+        .tooltip-hint {
+            color: #4ecdc4;
+            margin-top: 8px;
+            font-size: 0.75rem;
+        }
+        
+         
+        .context-menu {
+            position: fixed;
+            background: #232a33;
+            border: 1px solid #3d4650;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+        }
+        
+        .context-menu.visible {
+            display: block;
+        }
+        
+        .context-menu-title {
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+        }
+        
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.15);
+            border-color: white;
+        }
+        
+        .color-option.selected {
+            border-color: white;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+        }
+        
+        .context-menu-label {
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+         
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: linear-gradient(145deg, #1e1e2f, #2d2d44);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.8) translateY(30px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #aaa;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+         
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .data-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .data-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .data-table td {
+            padding: 10px 0;
+            vertical-align: top;
+        }
+        
+        .data-table td:first-child {
+            color: #888;
+            width: 40%;
+            font-size: 0.85rem;
+        }
+        
+        .data-table td:last-child {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .data-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+         
+        .media-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .media-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .media-section-title .icon {
+            font-size: 1rem;
+        }
+        
+        .media-container {
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .media-container img {
+            width: 100%;
+            display: block;
+        }
+        
+        .media-container video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+        
+        .media-container audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .media-container.audio-container {
+            background: linear-gradient(145deg, #232a33, #1a1f26);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .audio-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .no-media {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+        
+         
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state-subtext {
+            font-size: 0.85rem;
+            max-width: 300px;
+        }
+        
+        .sample-data-info {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 6px;
+            text-align: center;
+        }
+        
+         
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(26, 31, 38, 0.9);
+            border: 1px solid #2d3640;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            color: #666;
+            z-index: 50;
+        }
+        
+        .keyboard-hint kbd {
+            background: #2d3640;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #aaa;
+        }
+        
+         
+        .grid-info {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .grid-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+        
+        .grid-info-label {
+            color: #666;
+        }
+        
+        .grid-info-value {
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+        
+         
+        .edit-hint {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.7rem;
+            color: #4ecdc4;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .edit-hint strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .edit-hint ul {
+            margin: 6px 0 0 16px;
+            padding: 0;
+        }
+        
+        .edit-hint li {
+            margin: 3px 0;
+        }
+        
+         
+        .dummy-settings {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .dummy-settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .dummy-settings-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+        
+        .dummy-count-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(78, 205, 196, 0.15);
+            color: #4ecdc4;
+            border-radius: 10px;
+        }
+        
+        .dummy-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        
+        .dummy-setting-row label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row input[type="checkbox"] {
+            accent-color: #4ecdc4;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row input[type="color"] {
+            width: 28px;
+            height: 22px;
+            border: 1px solid #3d4650;
+            border-radius: 4px;
+            background: #1a1f26;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .dummy-setting-row input[type="range"] {
+            width: 80px;
+            accent-color: #4ecdc4;
+            cursor: pointer;
+        }
+        
+        .dummy-setting-row select {
+            background: #1a1f26;
+            color: #aaa;
+            border: 1px solid #3d4650;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        
+        .dummy-info-text {
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        
+         
+        .data-point.dummy-point {
+            border: 1.5px dashed rgba(255,255,255,0.4);
+            cursor: default;
+        }
+        
+        .data-point.dummy-point:hover {
+            transform: scale(1.3);
+            cursor: default;
+        }
+        
+        .data-point.dummy-point.hidden-dummy {
+            display: none;
+        }
+        
+         
+        .changelog-section {
+            background: #232a33;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .changelog-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .changelog-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+        
+        .changelog-count-badge {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+            border-radius: 10px;
+        }
+        
+        .changelog-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .changelog-actions .btn {
+            flex: 1;
+            margin-top: 0;
+            padding: 6px 10px;
+            font-size: 0.7rem;
+        }
+        
+        .changelog-preview {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 8px;
+            border-top: 1px solid #2d3640;
+            padding-top: 8px;
+        }
+        
+        .changelog-entry {
+            font-size: 0.65rem;
+            color: #999;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(45, 54, 64, 0.5);
+            line-height: 1.4;
+        }
+        
+        .changelog-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .changelog-entry .field-name {
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+        
+        .changelog-entry .old-val {
+            color: #ff6b6b;
+            text-decoration: line-through;
+        }
+        
+        .changelog-entry .new-val {
+            color: #6bcb77;
+        }
+        
+        .changelog-entry .log-time {
+            color: #555;
+            font-size: 0.6rem;
+        }
+        
+        .changelog-empty {
+            font-size: 0.65rem;
+            color: #555;
+            text-align: center;
+            padding: 8px 0;
+        }
+        
+         
+        .media-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .media-tab {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .media-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ddd;
+        }
+        
+        .media-tab.active {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+            color: #4ecdc4;
+        }
+        
+        .media-panel {
+            display: none;
+        }
+        
+        .media-panel.active {
+            display: block;
+        }
+        
+         
+        .undo-redo-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .undo-redo-btn {
+            background: #2d3640;
+            border: 1px solid #3d4650;
+            color: #aaa;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .undo-redo-btn:hover:not(:disabled) {
+            background: #3d4650;
+            color: #e8e8e8;
+            border-color: #4ecdc4;
+        }
+        
+        .undo-redo-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .undo-redo-btn .badge {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+            font-size: 0.6rem;
+            padding: 1px 5px;
+            border-radius: 8px;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+         
+        .legend-row.interactive {
+            cursor: pointer;
+            padding: 5px 6px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+        
+        .legend-row.interactive:hover {
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .legend-swatch.editable {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        
+        .legend-swatch.editable:hover {
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.2);
+        }
+        
+        .legend-shape-btn {
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 2px;
+            transition: all 0.15s ease;
+        }
+        
+        .legend-shape-btn:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .legend-edit-hint {
+            font-size: 0.6rem;
+            color: #555;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+         
+        .color-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .color-picker-wrapper input[type="color"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+         
+        .context-menu-divider {
+            height: 1px;
+            background: #3d4650;
+            margin: 10px 0;
+        }
+        
+        .shape-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .shape-option {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background: #1a1f26;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+        
+        .shape-option:hover {
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.4);
+        }
+        
+        .shape-option.selected {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.15);
+        }
+        
+        .shape-option .shape-preview {
+            width: 14px;
+            height: 14px;
+        }
+        
+         
+        .shape-selector-popup {
+            position: fixed;
+            background: #232a33;
+            border: 1px solid #3d4650;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+        }
+        
+        .shape-selector-popup.visible {
+            display: block;
+        }
+        
+        .shape-selector-popup .shape-grid {
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <a href="/examples/" style="color:#4ecdc4;text-decoration:none;font-size:12px;display:inline-block;margin-bottom:10px;">← All Examples</a>
+                <h1>📊 Business Meeting: AI Strategy</h1>
+                <p class="subtitle">50 utterances from a cross-functional team discussing AI adoption. Dimensions: Speaker Role, Utterance Type, Sentiment, AI Topic, On-Task status, Interruptions.</p>
+                
+                
+                <div class="changes-indicator" id="changesIndicator">
+                    <div class="changes-count" id="changesCount">0 changes made</div>
+                    <div class="undo-redo-group" style="margin-bottom: 8px;">
+                        <button class="undo-redo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">
+                            ↩ Undo <span class="badge" id="undoCount">0</span>
+                        </button>
+                        <button class="undo-redo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Shift+Z)">
+                            ↪ Redo <span class="badge" id="redoCount">0</span>
+                        </button>
+                    </div>
+                    <div class="changes-actions">
+                        <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
+                        <button class="btn btn-warning btn-small" onclick="resetAllChanges()">↩️ Reset All</button>
+                    </div>
+                </div>
+                
+                
+                <div class="section" id="changeLogSection" style="display: none;">
+                    <div class="section-title">
+                        <span>Change Log</span>
+                    </div>
+                    <div class="changelog-section">
+                        <div class="changelog-header">
+                            <span class="changelog-title">Recorded Changes</span>
+                            <span class="changelog-count-badge" id="changeLogCountBadge">0</span>
+                        </div>
+                        <div class="changelog-actions">
+                            <button class="btn btn-secondary btn-small" onclick="downloadChangeLog('csv')">📋 CSV</button>
+                            <button class="btn btn-secondary btn-small" onclick="downloadChangeLog('json')">📋 JSON</button>
+                            <button class="btn btn-warning btn-small" onclick="clearChangeLog()">🗑️ Clear</button>
+                        </div>
+                        <div class="changelog-preview" id="changeLogPreview">
+                            <div class="changelog-empty">No changes recorded yet</div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="section" id="dummySection" style="display: none;">
+                    <div class="section-title">
+                        <span>Anchor Points</span>
+                    </div>
+                    <div class="dummy-settings" id="dummySettings">
+                        <div class="dummy-settings-header">
+                            <span class="dummy-settings-title">Value Preservers</span>
+                            <span class="dummy-count-badge" id="dummyCountBadge">0 anchors</span>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <label>
+                                <input type="checkbox" id="dummyVisible" checked onchange="updateDummySettings()">
+                                Show on chart
+                            </label>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Color</span>
+                            <input type="color" id="dummyColor" value="#555555" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Opacity</span>
+                            <input type="range" id="dummyOpacity" min="0.05" max="1" step="0.05" value="0.3" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Shape</span>
+                            <select id="dummyShape" onchange="updateDummySettings()">
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="diamond" selected>Diamond</option>
+                                <option value="triangle">Triangle</option>
+                            </select>
+                        </div>
+                        <div class="dummy-info-text">
+                            Anchor points preserve dimension values when all real data leaves a category. They are appended to exported CSVs with alphabetical IDs and auto-detected on re-upload.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section" id="dimensionSection" style="display: none;">
+                    <div class="section-title">
+                        <span>Dimensions</span>
+                        <div class="section-title-actions">
+                            <button class="section-btn" onclick="resetDimensionOrder()">Reset</button>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-hint">
+                        <strong>✏️ Edit Mode</strong>
+                        <ul>
+                            <li>Drag dimensions to reorder axes</li>
+                            <li>Drag data points to reclassify</li>
+                            <li>Right-click points to change color/shape</li>
+                            <li>Click legend swatches to customize colors/shapes</li>
+                            <li><kbd style="background:#1a1f26;padding:1px 4px;border-radius:3px;font-size:0.65rem;">Ctrl+Z</kbd> undo &nbsp; <kbd style="background:#1a1f26;padding:1px 4px;border-radius:3px;font-size:0.65rem;">Ctrl+Shift+Z</kbd> redo</li>
+                        </ul>
+                    </div>
+                    
+                    <ul class="dimension-list" id="dimensionList"></ul>
+                    <div class="grid-info" id="gridInfo"></div>
+                </div>
+                
+                <div class="section" id="legendSection" style="display: none;">
+                    <div class="section-title">Color Legend</div>
+                    <div class="legend-section" id="colorLegend"></div>
+                </div>
+                
+                <div class="section" id="shapeLegendSection" style="display: none;">
+                    <div class="section-title">Shape Legend</div>
+                    <div class="legend-section" id="shapeLegend"></div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar (Press B)">
+            <span class="arrow">◀</span>
+        </button>
+        
+        
+        <div class="main-area">
+            
+            <div class="floating-controls" id="floatingControls">
+                <button class="floating-btn" onclick="downloadCSV()">
+                    <span class="icon">📥</span>
+                    <span>Download</span>
+                </button>
+            </div>
+            
+            
+            <div class="floating-legend" id="floatingLegend">
+                <button class="floating-legend-toggle" onclick="toggleFloatingLegend()">−</button>
+                <div class="floating-legend-title">Legend</div>
+                <div class="floating-legend-content" id="floatingLegendContent"></div>
+            </div>
+            
+            <div class="viz-header" id="vizHeader" style="display: none;">
+                <div>
+                    <div class="viz-title" id="vizTitle">Visualization</div>
+                    <div class="viz-stats" id="vizStats"></div>
+                </div>
+                <div class="viz-actions">
+                    <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
+                </div>
+            </div>
+            
+            <div class="panel-grid-container" id="vizContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📈</div>
+                    <div class="empty-state-text">No data loaded</div>
+                    <div class="empty-state-subtext">
+                        Upload a CSV file or load sample data. Drag points to reclassify them, then download the updated CSV.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="keyboard-hint">
+        <kbd>B</kbd> sidebar • <kbd>Right-click</kbd> change color/shape • <kbd>Drag</kbd> reclassify • <kbd>Ctrl+Z</kbd> undo • <kbd>Ctrl+Shift+Z</kbd> redo
+    </div>
+    
+    
+    <div class="tooltip" id="tooltip"></div>
+    
+    
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-title">Change Color Value</div>
+        <div class="color-grid" id="colorGrid"></div>
+        <div class="context-menu-label" id="colorLabel"></div>
+        <div class="context-menu-divider" id="shapeMenuDivider" style="display:none;"></div>
+        <div id="shapeMenuSection" style="display:none;">
+            <div class="context-menu-title">Change Shape Value</div>
+            <div class="shape-grid" id="shapeGrid"></div>
+            <div class="context-menu-label" id="shapeLabel"></div>
+        </div>
+    </div>
+    
+    
+    <div class="shape-selector-popup" id="shapeSelectorPopup">
+        <div class="context-menu-title">Choose Shape</div>
+        <div class="shape-grid" id="shapeSelectorGrid"></div>
+    </div>
+    
+    
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Record Details</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+    
+    <script>
+        const DATASET_URL = "\/data\/business-meeting.csv";
+        
+        
+        
+        const COLORS = [
+            '#4ecdc4', '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
+            '#9b59b6', '#e67e22', '#1abc9c', '#e74c3c', '#3498db'
+        ];
+        
+        const SHAPES = ['circle', 'square', 'diamond', 'triangle'];
+        
+        const ENCODING_LABELS = [
+            { key: 'panel-x', label: 'Panel X', class: 'encoding-panel-x' },
+            { key: 'panel-y', label: 'Panel Y', class: 'encoding-panel-y' },
+            { key: 'inner-x', label: 'Inner X', class: 'encoding-inner-x' },
+            { key: 'inner-y', label: 'Inner Y', class: 'encoding-inner-y' },
+            { key: 'color', label: 'Color', class: 'encoding-color' },
+            { key: 'shape', label: 'Shape', class: 'encoding-shape' }
+        ];
+        
+        const RESERVED_COLUMNS = ['description', 'title', 'name'];
+        
+        
+        const DESC_LIKE_COLUMNS = ['gloss', 'glossing', 'transcription', 'transcript', 'translation', 'meaning', 'orthography',  'description', 'text', 'sentence'];
+        
+        
+        const COLUMN_PREFIXES = { 'dim::': 'dim', 'med::': 'med', 'desc::': 'desc', 'res::': 'res' };
+        
+        function parseColumnPrefix(header) {
+            for (const [prefix, type] of Object.entries(COLUMN_PREFIXES)) {
+                if (header.startsWith(prefix)) {
+                    return { type, displayName: header.slice(prefix.length), key: header };
+                }
+            }
+            return null;
+        }
+        
+        function getDisplayName(header) {
+            const parsed = parseColumnPrefix(header);
+            return parsed ? parsed.displayName : header;
+        }
+        
+        function dimKey(dim) {
+            return dim.key != null ? dim.key : dim.name;
+        }
+        
+        function shouldExcludeFromTooltip(key) {
+            const parsed = parseColumnPrefix(key);
+            if (parsed && (parsed.type === 'res' || parsed.type === 'desc' || parsed.type === 'med')) return true;
+            const dn = getDisplayName(key);
+            if (RESERVED_COLUMNS.some(rc => dn.toLowerCase().includes(rc))) return true;
+            if (DESC_LIKE_COLUMNS.includes(dn.toLowerCase())) return true;
+            return isMediaRelatedColumn(key);
+        }
+        
+        function shouldExcludeFromModalTable(key) {
+            const parsed = parseColumnPrefix(key);
+            if (parsed && (parsed.type === 'res' || parsed.type === 'med')) return true;
+            const dn = getDisplayName(key);
+            if (RESERVED_COLUMNS.some(rc => dn.toLowerCase() === rc)) return true;
+            return isMediaRelatedColumn(key);
+        }
+        
+        function getModalTitleFromRow(row) {
+            for (const key of Object.keys(row)) {
+                if (key.startsWith('_')) continue;
+                const dn = getDisplayName(key);
+                if (dn.toLowerCase() === 'title' || dn.toLowerCase() === 'name') return row[key];
+            }
+            return row.title || row.name || row.Name || row.Title || `Record #${(row._index ?? -1) + 1}`;
+        }
+        
+        
+        const MEDIA_URL_PATTERNS = [
+            /^(audio|image|img|photo|picture|video|media|thumbnail|thumb|poster|clip|sound|track)[-_]?(url|file|src|path|link|href)$/i,
+            /^(url|file|src|path|link|href)[-_]?(audio|image|img|photo|picture|video|media|thumbnail|thumb)$/i
+        ];
+        const MEDIA_META_PATTERNS = [
+            /^media[-_]?type$/i,
+            /^(audio|image|video)[-_]?type$/i
+        ];
+        
+        const MEDIA_TYPE_HINTS = {
+            audio: 'audio', sound: 'audio', track: 'audio',
+            image: 'image', img: 'image', photo: 'image', picture: 'image', thumbnail: 'image', thumb: 'image', poster: 'image',
+            video: 'video', clip: 'video',
+            media: 'auto'
+        };
+        
+        
+        
+        
+        let originalData = null;
+        let currentData = null;
+        let allDimensions = null;
+        let userDimensionOrder = [];
+        let enabledDimensions = new Set();
+        let encodings = null;
+        let modifiedRows = new Set();
+        let changeLog = [];
+        let csvHeaders = [];
+        let mediaColumns = [];
+        
+        
+        let dummyRows = [];
+        let dummySettings = {
+            visible: true,
+            color: '#555555',
+            opacity: 0.3,
+            shape: 'diamond'
+        };
+        let preservedDimValues = {};
+        
+        
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_UNDO = 100;
+        
+        
+        let customColorMap = {};   
+        let customShapeMap = {};   
+        
+        
+        let draggedDimensionItem = null;
+        let draggedDataPoint = null;
+        let draggedRowIndex = null;
+        
+        
+        let contextMenuRowIndex = null;
+        
+        
+        
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            
+            if (encodings) {
+                updateFloatingLegend(encodings);
+            }
+        }
+        
+        function toggleFloatingLegend() {
+            const legend = document.getElementById('floatingLegend');
+            const btn = legend.querySelector('.floating-legend-toggle');
+            legend.classList.toggle('minimized');
+            btn.textContent = legend.classList.contains('minimized') ? '+' : '−';
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    toggleSidebar();
+                }
+            }
+            if (e.key === 'Escape') {
+                closeContextMenu();
+                closeShapeSelectorPopup();
+                closeModal();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault();
+                redo();
+            }
+        });
+        
+        
+        
+        
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const data = lines.slice(1).map((line, idx) => {
+                const values = parseCSVLine(line);
+                const row = { _index: idx };
+                headers.forEach((header, i) => {
+                    row[header] = values[i]?.trim() ?? '';
+                });
+                return row;
+            });
+            
+            return { headers, data };
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+        
+        
+        
+        
+        function generateCSV() {
+            if (!currentData || currentData.length === 0) return '';
+            
+            
+            const headers = Object.keys(currentData[0]).filter(k => !k.startsWith('_'));
+            
+            
+            let csv = headers.join(',') + '\n';
+            
+            currentData.forEach(row => {
+                const values = headers.map(h => {
+                    let val = row[h] ?? '';
+                    if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            
+            dummyRows.forEach(row => {
+                const values = headers.map(h => {
+                    let val = row[h] ?? '';
+                    if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            return csv;
+        }
+        
+        function downloadCSV() {
+            const csv = generateCSV();
+            if (!csv) {
+                alert('No data to download');
+                return;
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'edited_data.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        
+        
+        
+        function isMediaUrlColumn(headerName) {
+            if (MEDIA_URL_PATTERNS.some(p => p.test(headerName))) return true;
+            
+            const dn = (parseColumnPrefix(headerName) || {}).displayName || headerName;
+            return /^(audio|image|img|video)$/i.test(dn);
+        }
+        
+        function isMediaMetaColumn(headerName) {
+            return MEDIA_META_PATTERNS.some(p => p.test(headerName));
+        }
+        
+        function isMediaRelatedColumn(headerName) {
+            const parsed = parseColumnPrefix(headerName);
+            if (parsed && parsed.type === 'med') return true;
+            return isMediaUrlColumn(headerName) || isMediaMetaColumn(headerName);
+        }
+        
+        function detectMediaColumns(headers) {
+            const cols = [];
+            headers.forEach(h => {
+                const parsed = parseColumnPrefix(h);
+                const colKey = parsed ? parsed.key : h;
+                const displayName = parsed ? parsed.displayName : h;
+                const lower = displayName.toLowerCase();
+                
+                if (parsed && parsed.type === 'med') {
+                    let detectedType = 'auto';
+                    for (const [fragment, type] of Object.entries(MEDIA_TYPE_HINTS)) {
+                        if (lower.includes(fragment)) {
+                            detectedType = type;
+                            break;
+                        }
+                    }
+                    cols.push({ column: colKey, type: detectedType });
+                } else if (isMediaUrlColumn(h)) {
+                    let detectedType = 'auto';
+                    for (const [fragment, type] of Object.entries(MEDIA_TYPE_HINTS)) {
+                        if (lower.includes(fragment)) {
+                            detectedType = type;
+                            break;
+                        }
+                    }
+                    cols.push({ column: colKey, type: detectedType });
+                }
+            });
+            return cols;
+        }
+        
+        function inferMediaTypeFromUrl(url) {
+            if (!url) return 'unknown';
+            const lower = url.toLowerCase();
+            if (/\.(jpe?g|png|gif|webp|svg|bmp|ico|tiff?)(\?|$)/i.test(lower)) return 'image';
+            if (/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(lower)) return 'video';
+            if (/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?|$)/i.test(lower)) return 'audio';
+            return 'unknown';
+        }
+        
+        function getRowMedia(row) {
+            
+            const media = [];
+            
+            
+            mediaColumns.forEach(mc => {
+                const url = row[mc.column];
+                if (!url || url.trim() === '') return;
+                
+                let type = mc.type;
+                if (type === 'auto') {
+                    type = inferMediaTypeFromUrl(url);
+                }
+                
+                const baseLabel = getDisplayName(mc.column).replace(/[-_](url|file|src|path|link|href)$/i, '').replace(/[-_]/g, ' ');
+                media.push({ type: type, url: url.trim(), label: baseLabel || 'media' });
+            });
+            
+            
+            if (row.media_type && row.media_url && !mediaColumns.some(mc => mc.column === 'media_url')) {
+                media.push({
+                    type: row.media_type,
+                    url: row.media_url.trim(),
+                    label: row.media_type
+                });
+            }
+            
+            return media;
+        }
+        
+        function rowHasMedia(row) {
+            return getRowMedia(row).length > 0;
+        }
+        
+        
+        
+        
+        function logChange(rowIndex, field, oldValue, newValue) {
+            changeLog.push({
+                rowId: getRowDisplayId(rowIndex),
+                rowIndex: rowIndex,
+                field: field,
+                oldValue: oldValue,
+                newValue: newValue,
+                timestamp: new Date().toISOString()
+            });
+            updateChangeLogUI();
+        }
+        
+        function getRowDisplayId(rowIndex) {
+            if (!currentData || !currentData[rowIndex]) return `#${rowIndex}`;
+            const row = currentData[rowIndex];
+            const idKey = csvHeaders[0];
+            return row[idKey] !== undefined ? row[idKey] : `#${rowIndex}`;
+        }
+        
+        function clearChangeLog() {
+            changeLog = [];
+            updateChangeLogUI();
+        }
+        
+        function updateChangeLogUI() {
+            const section = document.getElementById('changeLogSection');
+            const badge = document.getElementById('changeLogCountBadge');
+            const preview = document.getElementById('changeLogPreview');
+            
+            if (changeLog.length === 0) {
+                section.style.display = currentData ? 'block' : 'none';
+                badge.textContent = '0';
+                preview.innerHTML = '<div class="changelog-empty">No changes recorded yet</div>';
+                return;
+            }
+            
+            section.style.display = 'block';
+            badge.textContent = changeLog.length;
+            
+            
+            const recent = changeLog.slice(-20).reverse();
+            preview.innerHTML = recent.map(entry => {
+                const time = new Date(entry.timestamp);
+                const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                return `
+                    <div class="changelog-entry">
+                        <span class="log-time">${timeStr}</span>
+                        Row <strong>${entry.rowId}</strong>: 
+                        <span class="field-name">${entry.field}</span> 
+                        <span class="old-val">${entry.oldValue}</span> → 
+                        <span class="new-val">${entry.newValue}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function downloadChangeLog(format) {
+            if (changeLog.length === 0) {
+                alert('No changes to export');
+                return;
+            }
+            
+            let content, mimeType, extension;
+            
+            if (format === 'json') {
+                content = JSON.stringify(changeLog, null, 2);
+                mimeType = 'application/json';
+                extension = 'json';
+            } else {
+                
+                const csvHeaders = ['rowId', 'rowIndex', 'field', 'oldValue', 'newValue', 'timestamp'];
+                let csv = csvHeaders.join(',') + '\n';
+                changeLog.forEach(entry => {
+                    const values = csvHeaders.map(h => {
+                        let val = String(entry[h] ?? '');
+                        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                            val = '"' + val.replace(/"/g, '""') + '"';
+                        }
+                        return val;
+                    });
+                    csv += values.join(',') + '\n';
+                });
+                content = csv;
+                mimeType = 'text/csv';
+                extension = 'csv';
+            }
+            
+            const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `change_log.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        
+        
+        
+        function getAlphaLabel(index) {
+            let label = '';
+            let n = index;
+            do {
+                label = String.fromCharCode(97 + (n % 26)) + label;
+                n = Math.floor(n / 26) - 1;
+            } while (n >= 0);
+            return label;
+        }
+        
+        function isAlphaLabel(str) {
+            return typeof str === 'string' && /^[a-z]+$/.test(str.trim());
+        }
+        
+        function detectExistingDummies(data, headers) {
+            if (data.length === 0) return { realData: data, existingDummies: [] };
+            
+            const idKey = headers[0];
+            const existingDummies = [];
+            let splitIndex = data.length;
+            
+            
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (isAlphaLabel(data[i][idKey])) {
+                    splitIndex = i;
+                } else {
+                    break;
+                }
+            }
+            
+            const realData = data.slice(0, splitIndex);
+            const dummies = data.slice(splitIndex);
+            
+            
+            dummies.forEach(row => { row._isDummy = true; });
+            
+            return { realData, existingDummies: dummies };
+        }
+        
+        function generateDummyRows(dimensions, headers) {
+            if (dimensions.length === 0) return [];
+            
+            const maxCard = Math.max(...dimensions.map(d => d.cardinality));
+            const idKey = headers[0];
+            const dummies = [];
+            
+            for (let i = 0; i < maxCard; i++) {
+                const row = { _isDummy: true };
+                row[idKey] = getAlphaLabel(i);
+                
+                
+                dimensions.forEach(dim => {
+                    row[dimKey(dim)] = dim.uniqueValues[i % dim.uniqueValues.length];
+                });
+                
+                
+                headers.forEach(h => {
+                    if (!(h in row) && !h.startsWith('_')) {
+                        row[h] = '';
+                    }
+                });
+                
+                dummies.push(row);
+            }
+            
+            return dummies;
+        }
+        
+        function validateAnchors(existingDummies, dimensions, headers) {
+            
+            
+            
+            if (existingDummies.length === 0) {
+                return { valid: false, reason: 'no_anchors' };
+            }
+            
+            if (dimensions.length === 0) {
+                return { valid: true, reason: 'no_dimensions' };
+            }
+            
+            
+            const requiredCount = Math.max(...dimensions.map(d => d.cardinality));
+            if (existingDummies.length !== requiredCount) {
+                return { 
+                    valid: false, 
+                    reason: `count_mismatch: need ${requiredCount}, have ${existingDummies.length}` 
+                };
+            }
+            
+            
+            for (const dim of dimensions) {
+                const anchorValuesForDim = new Set(
+                    existingDummies.map(row => row[dimKey(dim)]).filter(v => v !== undefined && v !== '')
+                );
+                
+                for (const val of dim.uniqueValues) {
+                    if (!anchorValuesForDim.has(val)) {
+                        return { 
+                            valid: false, 
+                            reason: `missing_value: "${val}" in dimension "${dim.name}"` 
+                        };
+                    }
+                }
+            }
+            
+            
+            const dimNames = new Set(dimensions.map(d => d.name));
+            const idKey = headers[0];
+            const anchorDataKeys = Object.keys(existingDummies[0]).filter(k => 
+                !k.startsWith('_') && k !== idKey && !shouldExcludeFromTooltip(k)
+            );
+            
+            
+            
+            
+            
+            for (const dimName of dimNames) {
+                if (!anchorDataKeys.includes(dimName)) {
+                    
+                    const hasColumn = existingDummies[0].hasOwnProperty(dimName);
+                    if (!hasColumn) {
+                        return { 
+                            valid: false, 
+                            reason: `missing_dimension_column: "${dimName}" not in anchor rows` 
+                        };
+                    }
+                }
+            }
+            
+            return { valid: true, reason: 'anchors_match' };
+        }
+        
+        function mergeValueSpaces(realDimensions, existingDummies, headers) {
+            
+            
+            const merged = realDimensions.map(dim => {
+                const realValues = new Set(dim.uniqueValues);
+                
+                
+                existingDummies.forEach(row => {
+                    const val = row[dimKey(dim)];
+                    if (val !== undefined && val !== '') {
+                        realValues.add(val);
+                    }
+                });
+                
+                const mergedValues = [...realValues].sort();
+                return {
+                    name: dim.name,
+                    key: dim.key,
+                    uniqueValues: mergedValues,
+                    cardinality: mergedValues.length
+                };
+            });
+            
+            return merged;
+        }
+        
+        function updateDummySettings() {
+            dummySettings.visible = document.getElementById('dummyVisible').checked;
+            dummySettings.color = document.getElementById('dummyColor').value;
+            dummySettings.opacity = parseFloat(document.getElementById('dummyOpacity').value);
+            dummySettings.shape = document.getElementById('dummyShape').value;
+            updateVisualization();
+        }
+        
+        function renderDummySettingsUI() {
+            const section = document.getElementById('dummySection');
+            const badge = document.getElementById('dummyCountBadge');
+            
+            if (dummyRows.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            badge.textContent = `${dummyRows.length} anchor${dummyRows.length !== 1 ? 's' : ''}`;
+            
+            
+            document.getElementById('dummyVisible').checked = dummySettings.visible;
+            document.getElementById('dummyColor').value = dummySettings.color;
+            document.getElementById('dummyOpacity').value = dummySettings.opacity;
+            document.getElementById('dummyShape').value = dummySettings.shape;
+        }
+        
+        
+        
+        
+        function updateChangesIndicator() {
+            const indicator = document.getElementById('changesIndicator');
+            const countEl = document.getElementById('changesCount');
+            
+            const hasChanges = modifiedRows.size > 0;
+            const hasHistory = undoStack.length > 0 || redoStack.length > 0;
+            
+            if (hasChanges || hasHistory) {
+                indicator.classList.add('visible');
+                if (hasChanges) {
+                    countEl.textContent = `${modifiedRows.size} change${modifiedRows.size > 1 ? 's' : ''} made`;
+                } else {
+                    countEl.textContent = `No active changes (history available)`;
+                    countEl.style.color = '#888';
+                }
+            } else {
+                indicator.classList.remove('visible');
+            }
+            
+            if (hasChanges) {
+                countEl.style.color = '#ff6b6b';
+            }
+        }
+        
+        function resetAllChanges() {
+            if (!originalData) return;
+            if (!confirm('Reset all changes? All your modifications will be reverted and cannot be undone. Are you sure you want to continue?')) return;
+            
+            
+            currentData = JSON.parse(JSON.stringify(originalData));
+            
+            currentData.forEach((row, i) => { row._index = i; });
+            modifiedRows.clear();
+            changeLog = [];
+            undoStack = [];
+            redoStack = [];
+            
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        
+        
+        
+        
+        
+        function pushUndoAction(action) {
+            undoStack.push(action);
+            if (undoStack.length > MAX_UNDO) undoStack.shift();
+            redoStack = []; 
+            updateUndoRedoUI();
+        }
+        
+        function undo() {
+            if (undoStack.length === 0) return;
+            
+            const action = undoStack.pop();
+            const reverseChanges = [];
+            
+            
+            action.changes.forEach(change => {
+                const row = currentData[change.rowIndex];
+                if (!row) return;
+                
+                const currentVal = row[change.field];
+                row[change.field] = change.oldValue;
+                reverseChanges.push({
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: currentVal,
+                    newValue: change.oldValue
+                });
+                
+                
+                const orig = originalData[change.rowIndex];
+                if (orig) {
+                    const stillModified = Object.keys(orig).some(k => 
+                        !k.startsWith('_') && orig[k] !== row[k]
+                    );
+                    if (stillModified) {
+                        modifiedRows.add(change.rowIndex);
+                    } else {
+                        modifiedRows.delete(change.rowIndex);
+                    }
+                }
+            });
+            
+            
+            const timestamp = new Date().toISOString();
+            action.changes.forEach(change => {
+                changeLog.push({
+                    rowId: getRowDisplayId(change.rowIndex),
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: change.newValue,
+                    newValue: change.oldValue,
+                    timestamp: timestamp
+                });
+            });
+            
+            redoStack.push({ type: action.type, changes: action.changes });
+            
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        function redo() {
+            if (redoStack.length === 0) return;
+            
+            const action = redoStack.pop();
+            
+            
+            action.changes.forEach(change => {
+                const row = currentData[change.rowIndex];
+                if (!row) return;
+                
+                row[change.field] = change.newValue;
+                modifiedRows.add(change.rowIndex);
+            });
+            
+            
+            const timestamp = new Date().toISOString();
+            action.changes.forEach(change => {
+                changeLog.push({
+                    rowId: getRowDisplayId(change.rowIndex),
+                    rowIndex: change.rowIndex,
+                    field: change.field,
+                    oldValue: change.oldValue,
+                    newValue: change.newValue,
+                    timestamp: timestamp
+                });
+            });
+            
+            undoStack.push({ type: action.type, changes: action.changes });
+            
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        function updateUndoRedoUI() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            const undoCount = document.getElementById('undoCount');
+            const redoCount = document.getElementById('redoCount');
+            
+            if (undoBtn) {
+                undoBtn.disabled = undoStack.length === 0;
+                undoCount.textContent = undoStack.length;
+            }
+            if (redoBtn) {
+                redoBtn.disabled = redoStack.length === 0;
+                redoCount.textContent = redoStack.length;
+            }
+        }
+        
+        
+        
+        
+        function getColorForValue(encodings, value) {
+            if (customColorMap[value]) return customColorMap[value];
+            if (!encodings.color) return COLORS[0];
+            const idx = encodings.color.uniqueValues.indexOf(value);
+            return COLORS[idx % COLORS.length];
+        }
+        
+        function getShapeForValue(encodings, value) {
+            if (customShapeMap[value]) return customShapeMap[value];
+            if (!encodings.shape) return 'circle';
+            const idx = encodings.shape.uniqueValues.indexOf(value);
+            return SHAPES[idx % SHAPES.length];
+        }
+        
+        function closeShapeSelectorPopup() {
+            document.getElementById('shapeSelectorPopup').classList.remove('visible');
+        }
+        
+        
+        
+        
+        function analyzeDimensions(headers, data) {
+            const validHeaders = headers.filter((header, idx) => {
+                const parsed = parseColumnPrefix(header);
+                const displayName = parsed ? parsed.displayName : header;
+                const headerLower = displayName.toLowerCase();
+                
+                
+                if (parsed) {
+                    if (parsed.type === 'dim') return true;
+                    if (parsed.type === 'med' || parsed.type === 'desc' || parsed.type === 'res') return false;
+                }
+                
+                
+                if (RESERVED_COLUMNS.some(rc => headerLower.includes(rc))) return false;
+                if (isMediaRelatedColumn(header)) return false;
+                if (DESC_LIKE_COLUMNS.includes(headerLower)) return false;
+                
+                const values = data.map(row => row[header]);
+                const uniqueCount = new Set(values).size;
+                const isIdColumn = (idx === 0 && headerLower.includes('id')) || uniqueCount === data.length;
+                return !isIdColumn;
+            });
+            
+            const dims = validHeaders.map(header => {
+                const values = data.map(row => row[header]);
+                const uniqueValues = [...new Set(values)].sort();
+                return {
+                    name: getDisplayName(header),
+                    key: header,
+                    uniqueValues,
+                    cardinality: uniqueValues.length
+                };
+            });
+            
+            dims.sort((a, b) => b.cardinality - a.cardinality);
+            
+            return dims;
+        }
+        
+        function getActiveDimensions() {
+            return userDimensionOrder
+                .filter(name => enabledDimensions.has(name))
+                .map(name => allDimensions.find(d => d.name === name))
+                .filter(Boolean);
+        }
+        
+        function assignEncodings(dims) {
+            const encodings = {};
+            
+            dims.forEach((dim, idx) => {
+                if (idx === 0) encodings.panelX = dim;
+                else if (idx === 1) encodings.panelY = dim;
+                else if (idx === 2) encodings.innerX = dim;
+                else if (idx === 3) encodings.innerY = dim;
+                else if (idx === 4) encodings.color = dim;
+                else if (idx === 5) encodings.shape = dim;
+            });
+            
+            return encodings;
+        }
+        
+        
+        
+        
+        function toggleDimension(name, enabled) {
+            if (enabled) {
+                enabledDimensions.add(name);
+            } else {
+                enabledDimensions.delete(name);
+            }
+            updateVisualization();
+        }
+        
+        function resetDimensionOrder() {
+            userDimensionOrder = allDimensions.map(d => d.name);
+            enabledDimensions = new Set(userDimensionOrder);
+            renderDimensionList();
+            updateVisualization();
+        }
+        
+        function updateVisualization() {
+            const activeDims = getActiveDimensions();
+            encodings = assignEncodings(activeDims);
+            
+            updateDimensionListEncodings();
+            updateColorLegend(encodings);
+            updateShapeLegend(encodings);
+            updateGridInfo(encodings);
+            
+            if (currentData && activeDims.length > 0) {
+                renderVisualization(currentData, encodings);
+            } else {
+                document.getElementById('vizContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">No dimensions enabled</div>
+                        <div class="empty-state-subtext">
+                            Enable at least one dimension in the sidebar.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            updateFloatingLegend(encodings);
+        }
+        
+        
+        
+        
+        function handleDimDragStart(e, name) {
+            draggedDimensionItem = name;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleDimDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedDimensionItem = null;
+            document.querySelectorAll('.dimension-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+        
+        function handleDimDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        
+        function handleDimDragEnter(e, name) {
+            if (draggedDimensionItem && draggedDimensionItem !== name) {
+                e.target.closest('.dimension-item').classList.add('drag-over');
+            }
+        }
+        
+        function handleDimDragLeave(e) {
+            e.target.closest('.dimension-item')?.classList.remove('drag-over');
+        }
+        
+        function handleDimDrop(e, targetName) {
+            e.preventDefault();
+            if (!draggedDimensionItem || draggedDimensionItem === targetName) return;
+            
+            const fromIndex = userDimensionOrder.indexOf(draggedDimensionItem);
+            const toIndex = userDimensionOrder.indexOf(targetName);
+            
+            userDimensionOrder.splice(fromIndex, 1);
+            userDimensionOrder.splice(toIndex, 0, draggedDimensionItem);
+            
+            renderDimensionList();
+            updateVisualization();
+        }
+        
+        
+        
+        
+        function handlePointDragStart(e, rowIndex) {
+            draggedRowIndex = rowIndex;
+            draggedDataPoint = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', rowIndex);
+            
+            
+            hideTooltip();
+        }
+        
+        function handlePointDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedDataPoint = null;
+            draggedRowIndex = null;
+            
+            
+            document.querySelectorAll('.inner-cell').forEach(cell => {
+                cell.classList.remove('drop-target');
+            });
+        }
+        
+        function handleCellDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        
+        function handleCellDragEnter(e) {
+            if (draggedRowIndex !== null) {
+                const cell = e.target.closest('.inner-cell');
+                if (cell) {
+                    cell.classList.add('drop-target');
+                }
+            }
+        }
+        
+        function handleCellDragLeave(e) {
+            const cell = e.target.closest('.inner-cell');
+            if (cell && !cell.contains(e.relatedTarget)) {
+                cell.classList.remove('drop-target');
+            }
+        }
+        
+        function handleCellDrop(e, panelXVal, panelYVal, innerXVal, innerYVal) {
+            e.preventDefault();
+            
+            const cell = e.target.closest('.inner-cell');
+            if (cell) {
+                cell.classList.remove('drop-target');
+            }
+            
+            if (draggedRowIndex === null) return;
+            
+            const row = currentData[draggedRowIndex];
+            if (!row) return;
+            
+            
+            const timestamp = new Date().toISOString();
+            const undoChanges = [];
+            
+            if (encodings.panelX && row[dimKey(encodings.panelX)] !== panelXVal) {
+                const oldVal = row[dimKey(encodings.panelX)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelX), oldValue: oldVal, newValue: panelXVal });
+                row[dimKey(encodings.panelX)] = panelXVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.panelX), oldValue: oldVal, newValue: panelXVal, timestamp });
+            }
+            if (encodings.panelY && row[dimKey(encodings.panelY)] !== panelYVal) {
+                const oldVal = row[dimKey(encodings.panelY)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal });
+                row[dimKey(encodings.panelY)] = panelYVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal, timestamp });
+            }
+            if (encodings.innerX && row[dimKey(encodings.innerX)] !== innerXVal) {
+                const oldVal = row[dimKey(encodings.innerX)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal });
+                row[dimKey(encodings.innerX)] = innerXVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal, timestamp });
+            }
+            if (encodings.innerY && row[dimKey(encodings.innerY)] !== innerYVal) {
+                const oldVal = row[dimKey(encodings.innerY)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal });
+                row[dimKey(encodings.innerY)] = innerYVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal, timestamp });
+            }
+            
+            if (undoChanges.length > 0) {
+                pushUndoAction({ type: 'drag-reclassify', changes: undoChanges });
+                modifiedRows.add(draggedRowIndex);
+                updateChangesIndicator();
+                updateChangeLogUI();
+                updateVisualization();
+            }
+        }
+        
+        
+        
+        
+        function showContextMenu(e, rowIndex) {
+            e.preventDefault();
+            
+            const hasColor = !!encodings.color;
+            const hasShape = !!encodings.shape;
+            
+            if (!hasColor && !hasShape) return; 
+            
+            contextMenuRowIndex = rowIndex;
+            const menu = document.getElementById('contextMenu');
+            const colorGrid = document.getElementById('colorGrid');
+            const colorLabel = document.getElementById('colorLabel');
+            const shapeSection = document.getElementById('shapeMenuSection');
+            const shapeDivider = document.getElementById('shapeMenuDivider');
+            const shapeGrid = document.getElementById('shapeGrid');
+            const shapeLabel = document.getElementById('shapeLabel');
+            
+            const row = currentData[rowIndex];
+            
+            
+            if (hasColor) {
+                const currentColorValue = row[dimKey(encodings.color)];
+                colorGrid.innerHTML = '';
+                colorGrid.parentElement.querySelector('.context-menu-title').style.display = '';
+                colorGrid.style.display = '';
+                colorLabel.style.display = '';
+                
+                encodings.color.uniqueValues.forEach((value, idx) => {
+                    const option = document.createElement('div');
+                    option.className = `color-option ${value === currentColorValue ? 'selected' : ''}`;
+                    option.style.backgroundColor = getColorForValue(encodings, value);
+                    option.title = value;
+                    option.onclick = () => changeColor(value);
+                    colorGrid.appendChild(option);
+                });
+                
+                colorLabel.textContent = `Current: ${currentColorValue}`;
+            } else {
+                colorGrid.innerHTML = '';
+                colorGrid.parentElement.querySelector('.context-menu-title').style.display = 'none';
+                colorGrid.style.display = 'none';
+                colorLabel.style.display = 'none';
+            }
+            
+            
+            if (hasShape) {
+                const currentShapeValue = row[dimKey(encodings.shape)];
+                shapeDivider.style.display = hasColor ? '' : 'none';
+                shapeSection.style.display = '';
+                shapeGrid.innerHTML = '';
+                
+                encodings.shape.uniqueValues.forEach((value, idx) => {
+                    const shape = getShapeForValue(encodings, value);
+                    const option = document.createElement('div');
+                    option.className = `shape-option ${value === currentShapeValue ? 'selected' : ''}`;
+                    option.title = value;
+                    option.onclick = () => changeShape(value);
+                    
+                    const preview = document.createElement('div');
+                    preview.className = `data-point shape-${shape} shape-preview`;
+                    preview.style.backgroundColor = '#aaa';
+                    preview.style.width = '14px';
+                    preview.style.height = '14px';
+                    preview.style.cursor = 'pointer';
+                    option.appendChild(preview);
+                    
+                    const label = document.createElement('div');
+                    label.style.cssText = 'font-size:0.55rem;color:#888;margin-top:2px;text-align:center;';
+                    label.textContent = value.length > 6 ? value.slice(0, 6) + '…' : value;
+                    option.style.cssText += 'flex-direction:column;height:auto;width:auto;min-width:40px;padding:6px;';
+                    option.appendChild(label);
+                    
+                    shapeGrid.appendChild(option);
+                });
+                
+                shapeLabel.textContent = `Current: ${currentShapeValue}`;
+            } else {
+                shapeDivider.style.display = 'none';
+                shapeSection.style.display = 'none';
+            }
+            
+            
+            const x = Math.min(e.clientX, window.innerWidth - 220);
+            const y = Math.min(e.clientY, window.innerHeight - 300);
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.add('visible');
+        }
+        
+        function closeContextMenu() {
+            document.getElementById('contextMenu').classList.remove('visible');
+            contextMenuRowIndex = null;
+        }
+        
+        function changeColor(newValue) {
+            if (contextMenuRowIndex === null || !encodings.color) return;
+            
+            const row = currentData[contextMenuRowIndex];
+            const field = dimKey(encodings.color);
+            const oldValue = row[field];
+            
+            if (oldValue !== newValue) {
+                row[field] = newValue;
+                modifiedRows.add(contextMenuRowIndex);
+                
+                pushUndoAction({
+                    type: 'color-change',
+                    changes: [{ rowIndex: contextMenuRowIndex, field, oldValue, newValue }]
+                });
+                
+                logChange(contextMenuRowIndex, field, oldValue, newValue);
+                updateChangesIndicator();
+                updateVisualization();
+            }
+            
+            closeContextMenu();
+        }
+        
+        function changeShape(newValue) {
+            if (contextMenuRowIndex === null || !encodings.shape) return;
+            
+            const row = currentData[contextMenuRowIndex];
+            const field = dimKey(encodings.shape);
+            const oldValue = row[field];
+            
+            if (oldValue !== newValue) {
+                row[field] = newValue;
+                modifiedRows.add(contextMenuRowIndex);
+                
+                pushUndoAction({
+                    type: 'shape-change',
+                    changes: [{ rowIndex: contextMenuRowIndex, field, oldValue, newValue }]
+                });
+                
+                logChange(contextMenuRowIndex, field, oldValue, newValue);
+                updateChangesIndicator();
+                updateVisualization();
+            }
+            
+            closeContextMenu();
+        }
+        
+        
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.context-menu') && !e.target.closest('.data-point')) {
+                closeContextMenu();
+            }
+            if (!e.target.closest('.shape-selector-popup') && !e.target.closest('.legend-shape-btn')) {
+                closeShapeSelectorPopup();
+            }
+        });
+        
+        
+        
+        
+        function renderDimensionList() {
+            const list = document.getElementById('dimensionList');
+            list.innerHTML = '';
+            
+            userDimensionOrder.forEach((name, idx) => {
+                const dim = allDimensions.find(d => d.name === name);
+                if (!dim) return;
+                
+                const isEnabled = enabledDimensions.has(name);
+                const activeIndex = getActiveDimensions().findIndex(d => d.name === name);
+                const encoding = activeIndex >= 0 ? ENCODING_LABELS[activeIndex] : null;
+                
+                const li = document.createElement('li');
+                li.className = `dimension-item ${isEnabled ? '' : 'disabled'}`;
+                li.draggable = true;
+                li.dataset.name = name;
+                
+                li.innerHTML = `
+                    <span class="drag-handle">⋮⋮</span>
+                    <input type="checkbox" class="dimension-toggle" 
+                           ${isEnabled ? 'checked' : ''} 
+                           onchange="toggleDimension('${name}', this.checked)">
+                    <div class="dimension-rank">${activeIndex >= 0 ? activeIndex + 1 : '-'}</div>
+                    <div class="dimension-info">
+                        <div class="dimension-name">${dim.name}</div>
+                        <div class="dimension-meta">${dim.cardinality} values</div>
+                    </div>
+                    ${encoding ? `<div class="dimension-encoding ${encoding.class}">${encoding.label}</div>` : ''}
+                `;
+                
+                li.addEventListener('dragstart', (e) => handleDimDragStart(e, name));
+                li.addEventListener('dragend', handleDimDragEnd);
+                li.addEventListener('dragover', handleDimDragOver);
+                li.addEventListener('dragenter', (e) => handleDimDragEnter(e, name));
+                li.addEventListener('dragleave', handleDimDragLeave);
+                li.addEventListener('drop', (e) => handleDimDrop(e, name));
+                
+                list.appendChild(li);
+            });
+            
+            document.getElementById('dimensionSection').style.display = 'block';
+        }
+        
+        function updateDimensionListEncodings() {
+            const activeDims = getActiveDimensions();
+            
+            document.querySelectorAll('.dimension-item').forEach(item => {
+                const name = item.dataset.name;
+                const activeIndex = activeDims.findIndex(d => d.name === name);
+                const isEnabled = enabledDimensions.has(name);
+                
+                const rankEl = item.querySelector('.dimension-rank');
+                rankEl.textContent = activeIndex >= 0 ? activeIndex + 1 : '-';
+                
+                const existingEncoding = item.querySelector('.dimension-encoding');
+                if (existingEncoding) existingEncoding.remove();
+                
+                if (activeIndex >= 0 && ENCODING_LABELS[activeIndex]) {
+                    const encoding = ENCODING_LABELS[activeIndex];
+                    const encodingEl = document.createElement('div');
+                    encodingEl.className = `dimension-encoding ${encoding.class}`;
+                    encodingEl.textContent = encoding.label;
+                    item.appendChild(encodingEl);
+                }
+                
+                item.classList.toggle('disabled', !isEnabled);
+            });
+        }
+        
+        function updateGridInfo(encodings) {
+            const gridInfo = document.getElementById('gridInfo');
+            const panelCols = encodings.panelX?.cardinality || 1;
+            const panelRows = encodings.panelY?.cardinality || 1;
+            const innerCols = encodings.innerX?.cardinality || 1;
+            const innerRows = encodings.innerY?.cardinality || 1;
+            
+            gridInfo.innerHTML = `
+                <div class="grid-info-row">
+                    <span class="grid-info-label">Panel Grid:</span>
+                    <span class="grid-info-value">${panelCols} × ${panelRows}</span>
+                </div>
+                <div class="grid-info-row">
+                    <span class="grid-info-label">Inner Grid:</span>
+                    <span class="grid-info-value">${innerCols} × ${innerRows}</span>
+                </div>
+            `;
+        }
+        
+        function updateColorLegend(encodings) {
+            const container = document.getElementById('colorLegend');
+            const section = document.getElementById('legendSection');
+            
+            if (!encodings.color) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            encodings.color.uniqueValues.forEach((value, idx) => {
+                const color = getColorForValue(encodings, value);
+                const row = document.createElement('div');
+                row.className = 'legend-row interactive';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'color-picker-wrapper';
+                
+                const swatch = document.createElement('div');
+                swatch.className = 'legend-swatch editable';
+                swatch.style.background = color;
+                swatch.title = `Click to change color for "${value}"`;
+                
+                const picker = document.createElement('input');
+                picker.type = 'color';
+                picker.value = color;
+                picker.addEventListener('input', (e) => {
+                    customColorMap[value] = e.target.value;
+                    swatch.style.background = e.target.value;
+                    updateVisualization();
+                });
+                
+                wrapper.appendChild(swatch);
+                wrapper.appendChild(picker);
+                
+                const label = document.createElement('span');
+                label.textContent = value;
+                
+                row.appendChild(wrapper);
+                row.appendChild(label);
+                container.appendChild(row);
+            });
+            
+            
+            const hint = document.createElement('div');
+            hint.className = 'legend-edit-hint';
+            hint.textContent = 'Click swatches to customize colors';
+            container.appendChild(hint);
+        }
+        
+        function updateShapeLegend(encodings) {
+            const container = document.getElementById('shapeLegend');
+            const section = document.getElementById('shapeLegendSection');
+            
+            if (!encodings.shape) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            encodings.shape.uniqueValues.forEach((value, idx) => {
+                const shape = getShapeForValue(encodings, value);
+                const row = document.createElement('div');
+                row.className = 'legend-row interactive';
+                
+                const shapeBtn = document.createElement('div');
+                shapeBtn.className = 'legend-shape-btn';
+                shapeBtn.title = `Click to change shape for "${value}" (current: ${shape})`;
+                shapeBtn.innerHTML = `
+                    <div class="legend-shape">
+                        <div class="data-point shape-${shape}" style="background: #888; width: 10px; height: 10px;"></div>
+                    </div>
+                `;
+                
+                shapeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showShapeSelectorPopup(e, value);
+                });
+                
+                const label = document.createElement('span');
+                label.textContent = `${value} (${shape})`;
+                label.style.fontSize = '0.75rem';
+                
+                row.appendChild(shapeBtn);
+                row.appendChild(label);
+                container.appendChild(row);
+            });
+            
+            
+            const hint = document.createElement('div');
+            hint.className = 'legend-edit-hint';
+            hint.textContent = 'Click shapes to customize assignments';
+            container.appendChild(hint);
+        }
+        
+        function showShapeSelectorPopup(e, dimensionValue) {
+            const popup = document.getElementById('shapeSelectorPopup');
+            const grid = document.getElementById('shapeSelectorGrid');
+            
+            grid.innerHTML = '';
+            
+            const currentShape = getShapeForValue(encodings, dimensionValue);
+            
+            SHAPES.forEach(shapeName => {
+                const option = document.createElement('div');
+                option.className = `shape-option ${shapeName === currentShape ? 'selected' : ''}`;
+                option.title = shapeName;
+                option.style.cssText = 'flex-direction:column;height:auto;width:auto;min-width:50px;padding:8px;';
+                
+                const preview = document.createElement('div');
+                preview.className = `data-point shape-${shapeName}`;
+                preview.style.cssText = 'background:#aaa;width:14px;height:14px;cursor:pointer;';
+                option.appendChild(preview);
+                
+                const label = document.createElement('div');
+                label.style.cssText = 'font-size:0.6rem;color:#888;margin-top:4px;text-align:center;';
+                label.textContent = shapeName;
+                option.appendChild(label);
+                
+                option.addEventListener('click', () => {
+                    customShapeMap[dimensionValue] = shapeName;
+                    closeShapeSelectorPopup();
+                    updateShapeLegend(encodings);
+                    updateVisualization();
+                });
+                
+                grid.appendChild(option);
+            });
+            
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = Math.min(rect.right + 10, window.innerWidth - 250);
+            const y = Math.min(rect.top, window.innerHeight - 120);
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            popup.classList.add('visible');
+        }
+        
+        function updateFloatingLegend(encodings) {
+            const content = document.getElementById('floatingLegendContent');
+            let html = '';
+            
+            if (encodings && encodings.color) {
+                html += `<div style="margin-bottom: 8px;"><strong style="font-size: 0.65rem; color: #888;">${encodings.color.name}</strong></div>`;
+                encodings.color.uniqueValues.forEach((value, idx) => {
+                    const color = getColorForValue(encodings, value);
+                    html += `
+                        <div class="legend-row">
+                            <div class="legend-swatch" style="background: ${color}"></div>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            if (encodings && encodings.shape) {
+                html += `<div style="margin: 10px 0 8px 0;"><strong style="font-size: 0.65rem; color: #888;">${encodings.shape.name}</strong></div>`;
+                encodings.shape.uniqueValues.forEach((value, idx) => {
+                    const shape = getShapeForValue(encodings, value);
+                    html += `
+                        <div class="legend-row">
+                            <div class="legend-shape">
+                                <div class="data-point shape-${shape}" style="background: #888; width: 10px; height: 10px;"></div>
+                            </div>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        
+        
+        
+        function renderVisualization(data, encodings) {
+            const container = document.getElementById('vizContainer');
+            
+            
+            const renderData = dummySettings.visible ? [...data, ...dummyRows] : data;
+            
+            const activeDims = getActiveDimensions();
+            
+            document.getElementById('vizHeader').style.display = 'flex';
+            document.getElementById('vizTitle').textContent = 'Data Editor';
+            document.getElementById('vizStats').textContent = 
+                `${data.length} records • ${modifiedRows.size} modified` +
+                (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
+            
+            const panelXValues = encodings.panelX?.uniqueValues || ['All'];
+            const panelYValues = encodings.panelY?.uniqueValues || ['All'];
+            
+            const panelCols = panelXValues.length;
+            const panelRows = panelYValues.length;
+            
+            const grid = document.createElement('div');
+            grid.className = 'panel-grid';
+            grid.style.gridTemplateColumns = `40px repeat(${panelCols}, minmax(100px, 1fr))`;
+            grid.style.gridTemplateRows = `30px repeat(${panelRows}, auto)`;
+            
+            
+            grid.appendChild(createCell(''));
+            
+            
+            panelXValues.forEach(val => {
+                const cell = document.createElement('div');
+                cell.className = 'panel-col-label';
+                cell.textContent = val;
+                cell.title = `${encodings.panelX?.name}: ${val}`;
+                grid.appendChild(cell);
+            });
+            
+            
+            panelYValues.forEach(yVal => {
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'panel-row-label';
+                rowLabel.textContent = yVal;
+                rowLabel.title = `${encodings.panelY?.name}: ${yVal}`;
+                grid.appendChild(rowLabel);
+                
+                panelXValues.forEach(xVal => {
+                    const panel = createPanel(renderData, encodings, xVal, yVal);
+                    grid.appendChild(panel);
+                });
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+        
+        function createCell(content) {
+            const cell = document.createElement('div');
+            cell.textContent = content;
+            return cell;
+        }
+        
+        function createPanel(data, encodings, panelXVal, panelYVal) {
+            const panel = document.createElement('div');
+            panel.className = 'panel';
+            
+            let panelData = data;
+            
+            if (encodings.panelX) {
+                panelData = panelData.filter(row => row[dimKey(encodings.panelX)] === panelXVal);
+            }
+            if (encodings.panelY) {
+                panelData = panelData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
+            }
+            
+            const title = document.createElement('div');
+            title.className = 'panel-title';
+            const realCount = panelData.filter(r => !r._isDummy).length;
+            const dummyCount = panelData.filter(r => r._isDummy).length;
+            title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
+            panel.appendChild(title);
+            
+            const innerXValues = encodings.innerX?.uniqueValues || ['All'];
+            const innerYValues = encodings.innerY?.uniqueValues || ['All'];
+            
+            const innerCols = innerXValues.length;
+            const innerRows = innerYValues.length;
+            
+            const innerGrid = document.createElement('div');
+            innerGrid.className = 'inner-grid';
+            innerGrid.style.gridTemplateColumns = `20px repeat(${innerCols}, 1fr)`;
+            innerGrid.style.gridTemplateRows = `16px repeat(${innerRows}, 1fr)`;
+            
+            
+            const corner = document.createElement('div');
+            corner.className = 'corner-cell';
+            innerGrid.appendChild(corner);
+            
+            
+            innerXValues.forEach(xVal => {
+                const header = document.createElement('div');
+                header.className = 'inner-axis-label x-header';
+                header.textContent = xVal;
+                header.title = `${encodings.innerX?.name}: ${xVal}`;
+                innerGrid.appendChild(header);
+            });
+            
+            
+            innerYValues.slice().reverse().forEach(yVal => {
+                const yHeader = document.createElement('div');
+                yHeader.className = 'inner-axis-label y-header';
+                yHeader.textContent = yVal;
+                yHeader.title = `${encodings.innerY?.name}: ${yVal}`;
+                innerGrid.appendChild(yHeader);
+                
+                innerXValues.forEach(xVal => {
+                    const cell = createInnerCell(panelData, encodings, panelXVal, panelYVal, xVal, yVal, innerXValues, innerYValues);
+                    innerGrid.appendChild(cell);
+                });
+            });
+            
+            panel.appendChild(innerGrid);
+            
+            
+            if (encodings.innerX || encodings.innerY) {
+                const axisLabels = document.createElement('div');
+                axisLabels.className = 'panel-axis-labels';
+                
+                if (encodings.innerY) {
+                    axisLabels.innerHTML += `<span class="panel-axis-label">Y: ${encodings.innerY.name}</span>`;
+                }
+                if (encodings.innerX) {
+                    axisLabels.innerHTML += `<span class="panel-axis-label">X: ${encodings.innerX.name}</span>`;
+                }
+                
+                panel.appendChild(axisLabels);
+            }
+            
+            return panel;
+        }
+        
+        function createInnerCell(panelData, encodings, panelXVal, panelYVal, innerXVal, innerYVal, allInnerXVals, allInnerYVals) {
+            const cell = document.createElement('div');
+            cell.className = 'inner-cell';
+            
+            let cellData = panelData;
+            
+            if (encodings.innerX && allInnerXVals.length > 1) {
+                cellData = cellData.filter(row => row[dimKey(encodings.innerX)] === innerXVal);
+            }
+            if (encodings.innerY && allInnerYVals.length > 1) {
+                cellData = cellData.filter(row => row[dimKey(encodings.innerY)] === innerYVal);
+            }
+            
+            
+            cell.addEventListener('dragover', handleCellDragOver);
+            cell.addEventListener('dragenter', handleCellDragEnter);
+            cell.addEventListener('dragleave', handleCellDragLeave);
+            cell.addEventListener('drop', (e) => handleCellDrop(e, panelXVal, panelYVal, innerXVal, innerYVal));
+            
+            cellData.forEach(row => {
+                const point = createDataPoint(row, encodings);
+                cell.appendChild(point);
+            });
+            
+            return cell;
+        }
+        
+        function createDataPoint(row, encodings) {
+            const point = document.createElement('div');
+            point.className = 'data-point';
+            
+            const isDummy = row._isDummy === true;
+            const rowIndex = row._index;
+            const isModified = !isDummy && modifiedRows.has(rowIndex);
+            
+            
+            if (isDummy) {
+                point.classList.add('dummy-point');
+                point.draggable = false;
+                point.style.backgroundColor = dummySettings.color;
+                point.style.opacity = dummySettings.opacity;
+                point.classList.add(`shape-${dummySettings.shape}`);
+                
+                if (!dummySettings.visible) {
+                    point.classList.add('hidden-dummy');
+                }
+                
+                
+                point.addEventListener('mouseenter', (e) => {
+                    const tooltip = document.getElementById('tooltip');
+                    const displayFields = Object.keys(row)
+                        .filter(k => !k.startsWith('_') && !shouldExcludeFromTooltip(k))
+                        .slice(0, 5);
+                    let html = `<div style="color: #888; font-size: 0.7rem; margin-bottom: 4px;">⚓ Anchor Point</div>`;
+                    html += displayFields.map(key => 
+                        `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
+                    ).join('<br>');
+                    html += `<div class="tooltip-hint">Preserves dimension values in export</div>`;
+                    tooltip.innerHTML = html;
+                    tooltip.classList.add('visible');
+                    moveTooltip(e);
+                });
+                point.addEventListener('mouseleave', hideTooltip);
+                point.addEventListener('mousemove', moveTooltip);
+                
+                return point;
+            }
+            
+            
+            point.draggable = true;
+            
+            if (isModified) {
+                point.classList.add('modified');
+            }
+            
+            const hasMedia = rowHasMedia(row);
+            
+            
+            if (encodings.color) {
+                point.style.backgroundColor = getColorForValue(encodings, row[dimKey(encodings.color)]);
+            } else {
+                point.style.backgroundColor = COLORS[0];
+            }
+            
+            
+            if (encodings.shape) {
+                const shape = getShapeForValue(encodings, row[dimKey(encodings.shape)]);
+                point.classList.add(`shape-${shape}`);
+            } else {
+                point.classList.add('shape-circle');
+            }
+            
+            
+            point.addEventListener('dragstart', (e) => handlePointDragStart(e, rowIndex));
+            point.addEventListener('dragend', handlePointDragEnd);
+            
+            
+            point.addEventListener('mouseenter', (e) => showTooltip(e, row, hasMedia, isModified));
+            point.addEventListener('mouseleave', hideTooltip);
+            point.addEventListener('mousemove', moveTooltip);
+            
+            
+            point.addEventListener('click', () => openModal(row, encodings));
+            
+            
+            point.addEventListener('contextmenu', (e) => showContextMenu(e, rowIndex));
+            
+            return point;
+        }
+        
+        
+        
+        
+        function showTooltip(e, row, hasMedia, isModified) {
+            const tooltip = document.getElementById('tooltip');
+            
+            const displayFields = Object.keys(row)
+                .filter(k => !k.startsWith('_') && !shouldExcludeFromTooltip(k))
+                .slice(0, 5);
+            
+            let html = displayFields.map(key => 
+                `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
+            ).join('<br>');
+            
+            if (isModified) {
+                html += `<div style="color: #ffd93d; margin-top: 6px; font-size: 0.7rem;">⚠️ Modified</div>`;
+            }
+            
+            html += `<div class="tooltip-hint">`;
+            if (hasMedia) {
+                const media = getRowMedia(row);
+                const icons = media.map(m => 
+                    m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷'
+                );
+                const uniqueIcons = [...new Set(icons)].join('');
+                html += `${uniqueIcons} Click to view • `;
+            }
+            html += `Drag to move • Right-click for color</div>`;
+            
+            tooltip.innerHTML = html;
+            tooltip.classList.add('visible');
+            moveTooltip(e);
+        }
+        
+        function moveTooltip(e) {
+            const tooltip = document.getElementById('tooltip');
+            const x = e.clientX + 15;
+            const y = e.clientY + 15;
+            
+            const rect = tooltip.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width - 20;
+            const maxY = window.innerHeight - rect.height - 20;
+            
+            tooltip.style.left = `${Math.min(x, maxX)}px`;
+            tooltip.style.top = `${Math.min(y, maxY)}px`;
+        }
+        
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('visible');
+        }
+        
+        
+        
+        
+        function openModal(row, encodings) {
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            modalTitle.textContent = getModalTitleFromRow(row);
+            
+            let tableHTML = '<table class="data-table">';
+            
+            Object.keys(row).forEach(key => {
+                if (key.startsWith('_')) return;
+                if (shouldExcludeFromModalTable(key)) return;
+                
+                let valueHTML = row[key];
+                
+                if (encodings.color && key === dimKey(encodings.color)) {
+                    const color = getColorForValue(encodings, row[key]);
+                    valueHTML = `<span class="data-tag" style="background: ${color}33; color: ${color}">${row[key]}</span>`;
+                }
+                
+                tableHTML += `
+                    <tr>
+                        <td>${getDisplayName(key)}</td>
+                        <td>${valueHTML}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</table>';
+            
+            
+            const media = getRowMedia(row);
+            
+            if (media.length > 0) {
+                tableHTML += `<div class="media-section">`;
+                tableHTML += `<div class="media-section-title"><span class="icon">🎛️</span> Media (${media.length})</div>`;
+                
+                if (media.length > 1) {
+                    
+                    tableHTML += `<div class="media-tabs">`;
+                    media.forEach((m, idx) => {
+                        const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
+                        const label = m.label.charAt(0).toUpperCase() + m.label.slice(1);
+                        tableHTML += `<button class="media-tab ${idx === 0 ? 'active' : ''}" 
+                            onclick="switchMediaTab(this, ${idx})">${icon} ${label}</button>`;
+                    });
+                    tableHTML += `</div>`;
+                    
+                    media.forEach((m, idx) => {
+                        tableHTML += `<div class="media-panel ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
+                            <div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                                ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    
+                    const m = media[0];
+                    const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
+                    tableHTML += `<div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                        ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                    </div>`;
+                }
+                
+                tableHTML += `</div>`;
+            }
+            
+            modalBody.innerHTML = tableHTML;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        
+        function switchMediaTab(btn, idx) {
+            const section = btn.closest('.media-section');
+            section.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
+            section.querySelectorAll('.media-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            section.querySelector(`.media-panel[data-media-idx="${idx}"]`).classList.add('active');
+            
+            
+            section.querySelectorAll('video, audio').forEach(el => {
+                el.pause();
+                el.currentTime = 0;
+            });
+        }
+        
+        function toYouTubeEmbedUrl(url) {
+            if (!url) return null;
+            const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/i);
+            if (!m) return null;
+            const vid = m[1];
+            const t = url.match(/[?&]t=(\d+)/);
+            const start = t ? `?start=${t[1]}` : '';
+            return `https://www.youtube.com/embed/${vid}${start}`;
+        }
+        
+        function generateMediaHTML(type, url, altText) {
+            const ytEmbed = toYouTubeEmbedUrl(url);
+            if (ytEmbed) {
+                return `<iframe src="${ytEmbed}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
+            switch (type) {
+                case 'image':
+                    return `<img src="${url}" alt="${altText}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22250%22><rect fill=%22%23333%22 width=%22100%%22 height=%22100%%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23666%22 text-anchor=%22middle%22>Image unavailable</text></svg>'">`;
+                case 'video':
+                    return `<video controls muted><source src="${url}" type="video/mp4"></video>`;
+                case 'audio':
+                    return `<div class="audio-icon">🎵</div><audio controls><source src="${url}" type="audio/wav"><source src="${url}" type="audio/mpeg"></audio>`;
+                default:
+                    return `<div class="no-media">Unknown media type: ${type}</div>`;
+            }
+        }
+        
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.querySelectorAll('video, audio').forEach(el => {
+                el.pause();
+                el.currentTime = 0;
+            });
+        }
+        
+        function processCSV(text) {
+            const { headers, data } = parseCSV(text);
+            csvHeaders = headers;
+            
+            
+            mediaColumns = detectMediaColumns(headers);
+            console.log('Detected media columns:', mediaColumns);
+            
+            
+            const { realData, existingDummies } = detectExistingDummies(data, headers);
+            
+            
+            const realDimensions = analyzeDimensions(headers, realData);
+            
+            
+            const mergedDimensions = existingDummies.length > 0
+                ? mergeValueSpaces(realDimensions, existingDummies, headers)
+                : realDimensions;
+            
+            
+            allDimensions = mergedDimensions;
+            
+            
+            preservedDimValues = {};
+            allDimensions.forEach(dim => {
+                preservedDimValues[dim.name] = [...dim.uniqueValues];
+            });
+            
+            
+            if (existingDummies.length > 0) {
+                const validation = validateAnchors(existingDummies, allDimensions, headers);
+                
+                if (validation.valid) {
+                    console.log('Anchors validated: keeping existing anchors.');
+                    dummyRows = existingDummies;
+                } else {
+                    console.log(`Anchors outdated (${validation.reason}): regenerating.`);
+                    dummyRows = generateDummyRows(allDimensions, headers);
+                }
+            } else {
+                dummyRows = generateDummyRows(allDimensions, headers);
+            }
+            
+            
+            realData.forEach((row, i) => { row._index = i; });
+            
+            
+            originalData = JSON.parse(JSON.stringify(realData));
+            currentData = realData;
+            modifiedRows.clear();
+            changeLog = [];
+            undoStack = [];
+            redoStack = [];
+            customColorMap = {};
+            customShapeMap = {};
+            
+            userDimensionOrder = allDimensions.map(d => d.name);
+            enabledDimensions = new Set(userDimensionOrder);
+            
+            renderDimensionList();
+            renderDummySettingsUI();
+            updateChangesIndicator();
+            updateChangeLogUI();
+            updateUndoRedoUI();
+            updateVisualization();
+        }
+        
+        
+        
+        
+        fetch(DATASET_URL)
+            .then(r => {
+                if (!r.ok) throw new Error('Dataset load failed: ' + r.status);
+                return r.text();
+            })
+            .then(csv => processCSV(csv))
+            .catch(err => {
+                console.error(err);
+                const errDiv = document.createElement('div');
+                errDiv.style.cssText = 'color:#ff6b6b;padding:8px;background:#2d1a1a;border-radius:4px;margin-bottom:8px;font-size:13px;';
+                errDiv.textContent = 'Failed to load dataset. Check console for details.';
+                document.querySelector('.sidebar-content').prepend(errDiv);
+            });
+    </script>
+</body>
+</html>
