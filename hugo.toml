@@ -1,6 +1,6 @@
-baseURL = 'http://www.lenslanding.com/'
+baseURL = 'len-sprague.github.io'
 languageCode = 'en-us'
-title = 'BetterViz'
+title = 'PLeW'
 
 [params]
   description = 'Interactive multi-dimensional data visualizer'
