@@ -1486,7 +1486,7 @@
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-content">
-                <a href="/examples/" style="color:#4ecdc4;text-decoration:none;font-size:12px;display:inline-block;margin-bottom:10px;">← All Examples</a>
+                <a href="{{ "/examples/" | relURL }}" style="color:#4ecdc4;text-decoration:none;font-size:12px;display:inline-block;margin-bottom:10px;">← All Examples</a>
                 <h1>📊 {{ .Title }}</h1>
                 <p class="subtitle">{{ with .Description }}{{ . }}{{ else }}Drag points to reclassify • Right-click to change color/shape{{ end }}</p>
                 
