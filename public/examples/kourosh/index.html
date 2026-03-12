@@ -1686,6 +1686,7 @@
     
     <script>
         const DATASET_URL = "\/PLeW\/data\/kourosh.csv";
+        const SITE_BASE = DATASET_URL.replace(/data\/kourosh\.csv$/, '');
         
         
         
@@ -2012,6 +2013,11 @@
             return 'unknown';
         }
         
+        function resolveMediaUrl(url) {
+            if (!url || url.startsWith('http') || url.startsWith('/')) return url;
+            return SITE_BASE + url;
+        }
+        
         function getRowMedia(row) {
             
             const media = [];
@@ -2027,14 +2033,14 @@
                 }
                 
                 const baseLabel = getDisplayName(mc.column).replace(/[-_](url|file|src|path|link|href)$/i, '').replace(/[-_]/g, ' ');
-                media.push({ type: type, url: url.trim(), label: baseLabel || 'media' });
+                media.push({ type: type, url: resolveMediaUrl(url.trim()), label: baseLabel || 'media' });
             });
             
             
             if (row.media_type && row.media_url && !mediaColumns.some(mc => mc.column === 'media_url')) {
                 media.push({
                     type: row.media_type,
-                    url: row.media_url.trim(),
+                    url: resolveMediaUrl(row.media_url.trim()),
                     label: row.media_type
                 });
             }
