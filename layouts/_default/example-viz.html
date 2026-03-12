@@ -2014,8 +2014,10 @@
         }
         
         function resolveMediaUrl(url) {
-            if (!url || url.startsWith('http') || url.startsWith('/')) return url;
+            if (!url || url.startsWith('http')) return url;
+            if (url.startsWith('/')) return SITE_BASE + url.slice(1);
             return SITE_BASE + url;
+}
         }
         
         function getRowMedia(row) {
