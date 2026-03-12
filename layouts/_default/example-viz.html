@@ -1686,7 +1686,7 @@
     
     <script>
         const DATASET_URL = "{{ .Params.dataset_url | relURL | safeJS }}";
-        const SITE_BASE = "{{ "/" | relURL }}";
+        const SITE_BASE = DATASET_URL.replace(/{{ .Params.dataset_url | safeJS }}$/, '');
         // ============================================================
         // CONFIGURATION
         // ============================================================
