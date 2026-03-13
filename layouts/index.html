@@ -1488,7 +1488,7 @@
             <div class="sidebar-content">
                 <h1>📊 Data Editor</h1>
                 <p class="subtitle">Drag points to reclassify • Right-click to change color/shape</p>
-                <p style="margin-top:8px;"><a href="{{ "examples/" | relURL }}"  style="color:#4ecdc4;text-decoration:none;font-size:12px;">View example datasets →</a></p>
+                <p style="margin-top:8px;"><a href="/examples/" style="color:#4ecdc4;text-decoration:none;font-size:12px;">View example datasets →</a></p>
 
                 <div class="section">
                     <div class="section-title">Data Input</div>
@@ -1801,6 +1801,7 @@
         let changeLog = [];
         let csvHeaders = [];
         let mediaColumns = [];
+        let csvBaseUrl = '';  // Base URL for resolving relative media paths
         
         // Dummy/Anchor state
         let dummyRows = [];
@@ -2024,7 +2025,29 @@
             if (/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?|$)/i.test(lower)) return 'audio';
             return 'unknown';
         }
-        
+
+        // Resolve a media URL relative to the CSV's source location.
+        // - Absolute URLs (http/https/data/blob) are returned unchanged.
+        // - Site-root-relative paths (starting with /) are resolved against window.location.origin.
+        // - Relative paths are resolved against csvBaseUrl (set when the CSV was loaded),
+        //   falling back to the current page URL.
+        function resolveMediaUrl(url) {
+            if (!url) return url;
+            url = url.trim();
+            if (!url) return url;
+            // Already absolute or special scheme
+            if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
+            // Site-root-relative (e.g. /kourosh/file.wav) → prepend origin
+            if (url.startsWith('/')) return window.location.origin + url;
+            // Relative path → resolve against the CSV's directory
+            const base = csvBaseUrl || window.location.href;
+            try {
+                return new URL(url, base).href;
+            } catch(e) {
+                return url;
+            }
+        }
+
         function getRowMedia(row) {
             // Returns array of {type, url, label} for all media in a row
             const media = [];
@@ -2040,14 +2063,14 @@
                 }
                 
                 const baseLabel = getDisplayName(mc.column).replace(/[-_](url|file|src|path|link|href)$/i, '').replace(/[-_]/g, ' ');
-                media.push({ type: type, url: url.trim(), label: baseLabel || 'media' });
+                media.push({ type: type, url: resolveMediaUrl(url.trim()), label: baseLabel || 'media' });
             });
-            
+
             // Legacy support: also check media_type + media_url columns
             if (row.media_type && row.media_url && !mediaColumns.some(mc => mc.column === 'media_url')) {
                 media.push({
                     type: row.media_type,
-                    url: row.media_url.trim(),
+                    url: resolveMediaUrl(row.media_url.trim()),
                     label: row.media_type
                 });
             }
@@ -3653,21 +3676,31 @@
         fileDrop.addEventListener('drop', (e) => {
             e.preventDefault();
             fileDrop.classList.remove('dragover');
-            
+
             const file = e.dataTransfer.files[0];
             if (file && file.name.endsWith('.csv')) {
-                loadFile(file);
+                // If the CSV was dragged from a browser (not from disk), capture its URL
+                // so relative media paths in it can be resolved against the right directory.
+                const droppedUrl = e.dataTransfer.getData('text/uri-list') || '';
+                const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
+                    ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
+                    : window.location.origin + '/';
+                loadFile(file, baseUrl);
             }
         });
         
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                loadFile(file);
+                // Local file picker: resolve media relative to the site root
+                loadFile(file, window.location.origin + '/');
             }
         });
-        
-        function loadFile(file) {
+
+        // baseUrl: the directory URL the CSV came from, used to resolve relative media paths.
+        // For local file uploads this defaults to the site origin so /path/file.ext works.
+        function loadFile(file, baseUrl) {
+            csvBaseUrl = baseUrl || window.location.origin + '/';
             const reader = new FileReader();
             reader.onload = (e) => {
                 processCSV(e.target.result);
@@ -3746,6 +3779,7 @@
         // SAMPLE DATA
         // ============================================================
         function loadSampleData() {
+            csvBaseUrl = window.location.origin + '/';
             const sampleCSV = `ID,Function,Intonation,Focus,Canonical,Surprise,audio_url
 1,Genuine,Rising,0,0,0,/kourosh/01_00_10_Genuine.wav
 2,Offer,Rising,0,0,0,/kourosh/01_00_2_Offer.wav
