@@ -2028,24 +2028,28 @@
 
         // Resolve a media URL relative to the CSV's source location.
         // - Absolute URLs (http/https/data/blob) are returned unchanged.
-        // - Site-root-relative paths (starting with /) are resolved against window.location.origin.
-        // - Relative paths are resolved against csvBaseUrl (set when the CSV was loaded),
-        //   falling back to the current page URL.
+        // - Site-root-relative paths (starting with /) are passed through as-is;
+        //   the browser resolves them against the current origin, which is correct
+        //   when Hugo serves the page and media from the same server.
+        // - Relative paths (no leading /) are resolved against csvBaseUrl, which is
+        //   set to the CSV file's directory when the CSV was fetched from a URL.
         function resolveMediaUrl(url) {
             if (!url) return url;
             url = url.trim();
             if (!url) return url;
-            // Already absolute or special scheme
+            // Already absolute or special scheme — use as-is
             if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
-            // Site-root-relative (e.g. /kourosh/file.wav) → prepend origin
-            if (url.startsWith('/')) return window.location.origin + url;
-            // Relative path → resolve against the CSV's directory
-            const base = csvBaseUrl || window.location.href;
-            try {
-                return new URL(url, base).href;
-            } catch(e) {
-                return url;
+            // Site-root-relative (e.g. /kourosh/file.wav) — let the browser resolve
+            // against the current origin naturally; no transformation needed.
+            if (url.startsWith('/')) return url;
+            // Relative path (e.g. audio/file.wav) — resolve against the directory
+            // the CSV was loaded from, if known.
+            if (csvBaseUrl) {
+                try {
+                    return new URL(url, csvBaseUrl).href;
+                } catch(e) {}
             }
+            return url;
         }
 
         function getRowMedia(row) {
@@ -3679,12 +3683,12 @@
 
             const file = e.dataTransfer.files[0];
             if (file && file.name.endsWith('.csv')) {
-                // If the CSV was dragged from a browser (not from disk), capture its URL
-                // so relative media paths in it can be resolved against the right directory.
+                // If the CSV was dragged from a browser tab, capture its URL so
+                // relative media paths in it resolve against the right directory.
                 const droppedUrl = e.dataTransfer.getData('text/uri-list') || '';
                 const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
                     ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
-                    : window.location.origin + '/';
+                    : '';
                 loadFile(file, baseUrl);
             }
         });
@@ -3692,15 +3696,14 @@
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Local file picker: resolve media relative to the site root
-                loadFile(file, window.location.origin + '/');
+                loadFile(file, '');
             }
         });
 
-        // baseUrl: the directory URL the CSV came from, used to resolve relative media paths.
-        // For local file uploads this defaults to the site origin so /path/file.ext works.
+        // baseUrl: directory URL the CSV came from, used to resolve relative media paths.
+        // Empty for local file uploads (root-relative paths resolve naturally via the browser).
         function loadFile(file, baseUrl) {
-            csvBaseUrl = baseUrl || window.location.origin + '/';
+            csvBaseUrl = baseUrl || '';
             const reader = new FileReader();
             reader.onload = (e) => {
                 processCSV(e.target.result);
@@ -3779,7 +3782,7 @@
         // SAMPLE DATA
         // ============================================================
         function loadSampleData() {
-            csvBaseUrl = window.location.origin + '/';
+            csvBaseUrl = '';
             const sampleCSV = `ID,Function,Intonation,Focus,Canonical,Surprise,audio_url
 1,Genuine,Rising,0,0,0,/kourosh/01_00_10_Genuine.wav
 2,Offer,Rising,0,0,0,/kourosh/01_00_2_Offer.wav
