@@ -1506,11 +1506,11 @@
                     <div class="section-title">Data Input</div>
                     <div class="file-drop" id="fileDrop">
                         <div class="file-drop-icon">📁</div>
-                        <div class="file-drop-text">Drop CSV or media folder here, or click</div>
-                        <input type="file" class="file-input" id="fileInput" accept=".csv">
-                        <input type="file" class="file-input" id="mediaFolderInput" webkitdirectory multiple>
+                        <div class="file-drop-text">Drop CSV + media files (or folder) here, or click</div>
+                        <input type="file" class="file-input" id="fileInput" multiple accept=".csv,.wav,.mp3,.ogg,.flac,.aac,.m4a,.opus,.webm,.mp4,.ogv,.mov,.avi,.mkv,.jpg,.jpeg,.png,.gif,.webp,.svg">
                     </div>
-                    <button class="btn btn-secondary" id="mediaFolderBtn" onclick="loadMediaFolder(null)">Load media folder…</button>
+                    <input type="file" class="file-input" id="mediaFolderInput" multiple>
+                    <button class="btn btn-secondary" id="mediaFolderBtn" onclick="loadMediaFolder(null)">Load media files…</button>
                     <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
                     <div class="sample-data-info">Linguistics dataset with audio (audio_url column)</div>
                 </div>
@@ -3711,23 +3711,28 @@
                 }
             }
 
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.csv')) {
-                // If the CSV was dragged from a browser tab, capture its URL so
-                // relative media paths in it resolve against the right directory.
+            const files = e.dataTransfer.files;
+            if (files.length > 1) {
+                // Multiple files dropped — treat as combined CSV + media selection
+                handleMixedFiles(files);
+            } else if (files.length === 1 && files[0].name.endsWith('.csv')) {
+                // Single CSV — preserve base URL capture for server-hosted CSVs
                 const droppedUrl = e.dataTransfer.getData('text/uri-list') || '';
                 const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
                     ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
                     : '';
-                loadFile(file, baseUrl);
+                loadFile(files[0], baseUrl);
             }
         });
         
         fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                loadFile(file, '');
+            const files = e.target.files;
+            if (files.length > 1) {
+                handleMixedFiles(files);
+            } else if (files.length === 1) {
+                loadFile(files[0], '');
             }
+            e.target.value = '';
         });
 
         document.getElementById('mediaFolderInput').addEventListener('change', (e) => {
@@ -3796,6 +3801,27 @@
             updateMediaFolderButton(count);
         }
 
+        // Handle a FileList that may contain a mix of one CSV and media files.
+        // Populates the media map first, then loads the CSV.
+        function handleMixedFiles(fileList) {
+            let csvFile = null;
+            clearLocalMediaMap();
+            let mediaCount = 0;
+            for (const file of fileList) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (file.name.toLowerCase().endsWith('.csv') && !csvFile) {
+                    csvFile = file;
+                } else if (MEDIA_EXTENSIONS.has(ext)) {
+                    const blobUrl = URL.createObjectURL(file);
+                    localMediaMap[file.name] = blobUrl;
+                    if (file.webkitRelativePath) localMediaMap[file.webkitRelativePath] = blobUrl;
+                    mediaCount++;
+                }
+            }
+            if (mediaCount > 0) updateMediaFolderButton(mediaCount);
+            if (csvFile) loadFile(csvFile, '');
+        }
+
         async function loadMediaFolder(dirHandle) {
             if (dirHandle) {
                 // Called from a folder drop — use File System Access API
@@ -3826,7 +3852,6 @@
         function processCSV(text) {
             const { headers, data } = parseCSV(text);
             csvHeaders = headers;
-            clearLocalMediaMap();
 
             // Detect media columns from headers
             mediaColumns = detectMediaColumns(headers);
@@ -3896,7 +3921,8 @@
             if (mediaBtn) {
                 if (mediaColumns.length > 0 && !csvBaseUrl) {
                     mediaBtn.style.display = '';
-                    updateMediaFolderButton(0);
+                    // Only reset the button count if no media is already loaded
+                    if (Object.keys(localMediaMap).length === 0) updateMediaFolderButton(0);
                 } else {
                     mediaBtn.style.display = 'none';
                 }
