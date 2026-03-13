@@ -269,6 +269,18 @@
         .file-input {
             display: none;
         }
+
+        #mediaFolderBtn {
+            display: none;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
+        #mediaFolderBtn.media-folder-loaded {
+            border-color: #6bcb77;
+            color: #6bcb77;
+        }
         
         .btn {
             display: inline-block;
@@ -1494,9 +1506,10 @@
                     <div class="section-title">Data Input</div>
                     <div class="file-drop" id="fileDrop">
                         <div class="file-drop-icon">📁</div>
-                        <div class="file-drop-text">Drop CSV here or click</div>
+                        <div class="file-drop-text">Drop CSV or media folder here, or click</div>
                         <input type="file" class="file-input" id="fileInput" accept=".csv">
                     </div>
+                    <button class="btn btn-secondary" id="mediaFolderBtn" onclick="loadMediaFolder(null)">Load media folder…</button>
                     <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
                     <div class="sample-data-info">Linguistics dataset with audio (audio_url column)</div>
                 </div>
@@ -1802,6 +1815,7 @@
         let csvHeaders = [];
         let mediaColumns = [];
         let csvBaseUrl = '';  // Base URL for resolving relative media paths
+        let localMediaMap = {};  // filename/path → blob URL for locally loaded media files
         
         // Dummy/Anchor state
         let dummyRows = [];
@@ -2026,24 +2040,26 @@
             return 'unknown';
         }
 
-        // Resolve a media URL relative to the CSV's source location.
-        // - Absolute URLs (http/https/data/blob) are returned unchanged.
-        // - Site-root-relative paths (starting with /) are passed through as-is;
-        //   the browser resolves them against the current origin, which is correct
-        //   when Hugo serves the page and media from the same server.
-        // - Relative paths (no leading /) are resolved against csvBaseUrl, which is
-        //   set to the CSV file's directory when the CSV was fetched from a URL.
+        // Resolve a media URL to something the browser can load.
+        // Priority order:
+        //   1. Already absolute/blob/data → unchanged
+        //   2. localMediaMap lookup by basename (for locally picked media folder)
+        //   3. Root-relative (/path/file) → pass through (browser resolves against current origin)
+        //   4. Relative path → resolve against csvBaseUrl (when CSV was fetched from a URL)
         function resolveMediaUrl(url) {
             if (!url) return url;
             url = url.trim();
             if (!url) return url;
             // Already absolute or special scheme — use as-is
             if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
-            // Site-root-relative (e.g. /kourosh/file.wav) — let the browser resolve
-            // against the current origin naturally; no transformation needed.
+            // Check local media map first (populated when user picks a media folder).
+            // Try the full url as given, then just the basename.
+            if (localMediaMap[url]) return localMediaMap[url];
+            const basename = url.split(/[/\\]/).pop();
+            if (basename && localMediaMap[basename]) return localMediaMap[basename];
+            // Root-relative — let the browser resolve against the current origin.
             if (url.startsWith('/')) return url;
-            // Relative path (e.g. audio/file.wav) — resolve against the directory
-            // the CSV was loaded from, if known.
+            // Relative path — resolve against the directory the CSV was loaded from.
             if (csvBaseUrl) {
                 try {
                     return new URL(url, csvBaseUrl).href;
@@ -3677,9 +3693,22 @@
             fileDrop.classList.remove('dragover');
         });
         
-        fileDrop.addEventListener('drop', (e) => {
+        fileDrop.addEventListener('drop', async (e) => {
             e.preventDefault();
             fileDrop.classList.remove('dragover');
+
+            // Check if a directory was dropped (File System Access API)
+            if (e.dataTransfer.items && window.FileSystemDirectoryHandle) {
+                for (const item of e.dataTransfer.items) {
+                    if (item.kind === 'file' && typeof item.getAsFileSystemHandle === 'function') {
+                        const handle = await item.getAsFileSystemHandle();
+                        if (handle && handle.kind === 'directory') {
+                            loadMediaFolder(handle);
+                            return;
+                        }
+                    }
+                }
+            }
 
             const file = e.dataTransfer.files[0];
             if (file && file.name.endsWith('.csv')) {
@@ -3711,10 +3740,78 @@
             reader.readAsText(file);
         }
         
+        const MEDIA_EXTENSIONS = new Set([
+            'wav','mp3','ogg','flac','aac','m4a','opus','webm',
+            'mp4','webm','ogv','mov','avi','mkv',
+            'jpg','jpeg','png','gif','webp','svg'
+        ]);
+
+        function clearLocalMediaMap() {
+            // Revoke old blob URLs to free memory
+            for (const url of Object.values(localMediaMap)) {
+                if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+            }
+            localMediaMap = {};
+        }
+
+        async function scanDirForMedia(dirHandle, prefix) {
+            for await (const [name, handle] of dirHandle.entries()) {
+                const relPath = prefix ? `${prefix}/${name}` : name;
+                if (handle.kind === 'file') {
+                    const ext = name.split('.').pop().toLowerCase();
+                    if (MEDIA_EXTENSIONS.has(ext)) {
+                        const file = await handle.getFile();
+                        const blobUrl = URL.createObjectURL(file);
+                        localMediaMap[name] = blobUrl;      // by basename
+                        localMediaMap[relPath] = blobUrl;   // by relative path
+                    }
+                } else if (handle.kind === 'directory') {
+                    await scanDirForMedia(handle, relPath);
+                }
+            }
+        }
+
+        async function loadMediaFolder(dirHandle) {
+            clearLocalMediaMap();
+            if (!dirHandle) {
+                if (!window.showDirectoryPicker) {
+                    alert('Your browser does not support the File System Access API.\nUse Chrome or Edge, or use absolute URLs in your CSV.');
+                    return;
+                }
+                try {
+                    dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+                } catch(e) {
+                    if (e.name !== 'AbortError') console.error(e);
+                    return;
+                }
+            }
+            const btn = document.getElementById('mediaFolderBtn');
+            if (btn) btn.textContent = 'Scanning…';
+            await scanDirForMedia(dirHandle, '');
+            const count = Object.values(localMediaMap).filter(v => v.startsWith('blob:')).length / 2 | 0;
+            // Rerender the current tooltip/detail panel if open, so newly resolved media shows
+            updateMediaFolderButton(count);
+            // Re-render any open point detail with fresh URLs
+            if (typeof renderPointDetail === 'function') renderPointDetail();
+        }
+
+        function updateMediaFolderButton(fileCount) {
+            const btn = document.getElementById('mediaFolderBtn');
+            if (!btn) return;
+            if (fileCount > 0) {
+                btn.textContent = `Media folder: ${fileCount} file${fileCount !== 1 ? 's' : ''} loaded`;
+                btn.classList.add('media-folder-loaded');
+            } else {
+                btn.textContent = 'Load media folder…';
+                btn.classList.remove('media-folder-loaded');
+            }
+        }
+
         function processCSV(text) {
             const { headers, data } = parseCSV(text);
             csvHeaders = headers;
-            
+            clearLocalMediaMap();
+
             // Detect media columns from headers
             mediaColumns = detectMediaColumns(headers);
             console.log('Detected media columns:', mediaColumns);
@@ -3776,6 +3873,18 @@
             updateChangeLogUI();
             updateUndoRedoUI();
             updateVisualization();
+
+            // Show "Load media folder" button when the CSV has media columns and
+            // was loaded from local disk (no server URL means no auto-resolution).
+            const mediaBtn = document.getElementById('mediaFolderBtn');
+            if (mediaBtn) {
+                if (mediaColumns.length > 0 && !csvBaseUrl) {
+                    mediaBtn.style.display = '';
+                    updateMediaFolderButton(0);
+                } else {
+                    mediaBtn.style.display = 'none';
+                }
+            }
         }
         
         // ============================================================
