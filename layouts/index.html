@@ -1508,6 +1508,7 @@
                         <div class="file-drop-icon">📁</div>
                         <div class="file-drop-text">Drop CSV or media folder here, or click</div>
                         <input type="file" class="file-input" id="fileInput" accept=".csv">
+                        <input type="file" class="file-input" id="mediaFolderInput" webkitdirectory multiple>
                     </div>
                     <button class="btn btn-secondary" id="mediaFolderBtn" onclick="loadMediaFolder(null)">Load media folder…</button>
                     <button class="btn btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
@@ -3729,6 +3730,13 @@
             }
         });
 
+        document.getElementById('mediaFolderInput').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                loadMediaFilesFromInput(e.target.files);
+                e.target.value = '';  // reset so same folder can be re-picked
+            }
+        });
+
         // baseUrl: directory URL the CSV came from, used to resolve relative media paths.
         // Empty for local file uploads (root-relative paths resolve naturally via the browser).
         function loadFile(file, baseUrl) {
@@ -3771,28 +3779,36 @@
             }
         }
 
-        async function loadMediaFolder(dirHandle) {
+        function loadMediaFilesFromInput(fileList) {
             clearLocalMediaMap();
-            if (!dirHandle) {
-                if (!window.showDirectoryPicker) {
-                    alert('Your browser does not support the File System Access API.\nUse Chrome or Edge, or use absolute URLs in your CSV.');
-                    return;
-                }
-                try {
-                    dirHandle = await window.showDirectoryPicker({ mode: 'read' });
-                } catch(e) {
-                    if (e.name !== 'AbortError') console.error(e);
-                    return;
+            let count = 0;
+            for (const file of fileList) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (MEDIA_EXTENSIONS.has(ext)) {
+                    const blobUrl = URL.createObjectURL(file);
+                    localMediaMap[file.name] = blobUrl;  // by basename
+                    if (file.webkitRelativePath) {
+                        localMediaMap[file.webkitRelativePath] = blobUrl;
+                    }
+                    count++;
                 }
             }
-            const btn = document.getElementById('mediaFolderBtn');
-            if (btn) btn.textContent = 'Scanning…';
-            await scanDirForMedia(dirHandle, '');
-            const count = Object.values(localMediaMap).filter(v => v.startsWith('blob:')).length / 2 | 0;
-            // Rerender the current tooltip/detail panel if open, so newly resolved media shows
             updateMediaFolderButton(count);
-            // Re-render any open point detail with fresh URLs
-            if (typeof renderPointDetail === 'function') renderPointDetail();
+        }
+
+        async function loadMediaFolder(dirHandle) {
+            if (dirHandle) {
+                // Called from a folder drop — use File System Access API
+                clearLocalMediaMap();
+                const btn = document.getElementById('mediaFolderBtn');
+                if (btn) btn.textContent = 'Scanning…';
+                await scanDirForMedia(dirHandle, '');
+                const count = Object.keys(localMediaMap).length / 2 | 0;
+                updateMediaFolderButton(count);
+            } else {
+                // Called from button click — trigger the hidden folder input
+                document.getElementById('mediaFolderInput').click();
+            }
         }
 
         function updateMediaFolderButton(fileCount) {
