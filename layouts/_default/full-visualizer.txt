@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Dimensional Data Visualizer - Full Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -546,12 +547,96 @@
         .viz-actions {
             display: flex;
             gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .viz-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .viz-checkbox input { accent-color: #4ecdc4; }
+        
+        .panel-grid-container.uniform-panels {
+            min-height: 80vh;
+        }
+        
+        .panel-grid.uniform-panels {
+            height: 100%;
+            min-height: 80vh;
+        }
+        
+        /* Label styling dropdown (in viz-actions) */
+        .label-style-wrap {
+            position: relative;
+        }
+        .label-style-btn {
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 6px;
+            color: #aaa;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .label-style-btn:hover {
+            background: #232a33;
+            border-color: #4ecdc4;
+            color: #4ecdc4;
+        }
+        .label-style-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 6px;
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 180px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 200;
+            display: none;
+        }
+        .label-style-dropdown.open { display: block; }
+        .label-style-dropdown .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.65rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .label-style-dropdown .control-row:last-child { margin-bottom: 0; }
+        .label-style-dropdown .control-row label { white-space: nowrap; }
+        .label-style-dropdown input[type="range"] { width: 100%; accent-color: #4ecdc4; }
+        .label-style-dropdown input[type="color"] {
+            width: 100%;
+            height: 24px;
+            border: 1px solid #2d3640;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
         }
         
         /* Panel Grid */
         .panel-grid-container {
             overflow: auto;
             padding-bottom: 40px;
+            --label-font-size: 0.7rem;
+            --label-color: #888;
+            --count-font-size: 0.6rem;
+            --count-color: #555;
+            --inner-label-font-size: 0.55rem;
+            --inner-label-color: #555;
         }
         
         .panel-grid {
@@ -567,8 +652,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
-            color: #888;
+            font-size: var(--label-font-size);
+            color: var(--label-color);
             padding: 6px 4px;
             background: #1a1f26;
             border-radius: 6px;
@@ -581,8 +666,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
-            color: #888;
+            font-size: var(--label-font-size);
+            color: var(--label-color);
             padding: 4px 6px;
             background: #1a1f26;
             border-radius: 6px;
@@ -599,8 +684,8 @@
         }
         
         .panel-title {
-            font-size: 0.6rem;
-            color: #555;
+            font-size: var(--count-font-size);
+            color: var(--count-color);
             margin-bottom: 6px;
             text-align: center;
         }
@@ -636,8 +721,8 @@
         
         /* Inner Axis Labels */
         .inner-axis-label {
-            font-size: 0.55rem;
-            color: #555;
+            font-size: var(--inner-label-font-size);
+            color: var(--inner-label-color);
             text-align: center;
             padding: 2px;
             background: #1a1f26;
@@ -893,6 +978,30 @@
             padding: 25px;
         }
         
+        /* Report Modal */
+        .report-modal { max-width: 700px; }
+        .report-modal-body { max-height: 80vh; overflow-y: auto; }
+        .report-config { margin-bottom: 20px; }
+        .report-section { margin-bottom: 16px; }
+        .report-section-title { font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+        .report-check { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; }
+        .report-check input { accent-color: #4ecdc4; }
+        .report-dim-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+        .report-dim-name { min-width: 120px; font-size: 0.85rem; color: #ccc; }
+        .report-dim-opts { display: flex; gap: 12px; }
+        .report-dim-opts label { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; color: #999; cursor: pointer; }
+        .report-dim-opts input { accent-color: #4ecdc4; }
+        .report-crosstab-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .report-crosstab-row select { padding: 6px 10px; background: #1a1f26; border: 1px solid #2d3640; border-radius: 6px; color: #e8e8e8; font-size: 0.85rem; min-width: 120px; }
+        .report-crosstab-row .remove-crosstab { color: #ff6b6b; cursor: pointer; font-size: 1rem; padding: 0 4px; }
+        .report-actions { display: flex; gap: 10px; margin-bottom: 16px; }
+        .report-output { background: #0f1419; border: 1px solid #2d3640; border-radius: 8px; padding: 16px; max-height: 300px; overflow-y: auto; font-size: 0.85rem; line-height: 1.5; }
+        .report-output table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+        .report-output th, .report-output td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #2d3640; }
+        .report-output th { color: #4ecdc4; font-weight: 500; }
+        .report-output h4 { color: #ccc; margin: 16px 0 8px; font-size: 0.95rem; }
+        .report-output h4:first-child { margin-top: 0; }
+        
         /* Data Table in Modal */
         .data-table {
             width: 100%;
@@ -1083,6 +1192,39 @@
             font-weight: 500;
         }
         
+        .value-filters-hint {
+            font-size: 0.65rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .value-filter-dim {
+            margin-bottom: 12px;
+        }
+        
+        .value-filter-dim-title {
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+        
+        .value-filter-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+        }
+        
+        .value-filter-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .value-filter-checkboxes input { accent-color: #4ecdc4; }
+        
         /* Edit mode hint */
         .edit-hint {
             background: rgba(78, 205, 196, 0.1);
@@ -1159,6 +1301,12 @@
                     <div class="grid-info" id="gridInfo"></div>
                 </div>
                 
+                <div class="section" id="valueFiltersSection" style="display: none;">
+                    <div class="section-title">Filter values</div>
+                    <div class="value-filters-hint">Choose which values to show per dimension. Default: all visible.</div>
+                    <div id="valueFiltersList"></div>
+                </div>
+                
                 <div class="section" id="legendSection" style="display: none;">
                     <div class="section-title">Color Legend</div>
                     <div class="legend-section" id="colorLegend"></div>
@@ -1188,6 +1336,14 @@
                     <span class="icon">📥</span>
                     <span>Download</span>
                 </button>
+                <button class="floating-btn" onclick="downloadSnapshot()">
+                    <span class="icon">📷</span>
+                    <span>Snapshot</span>
+                </button>
+                <button class="floating-btn" onclick="openReportModal()">
+                    <span class="icon">📋</span>
+                    <span>Report</span>
+                </button>
             </div>
             
             <!-- Floating Legend -->
@@ -1203,7 +1359,31 @@
                     <div class="viz-stats" id="vizStats"></div>
                 </div>
                 <div class="viz-actions">
+                    <div class="label-style-wrap">
+                        <button class="label-style-btn" id="labelStyleBtn" onclick="toggleLabelStylePanel(event)" title="Adjust size and color of labels and counts">Label styling ▾</button>
+                        <div class="label-style-dropdown" id="labelStyleDropdown">
+                            <div class="control-row">
+                                <label>Column labels size</label>
+                                <input type="range" id="labelSize" min="0.5" max="1.2" step="0.05" value="0.7" oninput="applyLabelStyle()">
+                            </div>
+                            <div class="control-row">
+                                <label>Count size</label>
+                                <input type="range" id="countSize" min="0.4" max="1" step="0.05" value="0.6" oninput="applyLabelStyle()">
+                            </div>
+                            <div class="control-row">
+                                <label>Column labels color</label>
+                                <input type="color" id="labelColor" value="#888888" oninput="applyLabelStyle()">
+                            </div>
+                            <div class="control-row">
+                                <label>Count color</label>
+                                <input type="color" id="countColor" value="#555555" oninput="applyLabelStyle()">
+                            </div>
+                        </div>
+                    </div>
+                    <label class="viz-checkbox"><input type="checkbox" id="uniformPanels" onchange="toggleUniformPanels()"> Uniform panel sizes</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
+                    <button class="btn btn-secondary btn-small" onclick="downloadSnapshot()">📷 Snapshot</button>
+                    <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
                 </div>
             </div>
             
@@ -1245,6 +1425,37 @@
         </div>
     </div>
     
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModalOverlay" onclick="closeReportModal(event)">
+        <div class="modal report-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Generate Report</h3>
+                <button class="modal-close" onclick="closeReportModal()">×</button>
+            </div>
+            <div class="modal-body report-modal-body">
+                <div class="report-config">
+                    <div class="report-section">
+                        <label class="report-check"><input type="checkbox" id="reportOverview" checked> Overview (total rows, dimensions)</label>
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title">Per-dimension stats</div>
+                        <div id="reportDimStats"></div>
+                    </div>
+                    <div class="report-section">
+                        <div class="report-section-title">Crosstabs</div>
+                        <div id="reportCrosstabsList"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addCrosstabRow()">+ Add crosstab</button>
+                    </div>
+                </div>
+                <div class="report-actions">
+                    <button class="btn btn-success" onclick="generateReport()">Generate</button>
+                    <button class="btn btn-secondary" onclick="downloadReportHtml()" id="downloadReportBtn" disabled>Download HTML</button>
+                </div>
+                <div class="report-output" id="reportOutput"></div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // ============================================================
         // CONFIGURATION
@@ -1277,6 +1488,8 @@
         let enabledDimensions = new Set();
         let encodings = null;
         let modifiedRows = new Set();  // Track which rows have been modified
+        let dimensionValueFilters = {};
+        let uniformPanelSizes = false;
         
         // Drag and drop state
         let draggedDimensionItem = null;
@@ -1321,11 +1534,14 @@
         // CSV PARSING
         // ============================================================
         function parseCSV(text) {
-            const lines = text.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
+            const lines = text.trim().split('\n').map(line => line.replace(/\r$/, ''));
+            if (lines.length === 0) return { headers: [], data: [] };
+            
+            const delimiter = detectDelimiter(lines);
+            const headers = parseDelimitedLine(lines[0], delimiter).map(h => h.trim());
             
             const data = lines.slice(1).map((line, idx) => {
-                const values = parseCSVLine(line);
+                const values = parseDelimitedLine(line, delimiter);
                 const row = { _index: idx };
                 headers.forEach((header, i) => {
                     row[header] = values[i]?.trim() ?? '';
@@ -1336,16 +1552,33 @@
             return { headers, data };
         }
         
-        function parseCSVLine(line) {
+        function detectDelimiter(lines) {
+            const candidates = [',', '\t', ';', '|'];
+            const sampleLine = lines.find(line => line.trim().length > 0) || '';
+            let best = candidates[0];
+            let bestCount = -1;
+            candidates.forEach((delimiter) => {
+                let count = 0;
+                let inQuotes = false;
+                for (let i = 0; i < sampleLine.length; i++) {
+                    const char = sampleLine[i];
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === delimiter && !inQuotes) count++;
+                }
+                if (count > bestCount) { best = delimiter; bestCount = count; }
+            });
+            return best;
+        }
+        
+        function parseDelimitedLine(line, delimiter) {
             const result = [];
             let current = '';
             let inQuotes = false;
-            
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
                 if (char === '"') {
                     inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
+                } else if (char === delimiter && !inQuotes) {
                     result.push(current);
                     current = '';
                 } else {
@@ -1381,6 +1614,29 @@
             });
             
             return csv;
+        }
+        
+        function downloadSnapshot() {
+            const el = document.getElementById('vizContainer');
+            const panelGrid = el.querySelector('.panel-grid');
+            if (!panelGrid) {
+                alert('No visualization to capture');
+                return;
+            }
+            if (typeof html2canvas === 'undefined') {
+                alert('Snapshot requires html2canvas. Please check your connection.');
+                return;
+            }
+            html2canvas(panelGrid, { backgroundColor: '#0f1419', scale: 2 }).then(canvas => {
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'grid_snapshot.png';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            });
         }
         
         function downloadCSV() {
@@ -1464,6 +1720,30 @@
             return dims;
         }
         
+        function dimKey(dim) {
+            return dim && (dim.key != null ? dim.key : dim.name);
+        }
+        
+        function getVisibleValues(dim) {
+            if (!dim) return ['All'];
+            const filter = dimensionValueFilters[dimKey(dim)];
+            if (!filter) return dim.uniqueValues;
+            return dim.uniqueValues.filter(v => filter.has(v));
+        }
+        
+        function setValueFilter(key, value, visible) {
+            if (!dimensionValueFilters[key]) {
+                const dim = allDimensions?.find(d => dimKey(d) === key);
+                dimensionValueFilters[key] = new Set(dim?.uniqueValues || []);
+            }
+            if (visible) {
+                dimensionValueFilters[key].add(value);
+            } else {
+                dimensionValueFilters[key].delete(value);
+            }
+            if (currentData && encodings) updateVisualization();
+        }
+        
         function getActiveDimensions() {
             return userDimensionOrder
                 .filter(name => enabledDimensions.has(name))
@@ -1510,6 +1790,7 @@
             encodings = assignEncodings(activeDims);
             
             updateDimensionListEncodings();
+            renderValueFilters(encodings);
             updateColorLegend(encodings);
             updateShapeLegend(encodings);
             updateGridInfo(encodings);
@@ -1728,6 +2009,9 @@
             if (!e.target.closest('.context-menu') && !e.target.closest('.data-point')) {
                 closeContextMenu();
             }
+            if (!e.target.closest('.label-style-wrap')) {
+                document.getElementById('labelStyleDropdown')?.classList.remove('open');
+            }
         });
         
         // ============================================================
@@ -1776,6 +2060,46 @@
             document.getElementById('dimensionSection').style.display = 'block';
         }
         
+        function renderValueFilters(encodings) {
+            const section = document.getElementById('valueFiltersSection');
+            const list = document.getElementById('valueFiltersList');
+            const dims = [encodings.panelX, encodings.panelY, encodings.innerX, encodings.innerY].filter(Boolean);
+            const seen = new Set();
+            const used = [];
+            dims.forEach(d => {
+                const k = dimKey(d);
+                if (seen.has(k)) return;
+                seen.add(k);
+                used.push(d);
+            });
+            if (used.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = 'block';
+            list.innerHTML = '';
+            used.forEach(dim => {
+                const k = dimKey(dim);
+                const isFiltered = dimensionValueFilters[k];
+                const div = document.createElement('div');
+                div.className = 'value-filter-dim';
+                div.innerHTML = `<div class="value-filter-dim-title">${dim.name}</div><div class="value-filter-checkboxes"></div>`;
+                const cbContainer = div.querySelector('.value-filter-checkboxes');
+                dim.uniqueValues.forEach(val => {
+                    const checked = !isFiltered || dimensionValueFilters[k].has(val);
+                    const label = document.createElement('label');
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.checked = checked;
+                    cb.addEventListener('change', () => setValueFilter(k, val, cb.checked));
+                    label.appendChild(cb);
+                    label.appendChild(document.createTextNode(' ' + val));
+                    cbContainer.appendChild(label);
+                });
+                list.appendChild(div);
+            });
+        }
+        
         function updateDimensionListEncodings() {
             const activeDims = getActiveDimensions();
             
@@ -1804,10 +2128,10 @@
         
         function updateGridInfo(encodings) {
             const gridInfo = document.getElementById('gridInfo');
-            const panelCols = encodings.panelX?.cardinality || 1;
-            const panelRows = encodings.panelY?.cardinality || 1;
-            const innerCols = encodings.innerX?.cardinality || 1;
-            const innerRows = encodings.innerY?.cardinality || 1;
+            const panelCols = getVisibleValues(encodings.panelX).length || 1;
+            const panelRows = getVisibleValues(encodings.panelY).length || 1;
+            const innerCols = getVisibleValues(encodings.innerX).length || 1;
+            const innerRows = getVisibleValues(encodings.innerY).length || 1;
             
             gridInfo.innerHTML = `
                 <div class="grid-info-row">
@@ -1903,16 +2227,18 @@
             document.getElementById('vizStats').textContent = 
                 `${data.length} records • ${modifiedRows.size} modified`;
             
-            const panelXValues = encodings.panelX?.uniqueValues || ['All'];
-            const panelYValues = encodings.panelY?.uniqueValues || ['All'];
+            const panelXValues = getVisibleValues(encodings.panelX);
+            const panelYValues = getVisibleValues(encodings.panelY);
             
             const panelCols = panelXValues.length;
             const panelRows = panelYValues.length;
             
             const grid = document.createElement('div');
-            grid.className = 'panel-grid';
+            grid.className = 'panel-grid' + (uniformPanelSizes ? ' uniform-panels' : '');
             grid.style.gridTemplateColumns = `40px repeat(${panelCols}, minmax(100px, 1fr))`;
-            grid.style.gridTemplateRows = `30px repeat(${panelRows}, auto)`;
+            grid.style.gridTemplateRows = uniformPanelSizes
+                ? `30px repeat(${panelRows}, minmax(200px, 1fr))`
+                : `30px repeat(${panelRows}, auto)`;
             
             // Corner cell
             grid.appendChild(createCell(''));
@@ -1940,8 +2266,40 @@
                 });
             });
             
+            if (uniformPanelSizes) {
+                container.classList.add('uniform-panels');
+            } else {
+                container.classList.remove('uniform-panels');
+            }
+            applyLabelStyle();
             container.innerHTML = '';
             container.appendChild(grid);
+        }
+        
+        function toggleUniformPanels() {
+            uniformPanelSizes = document.getElementById('uniformPanels').checked;
+            if (currentData && encodings) updateVisualization();
+        }
+        
+        function toggleLabelStylePanel(ev) {
+            ev?.stopPropagation();
+            const dropdown = document.getElementById('labelStyleDropdown');
+            dropdown.classList.toggle('open');
+        }
+        
+        function applyLabelStyle() {
+            const container = document.getElementById('vizContainer');
+            if (!container) return;
+            const labelSize = document.getElementById('labelSize')?.value ?? '0.7';
+            const countSize = document.getElementById('countSize')?.value ?? '0.6';
+            const labelColor = document.getElementById('labelColor')?.value ?? '#888888';
+            const countColor = document.getElementById('countColor')?.value ?? '#555555';
+            container.style.setProperty('--label-font-size', labelSize + 'rem');
+            container.style.setProperty('--label-color', labelColor);
+            container.style.setProperty('--count-font-size', countSize + 'rem');
+            container.style.setProperty('--count-color', countColor);
+            container.style.setProperty('--inner-label-font-size', (parseFloat(countSize) * 0.9).toFixed(2) + 'rem');
+            container.style.setProperty('--inner-label-color', countColor);
         }
         
         function createCell(content) {
@@ -1968,8 +2326,8 @@
             title.textContent = `${panelData.length} items`;
             panel.appendChild(title);
             
-            const innerXValues = encodings.innerX?.uniqueValues || ['All'];
-            const innerYValues = encodings.innerY?.uniqueValues || ['All'];
+            const innerXValues = getVisibleValues(encodings.innerX);
+            const innerYValues = getVisibleValues(encodings.innerY);
             
             const innerCols = innerXValues.length;
             const innerRows = innerYValues.length;
@@ -2224,12 +2582,200 @@
             }
         }
         
+        // ============================================================
+        // REPORT
+        // ============================================================
+        let reportCrosstabs = [];
+        let lastReportHtml = '';
+        
+        function openReportModal() {
+            if (!currentData || !allDimensions) {
+                alert('Load data first to generate a report.');
+                return;
+            }
+            document.getElementById('reportOverview').checked = true;
+            const dimStats = document.getElementById('reportDimStats');
+            dimStats.innerHTML = '';
+            allDimensions.forEach(dim => {
+                const row = document.createElement('div');
+                row.className = 'report-dim-row';
+                row.innerHTML = `
+                    <span class="report-dim-name">${dim.name}</span>
+                    <div class="report-dim-opts">
+                        <label><input type="checkbox" data-dim="${dimKey(dim)}" data-stat="count"> Count per value</label>
+                        <label><input type="checkbox" data-dim="${dimKey(dim)}" data-stat="pct"> Percentage</label>
+                    </div>
+                `;
+                dimStats.appendChild(row);
+            });
+            reportCrosstabs = [];
+            renderCrosstabsList();
+            document.getElementById('reportOutput').innerHTML = '';
+            document.getElementById('downloadReportBtn').disabled = true;
+            document.getElementById('reportModalOverlay').classList.add('active');
+        }
+        
+        function closeReportModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('reportModalOverlay').classList.remove('active');
+        }
+        
+        function addCrosstabRow() {
+            reportCrosstabs.push({ dim1: '', dim2: '' });
+            renderCrosstabsList();
+        }
+        
+        function removeCrosstabRow(idx) {
+            reportCrosstabs.splice(idx, 1);
+            renderCrosstabsList();
+        }
+        
+        function renderCrosstabsList() {
+            const list = document.getElementById('reportCrosstabsList');
+            list.innerHTML = '';
+            reportCrosstabs.forEach((c, idx) => {
+                const row = document.createElement('div');
+                row.className = 'report-crosstab-row';
+                const sel1 = document.createElement('select');
+                sel1.innerHTML = '<option value="">—</option>' + allDimensions.map(d => 
+                    `<option value="${dimKey(d)}" ${c.dim1 === dimKey(d) ? 'selected' : ''}>${d.name}</option>`
+                ).join('');
+                sel1.onchange = () => { reportCrosstabs[idx].dim1 = sel1.value; };
+                const sel2 = document.createElement('select');
+                sel2.innerHTML = '<option value="">—</option>' + allDimensions.map(d => 
+                    `<option value="${dimKey(d)}" ${c.dim2 === dimKey(d) ? 'selected' : ''}>${d.name}</option>`
+                ).join('');
+                sel2.onchange = () => { reportCrosstabs[idx].dim2 = sel2.value; };
+                const removeSpan = document.createElement('span');
+                removeSpan.className = 'remove-crosstab';
+                removeSpan.textContent = '×';
+                removeSpan.title = 'Remove';
+                removeSpan.onclick = () => removeCrosstabRow(idx);
+                row.appendChild(sel1);
+                row.appendChild(document.createTextNode(' × '));
+                row.appendChild(sel2);
+                row.appendChild(document.createTextNode(' '));
+                row.appendChild(removeSpan);
+                list.appendChild(row);
+            });
+        }
+        
+        function getCountPerValue(data, key) {
+            const counts = {};
+            data.forEach(row => {
+                const v = row[key] ?? '(empty)';
+                counts[v] = (counts[v] || 0) + 1;
+            });
+            return counts;
+        }
+        
+        function getPercentage(data, key) {
+            const counts = getCountPerValue(data, key);
+            const total = data.length;
+            return Object.fromEntries(
+                Object.entries(counts).map(([v, n]) => [v, ((n / total) * 100).toFixed(1) + '%'])
+            );
+        }
+        
+        function getCrosstab(data, key1, key2) {
+            const table = {};
+            data.forEach(row => {
+                const k1 = row[key1] ?? '(empty)';
+                const k2 = row[key2] ?? '(empty)';
+                if (!table[k1]) table[k1] = {};
+                table[k1][k2] = (table[k1][k2] || 0) + 1;
+            });
+            return table;
+        }
+        
+        function generateReport() {
+            const data = currentData;
+            if (!data || data.length === 0) {
+                document.getElementById('reportOutput').innerHTML = '<span style="color:#ff6b6b;">No data to report.</span>';
+                return;
+            }
+            const includeOverview = document.getElementById('reportOverview').checked;
+            const parts = [];
+            
+            if (includeOverview) {
+                parts.push('<h4>Overview</h4>');
+                parts.push(`<p>Total rows: <strong>${data.length}</strong></p>`);
+                parts.push('<p>Dimensions: ' + allDimensions.map(d => d.name).join(', ') + '</p>');
+            }
+            
+            allDimensions.forEach(dim => {
+                const key = dimKey(dim);
+                const countCb = document.querySelector(`input[data-dim="${key}"][data-stat="count"]`);
+                const pctCb = document.querySelector(`input[data-dim="${key}"][data-stat="pct"]`);
+                if (!countCb?.checked && !pctCb?.checked) return;
+                parts.push(`<h4>${dim.name}</h4>`);
+                if (countCb?.checked) {
+                    const counts = getCountPerValue(data, key);
+                    const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                    parts.push('<table><tr><th>Value</th><th>Count</th></tr>');
+                    rows.forEach(([v, n]) => parts.push(`<tr><td>${escapeHtml(v)}</td><td>${n}</td></tr>`));
+                    parts.push('</table>');
+                }
+                if (pctCb?.checked) {
+                    const pcts = getPercentage(data, key);
+                    const rows = Object.entries(pcts).sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+                    parts.push('<table><tr><th>Value</th><th>%</th></tr>');
+                    rows.forEach(([v, p]) => parts.push(`<tr><td>${escapeHtml(v)}</td><td>${p}</td></tr>`));
+                    parts.push('</table>');
+                }
+            });
+            
+            reportCrosstabs.forEach(c => {
+                if (!c.dim1 || !c.dim2) return;
+                const d1 = allDimensions.find(d => dimKey(d) === c.dim1);
+                const d2 = allDimensions.find(d => dimKey(d) === c.dim2);
+                if (!d1 || !d2) return;
+                parts.push(`<h4>Crosstab: ${d1.name} × ${d2.name}</h4>`);
+                const tab = getCrosstab(data, c.dim1, c.dim2);
+                const colVals = [...new Set(Object.values(tab).flatMap(o => Object.keys(o)))].sort();
+                const rowVals = Object.keys(tab).sort();
+                parts.push('<table><tr><th></th>');
+                colVals.forEach(v => parts.push(`<th>${escapeHtml(v)}</th>`));
+                parts.push('</tr>');
+                rowVals.forEach(r => {
+                    parts.push(`<tr><th>${escapeHtml(r)}</th>`);
+                    colVals.forEach(cv => parts.push(`<td>${tab[r]?.[cv] ?? 0}</td>`));
+                    parts.push('</tr>');
+                });
+                parts.push('</table>');
+            });
+            
+            const html = parts.length ? parts.join('') : '<p style="color:#888;">Select at least one option above and click Generate.</p>';
+            document.getElementById('reportOutput').innerHTML = html;
+            lastReportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report</title><style>body{font-family:system-ui,sans-serif;background:#0f1419;color:#e8e8e8;padding:24px}table{border-collapse:collapse;margin:12px 0}th,td{padding:8px 12px;text-align:left;border:1px solid #2d3640}th{background:#1a1f26;color:#4ecdc4}h4{margin:20px 0 8px;color:#ccc}</style></head><body>' + html + '</body></html>';
+            document.getElementById('downloadReportBtn').disabled = false;
+        }
+        
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+        
+        function downloadReportHtml() {
+            if (!lastReportHtml) return;
+            const blob = new Blob([lastReportHtml], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'report.html';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+        
         function closeModal(event) {
             if (event && event.target !== event.currentTarget) return;
             document.getElementById('modalOverlay').classList.remove('active');
             document.querySelectorAll('video, audio').forEach(el => {
                 el.pause();
                 el.currentTime = 0;
+            });
+            document.querySelectorAll('#modalOverlay iframe[src*="youtube"], #modalOverlay iframe[src*="youtu.be"]').forEach(iframe => {
+                iframe.src = '';
             });
         }
         
@@ -2282,6 +2828,7 @@
             originalData = JSON.parse(JSON.stringify(data));
             currentData = data;
             modifiedRows.clear();
+            dimensionValueFilters = {};
             
             allDimensions = analyzeDimensions(headers, data);
             userDimensionOrder = allDimensions.map(d => d.name);
