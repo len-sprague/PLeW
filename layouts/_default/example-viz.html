@@ -1896,7 +1896,7 @@
     </div>
     
     <script>
-        const DATASET_URL = "{{ .Params.dataset_url | safeJS }}";
+        const DATASET_URL = "{{ .Params.dataset_url | absURL | safeJS }}";
         // ============================================================
         // CONFIGURATION
         // ============================================================
