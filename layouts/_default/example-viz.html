@@ -1897,7 +1897,7 @@
     
     <script>
         const DATASET_URL = "{{ .Params.dataset_url | absURL | safeJS }}";
-        const SITE_BASE = "{{ "/" | absURL | safeJS }}";
+        const SITE_BASE = "{{ .Site.BaseURL | safeJS }}";
         // ============================================================
         // CONFIGURATION
         // ============================================================
