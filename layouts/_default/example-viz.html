@@ -1628,7 +1628,7 @@
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-content">
-                <a href="/examples/" style="color:#4ecdc4;text-decoration:none;font-size:12px;display:inline-block;margin-bottom:10px;">← All Examples</a>
+                <a href="{{ "examples/" | absURL }}" style="color:#4ecdc4;text-decoration:none;font-size:12px;display:inline-block;margin-bottom:10px;">← All Examples</a>
                 <h1>📊 {{ .Title }}</h1>
                 <p class="subtitle">{{ with .Description }}{{ . }}{{ else }}Drag points to reclassify • Right-click to change color/shape{{ end }}</p>
                 
@@ -1897,6 +1897,7 @@
     
     <script>
         const DATASET_URL = "{{ .Params.dataset_url | absURL | safeJS }}";
+        const SITE_BASE = "{{ "/" | absURL | safeJS }}";
         // ============================================================
         // CONFIGURATION
         // ============================================================
@@ -2289,6 +2290,13 @@
             return 'unknown';
         }
         
+        function resolveExampleUrl(url) {
+            if (!url) return url;
+            if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) return url;
+            if (url.startsWith('/')) return SITE_BASE + url.slice(1);
+            return SITE_BASE + url;
+        }
+        
         function getRowMedia(row) {
             // Returns array of {type, url, label} for all media in a row
             const media = [];
@@ -2304,14 +2312,14 @@
                 }
                 
                 const baseLabel = getDisplayName(mc.column).replace(/[-_](url|file|src|path|link|href)$/i, '').replace(/[-_]/g, ' ');
-                media.push({ type: type, url: url.trim(), label: baseLabel || 'media' });
+                media.push({ type: type, url: resolveExampleUrl(url.trim()), label: baseLabel || 'media' });
             });
             
             // Legacy support: also check media_type + media_url columns
             if (row.media_type && row.media_url && !mediaColumns.some(mc => mc.column === 'media_url')) {
                 media.push({
                     type: row.media_type,
-                    url: row.media_url.trim(),
+                    url: resolveExampleUrl(row.media_url.trim()),
                     label: row.media_type
                 });
             }
