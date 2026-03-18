@@ -474,10 +474,10 @@
             white-space: nowrap;
         }
         
-        .encoding-panel-x { background: #ff6b6b33; color: #ff6b6b; }
-        .encoding-panel-y { background: #ffd93d33; color: #ffd93d; }
-        .encoding-inner-x { background: #6bcb7733; color: #6bcb77; }
-        .encoding-inner-y { background: #4d96ff33; color: #4d96ff; }
+        .encoding-grid-x { background: #ff6b6b33; color: #ff6b6b; }
+        .encoding-grid-y { background: #ffd93d33; color: #ffd93d; }
+        .encoding-panel-x { background: #6bcb7733; color: #6bcb77; }
+        .encoding-panel-y { background: #4d96ff33; color: #4d96ff; }
         .encoding-color { background: #9b59b633; color: #c39bd3; }
         .encoding-shape { background: #e67e2233; color: #e67e22; }
         
@@ -574,11 +574,11 @@
         
         .viz-checkbox input { accent-color: #4ecdc4; }
         
-        .panel-grid-container.uniform-panels {
+        .grid-grid-container.uniform-grids {
             min-height: 80vh;
         }
         
-        .panel-grid.uniform-panels {
+        .grid-grid.uniform-grids {
             height: 100%;
             min-height: 80vh;
         }
@@ -639,25 +639,25 @@
             background: transparent;
         }
         
-        /* Panel Grid - uses CSS vars for label styling */
-        .panel-grid-container {
+        /* grid Grid - uses CSS vars for label styling */
+        .grid-grid-container {
             overflow: auto;
             padding-bottom: 40px;
             --label-font-size: 0.7rem;
             --label-color: #888;
             --count-font-size: 0.6rem;
             --count-color: #555;
-            --inner-label-font-size: 0.55rem;
-            --inner-label-color: #555;
+            --panel-label-font-size: 0.55rem;
+            --panel-label-color: #555;
         }
         
-        .panel-grid {
+        .grid-grid {
             display: inline-grid;
             gap: 12px;
             padding: 10px;
         }
         
-        .panel-row-label {
+        .grid-row-label {
             writing-mode: vertical-rl;
             text-orientation: mixed;
             transform: rotate(180deg);
@@ -674,7 +674,7 @@
             text-overflow: ellipsis;
         }
         
-        .panel-col-label {
+        .grid-col-label {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -687,7 +687,7 @@
             word-break: break-word;
         }
         
-        .panel {
+        .grid {
             background: #1a1f26;
             border-radius: 10px;
             padding: 10px;
@@ -695,15 +695,15 @@
             position: relative;
         }
         
-        .panel-title {
+        .grid-title {
             font-size: var(--count-font-size);
             color: var(--count-color);
             margin-bottom: 6px;
             text-align: center;
         }
         
-        /* Dynamic Inner Grid */
-        .inner-grid {
+        /* Dynamic panel Grid */
+        .panel-grid {
             display: grid;
             gap: 1px;
             background: #2d3640;
@@ -712,7 +712,7 @@
             min-height: 60px;
         }
         
-        .inner-cell {
+        .panel-cell {
             background: #232a33;
             position: relative;
             display: flex;
@@ -726,25 +726,25 @@
             transition: all 0.2s ease;
         }
         
-        .inner-cell.drop-target {
+        .panel-cell.drop-target {
             background: rgba(78, 205, 196, 0.2);
             box-shadow: inset 0 0 0 2px #4ecdc4;
         }
         
-        /* Inner Axis Labels */
-        .inner-axis-label {
-            font-size: var(--inner-label-font-size);
-            color: var(--inner-label-color);
+        /* panel Axis Labels */
+        .panel-axis-label {
+            font-size: var(--panel-label-font-size);
+            color: var(--panel-label-color);
             text-align: center;
             padding: 2px;
             background: #1a1f26;
         }
         
-        .inner-axis-label.x-header {
+        .panel-axis-label.x-header {
             border-radius: 4px 4px 0 0;
         }
         
-        .inner-axis-label.y-header {
+        .panel-axis-label.y-header {
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             border-radius: 0 4px 4px 0;
@@ -799,8 +799,8 @@
             background: transparent !important;
         }
         
-        /* Axis dimension labels on panels */
-        .panel-axis-labels {
+        /* Axis dimension labels on grids */
+        .grid-axis-labels {
             display: flex;
             justify-content: space-between;
             margin-top: 4px;
@@ -808,7 +808,7 @@
             color: #666;
         }
         
-        .panel-axis-label {
+        .grid-axis-label {
             background: #232a33;
             padding: 2px 4px;
             border-radius: 3px;
@@ -1463,11 +1463,11 @@
             color: #4ecdc4;
         }
         
-        .media-panel {
+        .media-grid {
             display: none;
         }
         
-        .media-panel.active {
+        .media-grid.active {
             display: block;
         }
         
@@ -1818,7 +1818,7 @@
                 </div>
                 <div class="viz-actions">
                     <div class="label-style-wrap">
-                        <button class="label-style-btn" id="labelStyleBtn" onclick="toggleLabelStylePanel(event)" title="Adjust size and color of labels and counts">Label styling ▾</button>
+                        <button class="label-style-btn" id="labelStyleBtn" onclick="toggleLabelStylegrid(event)" title="Adjust size and color of labels and counts">Label styling ▾</button>
                         <div class="label-style-dropdown" id="labelStyleDropdown">
                             <div class="control-row">
                                 <label>Column labels size</label>
@@ -1838,14 +1838,14 @@
                             </div>
                         </div>
                     </div>
-                    <label class="viz-checkbox"><input type="checkbox" id="uniformPanels" onchange="toggleUniformPanels()"> Uniform panel sizes</label>
+                    <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="toggleUniformgrids()"> Uniform grid sizes</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot()">📷 Snapshot</button>
                     <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
                 </div>
             </div>
             
-            <div class="panel-grid-container" id="vizContainer">
+            <div class="grid-grid-container" id="vizContainer">
                 <div class="empty-state">
                     <div class="empty-state-icon">📈</div>
                     <div class="empty-state-text">No data loaded</div>
@@ -1940,10 +1940,10 @@
         const SHAPES = ['circle', 'square', 'diamond', 'triangle'];
         
         const ENCODING_LABELS = [
-            { key: 'panel-x', label: 'Panel X', class: 'encoding-panel-x' },
-            { key: 'panel-y', label: 'Panel Y', class: 'encoding-panel-y' },
-            { key: 'inner-x', label: 'Inner X', class: 'encoding-inner-x' },
-            { key: 'inner-y', label: 'Inner Y', class: 'encoding-inner-y' },
+            { key: 'grid-x', label: 'grid X', class: 'encoding-grid-x' },
+            { key: 'grid-y', label: 'grid Y', class: 'encoding-grid-y' },
+            { key: 'panel-x', label: 'panel X', class: 'encoding-panel-x' },
+            { key: 'panel-y', label: 'panel Y', class: 'encoding-panel-y' },
             { key: 'color', label: 'Color', class: 'encoding-color' },
             { key: 'shape', label: 'Shape', class: 'encoding-shape' }
         ];
@@ -2073,7 +2073,7 @@
         let customColorMap = {};   // { dimensionValue: '#hexcolor' }
         let customShapeMap = {};   // { dimensionValue: 'shapeName' }
         
-        let uniformPanelSizes = false;
+        let uniformgridSizes = false;
         
         // Drag and drop state
         let draggedDimensionItem = null;
@@ -2224,8 +2224,8 @@
         
         function downloadSnapshot() {
             const el = document.getElementById('vizContainer');
-            const panelGrid = el.querySelector('.panel-grid');
-            if (!panelGrid) {
+            const gridGrid = el.querySelector('.grid-grid');
+            if (!gridGrid) {
                 alert('No visualization to capture');
                 return;
             }
@@ -2233,7 +2233,7 @@
                 alert('Snapshot requires html2canvas. Please check your connection.');
                 return;
             }
-            html2canvas(panelGrid, { backgroundColor: '#0f1419', scale: 2 }).then(canvas => {
+            html2canvas(gridGrid, { backgroundColor: '#0f1419', scale: 2 }).then(canvas => {
                 canvas.toBlob(blob => {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -2909,10 +2909,10 @@
             const encodings = {};
             
             dims.forEach((dim, idx) => {
-                if (idx === 0) encodings.panelX = dim;
-                else if (idx === 1) encodings.panelY = dim;
-                else if (idx === 2) encodings.innerX = dim;
-                else if (idx === 3) encodings.innerY = dim;
+                if (idx === 0) encodings.gridX = dim;
+                else if (idx === 1) encodings.gridY = dim;
+                else if (idx === 2) encodings.panelX = dim;
+                else if (idx === 3) encodings.panelY = dim;
                 else if (idx === 4) encodings.color = dim;
                 else if (idx === 5) encodings.shape = dim;
             });
@@ -3032,7 +3032,7 @@
             draggedRowIndex = null;
             
             // Remove drop-target class from all cells
-            document.querySelectorAll('.inner-cell').forEach(cell => {
+            document.querySelectorAll('.panel-cell').forEach(cell => {
                 cell.classList.remove('drop-target');
             });
         }
@@ -3044,7 +3044,7 @@
         
         function handleCellDragEnter(e) {
             if (draggedRowIndex !== null) {
-                const cell = e.target.closest('.inner-cell');
+                const cell = e.target.closest('.panel-cell');
                 if (cell) {
                     cell.classList.add('drop-target');
                 }
@@ -3052,16 +3052,16 @@
         }
         
         function handleCellDragLeave(e) {
-            const cell = e.target.closest('.inner-cell');
+            const cell = e.target.closest('.panel-cell');
             if (cell && !cell.contains(e.relatedTarget)) {
                 cell.classList.remove('drop-target');
             }
         }
         
-        function handleCellDrop(e, panelXVal, panelYVal, innerXVal, innerYVal) {
+        function handleCellDrop(e, gridXVal, gridYVal, panelXVal, panelYVal) {
             e.preventDefault();
             
-            const cell = e.target.closest('.inner-cell');
+            const cell = e.target.closest('.panel-cell');
             if (cell) {
                 cell.classList.remove('drop-target');
             }
@@ -3075,6 +3075,18 @@
             const timestamp = new Date().toISOString();
             const undoChanges = [];
             
+            if (encodings.gridX && row[dimKey(encodings.gridX)] !== gridXVal) {
+                const oldVal = row[dimKey(encodings.gridX)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.gridX), oldValue: oldVal, newValue: gridXVal });
+                row[dimKey(encodings.gridX)] = gridXVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.gridX), oldValue: oldVal, newValue: gridXVal, timestamp });
+            }
+            if (encodings.gridY && row[dimKey(encodings.gridY)] !== gridYVal) {
+                const oldVal = row[dimKey(encodings.gridY)];
+                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.gridY), oldValue: oldVal, newValue: gridYVal });
+                row[dimKey(encodings.gridY)] = gridYVal;
+                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.gridY), oldValue: oldVal, newValue: gridYVal, timestamp });
+            }
             if (encodings.panelX && row[dimKey(encodings.panelX)] !== panelXVal) {
                 const oldVal = row[dimKey(encodings.panelX)];
                 undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelX), oldValue: oldVal, newValue: panelXVal });
@@ -3086,18 +3098,6 @@
                 undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal });
                 row[dimKey(encodings.panelY)] = panelYVal;
                 changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.panelY), oldValue: oldVal, newValue: panelYVal, timestamp });
-            }
-            if (encodings.innerX && row[dimKey(encodings.innerX)] !== innerXVal) {
-                const oldVal = row[dimKey(encodings.innerX)];
-                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal });
-                row[dimKey(encodings.innerX)] = innerXVal;
-                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerX), oldValue: oldVal, newValue: innerXVal, timestamp });
-            }
-            if (encodings.innerY && row[dimKey(encodings.innerY)] !== innerYVal) {
-                const oldVal = row[dimKey(encodings.innerY)];
-                undoChanges.push({ rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal });
-                row[dimKey(encodings.innerY)] = innerYVal;
-                changeLog.push({ rowId: getRowDisplayId(draggedRowIndex), rowIndex: draggedRowIndex, field: dimKey(encodings.innerY), oldValue: oldVal, newValue: innerYVal, timestamp });
             }
             
             if (undoChanges.length > 0) {
@@ -3316,7 +3316,7 @@
         function renderValueFilters(encodings) {
             const section = document.getElementById('valueFiltersSection');
             const list = document.getElementById('valueFiltersList');
-            const dims = [encodings.panelX, encodings.panelY, encodings.innerX, encodings.innerY].filter(Boolean);
+            const dims = [encodings.gridX, encodings.gridY, encodings.panelX, encodings.panelY].filter(Boolean);
             const seen = new Set();
             const used = [];
             dims.forEach(d => {
@@ -3381,19 +3381,19 @@
         
         function updateGridInfo(encodings) {
             const gridInfo = document.getElementById('gridInfo');
+            const gridCols = getVisibleValues(encodings.gridX).length || 1;
+            const gridRows = getVisibleValues(encodings.gridY).length || 1;
             const panelCols = getVisibleValues(encodings.panelX).length || 1;
             const panelRows = getVisibleValues(encodings.panelY).length || 1;
-            const innerCols = getVisibleValues(encodings.innerX).length || 1;
-            const innerRows = getVisibleValues(encodings.innerY).length || 1;
             
             gridInfo.innerHTML = `
                 <div class="grid-info-row">
-                    <span class="grid-info-label">Panel Grid:</span>
-                    <span class="grid-info-value">${panelCols} × ${panelRows}</span>
+                    <span class="grid-info-label">grid Grid:</span>
+                    <span class="grid-info-value">${gridCols} × ${gridRows}</span>
                 </div>
                 <div class="grid-info-row">
                     <span class="grid-info-label">Inner Grid:</span>
-                    <span class="grid-info-value">${innerCols} × ${innerRows}</span>
+                    <span class="grid-info-value">${panelCols} × ${panelRows}</span>
                 </div>
             `;
         }
@@ -3592,61 +3592,61 @@
                 `${data.length} records • ${modifiedRows.size} modified` +
                 (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
             
-            const panelXValues = getVisibleValues(encodings.panelX);
-            const panelYValues = getVisibleValues(encodings.panelY);
+            const gridXValues = getVisibleValues(encodings.gridX);
+            const gridYValues = getVisibleValues(encodings.gridY);
             
-            const panelCols = panelXValues.length;
-            const panelRows = panelYValues.length;
+            const gridCols = gridXValues.length;
+            const gridRows = gridYValues.length;
             
             const grid = document.createElement('div');
-            grid.className = 'panel-grid' + (uniformPanelSizes ? ' uniform-panels' : '');
-            grid.style.gridTemplateColumns = `40px repeat(${panelCols}, minmax(100px, 1fr))`;
-            grid.style.gridTemplateRows = uniformPanelSizes
-                ? `30px repeat(${panelRows}, minmax(200px, 1fr))`
-                : `30px repeat(${panelRows}, auto)`;
+            grid.className = 'grid-grid' + (uniformgridSizes ? ' uniform-grids' : '');
+            grid.style.gridTemplateColumns = `40px repeat(${gridCols}, minmax(100px, 1fr))`;
+            grid.style.gridTemplateRows = uniformgridSizes
+                ? `30px repeat(${gridRows}, minmax(200px, 1fr))`
+                : `30px repeat(${gridRows}, auto)`;
             
             // Corner cell
             grid.appendChild(createCell(''));
             
             // Column headers
-            panelXValues.forEach(val => {
+            gridXValues.forEach(val => {
                 const cell = document.createElement('div');
-                cell.className = 'panel-col-label';
+                cell.className = 'grid-col-label';
                 cell.textContent = val;
-                cell.title = `${encodings.panelX?.name}: ${val}`;
+                cell.title = `${encodings.gridX?.name}: ${val}`;
                 grid.appendChild(cell);
             });
             
             // Rows
-            panelYValues.forEach(yVal => {
+            gridYValues.forEach(yVal => {
                 const rowLabel = document.createElement('div');
-                rowLabel.className = 'panel-row-label';
+                rowLabel.className = 'grid-row-label';
                 rowLabel.textContent = yVal;
-                rowLabel.title = `${encodings.panelY?.name}: ${yVal}`;
+                rowLabel.title = `${encodings.gridY?.name}: ${yVal}`;
                 grid.appendChild(rowLabel);
                 
-                panelXValues.forEach(xVal => {
-                    const panel = createPanel(renderData, encodings, xVal, yVal);
-                    grid.appendChild(panel);
+                gridXValues.forEach(xVal => {
+                    const grid = creategrid(renderData, encodings, xVal, yVal);
+                    grid.appendChild(grid);
                 });
             });
             
-            if (uniformPanelSizes) {
-                container.classList.add('uniform-panels');
+            if (uniformgridSizes) {
+                container.classList.add('uniform-grids');
             } else {
-                container.classList.remove('uniform-panels');
+                container.classList.remove('uniform-grids');
             }
             applyLabelStyle();
             container.innerHTML = '';
             container.appendChild(grid);
         }
         
-        function toggleUniformPanels() {
-            uniformPanelSizes = document.getElementById('uniformPanels').checked;
+        function toggleUniformgrids() {
+            uniformgridSizes = document.getElementById('uniformgrids').checked;
             if (currentData && encodings) updateVisualization();
         }
         
-        function toggleLabelStylePanel(ev) {
+        function toggleLabelStylegrid(ev) {
             ev?.stopPropagation();
             const dropdown = document.getElementById('labelStyleDropdown');
             dropdown.classList.toggle('open');
@@ -3663,8 +3663,8 @@
             container.style.setProperty('--label-color', labelColor);
             container.style.setProperty('--count-font-size', countSize + 'rem');
             container.style.setProperty('--count-color', countColor);
-            container.style.setProperty('--inner-label-font-size', (parseFloat(countSize) * 0.9).toFixed(2) + 'rem');
-            container.style.setProperty('--inner-label-color', countColor);
+            container.style.setProperty('--panel-label-font-size', (parseFloat(countSize) * 0.9).toFixed(2) + 'rem');
+            container.style.setProperty('--panel-label-color', countColor);
         }
         
         function createCell(content) {
@@ -3673,103 +3673,103 @@
             return cell;
         }
         
-        function createPanel(data, encodings, panelXVal, panelYVal) {
-            const panel = document.createElement('div');
-            panel.className = 'panel';
+        function creategrid(data, encodings, gridXVal, gridYVal) {
+            const grid = document.createElement('div');
+            grid.className = 'grid';
             
-            let panelData = data;
+            let gridData = data;
             
-            if (encodings.panelX) {
-                panelData = panelData.filter(row => row[dimKey(encodings.panelX)] === panelXVal);
+            if (encodings.gridX) {
+                gridData = gridData.filter(row => row[dimKey(encodings.gridX)] === gridXVal);
             }
-            if (encodings.panelY) {
-                panelData = panelData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
+            if (encodings.gridY) {
+                gridData = gridData.filter(row => row[dimKey(encodings.gridY)] === gridYVal);
             }
             
             const title = document.createElement('div');
-            title.className = 'panel-title';
-            const realCount = panelData.filter(r => !r._isDummy).length;
-            const dummyCount = panelData.filter(r => r._isDummy).length;
+            title.className = 'grid-title';
+            const realCount = gridData.filter(r => !r._isDummy).length;
+            const dummyCount = gridData.filter(r => r._isDummy).length;
             title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
-            panel.appendChild(title);
+            grid.appendChild(title);
             
-            const innerXValues = getVisibleValues(encodings.innerX);
-            const innerYValues = getVisibleValues(encodings.innerY);
+            const panelXValues = getVisibleValues(encodings.panelX);
+            const panelYValues = getVisibleValues(encodings.panelY);
             
-            const innerCols = innerXValues.length;
-            const innerRows = innerYValues.length;
+            const panelCols = panelXValues.length;
+            const panelRows = panelYValues.length;
             
-            const innerGrid = document.createElement('div');
-            innerGrid.className = 'inner-grid';
-            innerGrid.style.gridTemplateColumns = `20px repeat(${innerCols}, 1fr)`;
-            innerGrid.style.gridTemplateRows = `16px repeat(${innerRows}, 1fr)`;
+            const panelGrid = document.createElement('div');
+            panelGrid.className = 'panel-grid';
+            panelGrid.style.gridTemplateColumns = `20px repeat(${panelCols}, 1fr)`;
+            panelGrid.style.gridTemplateRows = `16px repeat(${panelRows}, 1fr)`;
             
             // Corner cell
             const corner = document.createElement('div');
             corner.className = 'corner-cell';
-            innerGrid.appendChild(corner);
+            panelGrid.appendChild(corner);
             
             // X-axis headers
-            innerXValues.forEach(xVal => {
+            panelXValues.forEach(xVal => {
                 const header = document.createElement('div');
-                header.className = 'inner-axis-label x-header';
+                header.className = 'panel-axis-label x-header';
                 header.textContent = xVal;
-                header.title = `${encodings.innerX?.name}: ${xVal}`;
-                innerGrid.appendChild(header);
+                header.title = `${encodings.panelX?.name}: ${xVal}`;
+                panelGrid.appendChild(header);
             });
             
             // Rows with Y headers and cells
-            innerYValues.slice().reverse().forEach(yVal => {
+            panelYValues.slice().reverse().forEach(yVal => {
                 const yHeader = document.createElement('div');
-                yHeader.className = 'inner-axis-label y-header';
+                yHeader.className = 'panel-axis-label y-header';
                 yHeader.textContent = yVal;
-                yHeader.title = `${encodings.innerY?.name}: ${yVal}`;
-                innerGrid.appendChild(yHeader);
+                yHeader.title = `${encodings.panelY?.name}: ${yVal}`;
+                panelGrid.appendChild(yHeader);
                 
-                innerXValues.forEach(xVal => {
-                    const cell = createInnerCell(panelData, encodings, panelXVal, panelYVal, xVal, yVal, innerXValues, innerYValues);
-                    innerGrid.appendChild(cell);
+                panelXValues.forEach(xVal => {
+                    const cell = createpanelCell(gridData, encodings, gridXVal, gridYVal, xVal, yVal, panelXValues, panelYValues);
+                    panelGrid.appendChild(cell);
                 });
             });
             
-            panel.appendChild(innerGrid);
+            grid.appendChild(panelGrid);
             
-            // Add axis labels below the inner grid
-            if (encodings.innerX || encodings.innerY) {
+            // Add axis labels below the panel grid
+            if (encodings.panelX || encodings.panelY) {
                 const axisLabels = document.createElement('div');
-                axisLabels.className = 'panel-axis-labels';
+                axisLabels.className = 'grid-axis-labels';
                 
-                if (encodings.innerY) {
-                    axisLabels.innerHTML += `<span class="panel-axis-label">Y: ${encodings.innerY.name}</span>`;
+                if (encodings.panelY) {
+                    axisLabels.innerHTML += `<span class="grid-axis-label">Y: ${encodings.panelY.name}</span>`;
                 }
-                if (encodings.innerX) {
-                    axisLabels.innerHTML += `<span class="panel-axis-label">X: ${encodings.innerX.name}</span>`;
+                if (encodings.panelX) {
+                    axisLabels.innerHTML += `<span class="grid-axis-label">X: ${encodings.panelX.name}</span>`;
                 }
                 
-                panel.appendChild(axisLabels);
+                grid.appendChild(axisLabels);
             }
             
-            return panel;
+            return grid;
         }
         
-        function createInnerCell(panelData, encodings, panelXVal, panelYVal, innerXVal, innerYVal, allInnerXVals, allInnerYVals) {
+        function createpanelCell(gridData, encodings, gridXVal, gridYVal, panelXVal, panelYVal, allpanelXVals, allpanelYVals) {
             const cell = document.createElement('div');
-            cell.className = 'inner-cell';
+            cell.className = 'panel-cell';
             
-            let cellData = panelData;
+            let cellData = gridData;
             
-            if (encodings.innerX && allInnerXVals.length > 1) {
-                cellData = cellData.filter(row => row[dimKey(encodings.innerX)] === innerXVal);
+            if (encodings.panelX && allpanelXVals.length > 1) {
+                cellData = cellData.filter(row => row[dimKey(encodings.panelX)] === panelXVal);
             }
-            if (encodings.innerY && allInnerYVals.length > 1) {
-                cellData = cellData.filter(row => row[dimKey(encodings.innerY)] === innerYVal);
+            if (encodings.panelY && allpanelYVals.length > 1) {
+                cellData = cellData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
             }
             
             // Drop zone setup
             cell.addEventListener('dragover', handleCellDragOver);
             cell.addEventListener('dragenter', handleCellDragEnter);
             cell.addEventListener('dragleave', handleCellDragLeave);
-            cell.addEventListener('drop', (e) => handleCellDrop(e, panelXVal, panelYVal, innerXVal, innerYVal));
+            cell.addEventListener('drop', (e) => handleCellDrop(e, gridXVal, gridYVal, panelXVal, panelYVal));
             
             cellData.forEach(row => {
                 const point = createDataPoint(row, encodings);
@@ -3964,7 +3964,7 @@
                     tableHTML += `</div>`;
                     
                     media.forEach((m, idx) => {
-                        tableHTML += `<div class="media-panel ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
+                        tableHTML += `<div class="media-grid ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
                             <div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
                                 ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
                             </div>
@@ -3989,9 +3989,9 @@
         function switchMediaTab(btn, idx) {
             const section = btn.closest('.media-section');
             section.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
-            section.querySelectorAll('.media-panel').forEach(p => p.classList.remove('active'));
+            section.querySelectorAll('.media-grid').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            section.querySelector(`.media-panel[data-media-idx="${idx}"]`).classList.add('active');
+            section.querySelector(`.media-grid[data-media-idx="${idx}"]`).classList.add('active');
             
             // Pause all media when switching tabs
             section.querySelectorAll('video, audio').forEach(el => {
