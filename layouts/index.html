@@ -1693,46 +1693,7 @@
                             <div class="changelog-empty">No changes recorded yet</div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Dummy Items Settings -->
-                <div class="section" id="dummySection" style="display: none;">
-                    <div class="section-title">
-                        <span>Anchor Points</span>
-                    </div>
-                    <div class="dummy-settings" id="dummySettings">
-                        <div class="dummy-settings-header">
-                            <span class="dummy-settings-title">Value Preservers</span>
-                            <span class="dummy-count-badge" id="dummyCountBadge">0 anchors</span>
-                        </div>
-                        <div class="dummy-setting-row">
-                            <label>
-                                <input type="checkbox" id="dummyVisible" checked onchange="updateDummySettings()">
-                                Show on chart
-                            </label>
-                        </div>
-                        <div class="dummy-setting-row">
-                            <span>Color</span>
-                            <input type="color" id="dummyColor" value="#555555" onchange="updateDummySettings()">
-                        </div>
-                        <div class="dummy-setting-row">
-                            <span>Opacity</span>
-                            <input type="range" id="dummyOpacity" min="0.05" max="1" step="0.05" value="0.3" onchange="updateDummySettings()">
-                        </div>
-                        <div class="dummy-setting-row">
-                            <span>Shape</span>
-                            <select id="dummyShape" onchange="updateDummySettings()">
-                                <option value="circle">Circle</option>
-                                <option value="square">Square</option>
-                                <option value="diamond" selected>Diamond</option>
-                                <option value="triangle">Triangle</option>
-                            </select>
-                        </div>
-                        <div class="dummy-info-text">
-                            Anchor points preserve dimension values when all real data leaves a category. They are appended to exported CSVs with alphabetical IDs and auto-detected on re-upload.
-                        </div>
-                    </div>
-                </div>
+                </div>                
                 
                 <div class="section" id="dimensionSection" style="display: none;">
                     <div class="section-title">
@@ -1772,6 +1733,47 @@
                     <div class="section-title">Shape Legend</div>
                     <div class="legend-section" id="shapeLegend"></div>
                 </div>
+
+                <!-- Dummy Items Settings -->
+                <div class="section" id="dummySection" style="display: none;">
+                    <div class="section-title">
+                        <span>Anchor Points</span>
+                    </div>
+                    <div class="dummy-settings" id="dummySettings">
+                        <div class="dummy-settings-header">
+                            <span class="dummy-settings-title">Value Preservers</span>
+                            <span class="dummy-count-badge" id="dummyCountBadge">0 anchors</span>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <label>
+                                <input type="checkbox" id="dummyVisible" checked onchange="updateDummySettings()">
+                                Show on chart
+                            </label>
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Color</span>
+                            <input type="color" id="dummyColor" value="#555555" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Opacity</span>
+                            <input type="range" id="dummyOpacity" min="0.05" max="1" step="0.05" value="0.3" onchange="updateDummySettings()">
+                        </div>
+                        <div class="dummy-setting-row">
+                            <span>Shape</span>
+                            <select id="dummyShape" onchange="updateDummySettings()">
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="diamond" selected>Diamond</option>
+                                <option value="triangle">Triangle</option>
+                            </select>
+                        </div>
+                        <div class="dummy-info-text">
+                            Anchor points preserve dimension values when all real data leaves a category. They are appended to exported CSVs with alphabetical IDs and auto-detected on re-upload.
+                        </div>
+                    </div>
+                </div>
+
+                
             </div>
         </div>
         
