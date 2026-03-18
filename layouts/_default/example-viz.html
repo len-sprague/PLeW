@@ -3655,7 +3655,7 @@
             const dummyCount = gridData.filter(r => r._isDummy).length;
             title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             grid.appendChild(title);
-            if (!showItemCounts) title.style.display = 'none';
+            //if (!showItemCounts) title.style.display = 'none';
             
             const panelXValues = getVisibleValues(encodings.panelX);
             const panelYValues = getVisibleValues(encodings.panelY);
