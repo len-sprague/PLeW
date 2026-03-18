@@ -1826,6 +1826,7 @@
                         </div>
                     </div>
                     <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="toggleUniformgrids()"> Uniform grid sizes</label>
+                    <label class="viz-checkbox"><input type="checkbox" id="showItemCounts" checked onchange="toggleItemCounts()"> Show item counts</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot()">📷 Snapshot</button>
                     <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
@@ -2049,6 +2050,9 @@
             shape: 'diamond'
         };
         let preservedDimValues = {};
+
+        // Item Count
+        let showItemCounts = true;
         
         // Undo/Redo state
         let undoStack = [];
@@ -3629,6 +3633,13 @@
             uniformgridSizes = document.getElementById('uniformgrids').checked;
             if (currentData && encodings) updateVisualization();
         }
+
+        function toggleItemCounts() { 
+            showItemCounts = document.getElementById('showItemCounts').checked;
+            document.querySelectorAll('.grid-title').forEach(el => {
+                el.style.display = showItemCounts ? '' : 'none'; 
+            });
+        }
         
         function toggleLabelStylegrid(ev) {
             ev?.stopPropagation();
@@ -3676,6 +3687,7 @@
             const dummyCount = gridData.filter(r => r._isDummy).length;
             title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             grid.appendChild(title);
+            if (!showItemCounts) title.style.display = 'none';
             
             const panelXValues = getVisibleValues(encodings.panelX);
             const panelYValues = getVisibleValues(encodings.panelY);
