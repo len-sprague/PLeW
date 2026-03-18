@@ -1700,12 +1700,12 @@
                 </div>
                 
                 <div class="section" id="legendSection" style="display: none;">
-                    <div class="section-title">Color Legend (${encodings.color.name})</div>
+                    <div class="section-title">Color Legend</div>
                     <div class="legend-section" id="colorLegend"></div>
                 </div>
                 
                 <div class="section" id="shapeLegendSection" style="display: none;">
-                    <div class="section-title">Shape Legend (${encodings.shape.name})</div>
+                    <div class="section-title">Shape Legend</div>
                     <div class="legend-section" id="shapeLegend"></div>
                 </div>
 
@@ -3358,6 +3358,7 @@
             }
             
             section.style.display = 'block';
+            section.querySelector('.section-title').textContent = `Color: ${encodings.color.name}`;
             container.innerHTML = '';
             
             encodings.color.uniqueValues.forEach((value, idx) => {
@@ -3410,6 +3411,7 @@
             }
             
             section.style.display = 'block';
+            section.querySelector('.section-title').textContent = `Color: ${encodings.shape.name}`;
             container.innerHTML = '';
             
             encodings.shape.uniqueValues.forEach((value, idx) => {
