@@ -717,8 +717,10 @@
             position: relative;
             display: flex;
             flex-wrap: wrap;
-            align-content: flex-start;
-            justify-content: flex-start;
+            /* align-content: flex-start;
+            justify-content: flex-start;*/
+            align-content: center;
+            justify-content: center;
             gap: 3px;
             padding: 6px;
             min-height: 30px;
@@ -1344,6 +1346,49 @@
         .data-point.dummy-point.hidden-dummy {
             display: none;
         }
+
+        /* Snapshot light-mode overrides */
+        .snapshot-light .grid-col-label,
+        .snapshot-light .grid-row-label,
+        .snapshot-light .corner-cell,
+        .snapshot-light .panel-axis-label,
+        .snapshot-light .grid {
+            background: #f0f0f0;
+        }
+
+        .snapshot-light .grid-col-label,
+        .snapshot-light .grid-row-label {
+            color: #333;
+        }
+
+        .snapshot-light .panel-grid {
+            background: #ccc;
+        }
+
+        .snapshot-light .panel-cell {
+            background: #ffffff;
+        }
+
+        .snapshot-light .grid-title {
+            color: #555;
+        }
+
+        .snapshot-light .panel-axis-label {
+            color: #444;
+        }
+
+        .snapshot-light .grid-axis-label {
+            background: #e8e8e8;
+            color: #444;
+        }
+
+        .snapshot-light .data-point.modified {
+            box-shadow: 0 0 0 2px #b8960a;
+        }
+
+        .snapshot-light .data-point.dummy-point {
+            border-color: rgba(0, 0, 0, 0.3);
+        }
         
         /* Change Log Section */
         .changelog-section {
@@ -1794,9 +1839,13 @@
                     <span class="icon">📥</span>
                     <span>Download</span>
                 </button>
-                <button class="floating-btn" onclick="downloadSnapshot()">
+                <button class="floating-btn" onclick="downloadSnapshot(false)">
                     <span class="icon">📷</span>
-                    <span>Snapshot</span>
+                    <span>Dark Snap</span>
+                </button>
+                <button class="floating-btn" onclick="downloadSnapshot(true)">
+                    <span class="icon">🔆</span>
+                    <span>Light Snap</span>
                 </button>
                 <button class="floating-btn" onclick="openReportModal()">
                     <span class="icon">📋</span>
@@ -1841,7 +1890,8 @@
                     <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="toggleUniformgrids()"> Uniform grid sizes</label>
                     <label class="viz-checkbox"><input type="checkbox" id="showItemCounts" onchange="toggleItemCounts()"> Show item counts</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
-                    <button class="btn btn-secondary btn-small" onclick="downloadSnapshot()">📷 Snapshot</button>
+                    <button class="btn btn-secondary btn-small" onclick="downloadSnapshot(false)">📷 Dark</button>
+                    <button class="btn btn-secondary btn-small" onclick="downloadSnapshot(true)">📷 Light</button>
                     <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
                 </div>
             </div>
@@ -2225,7 +2275,7 @@
             return csv;
         }
         
-        function downloadSnapshot() {
+        function downloadSnapshot(lightMode) {
             const el = document.getElementById('vizContainer');
             const gridGrid = el.querySelector('.grid-grid');
             if (!gridGrid) {
@@ -2236,7 +2286,17 @@
                 alert('Snapshot requires html2canvas. Please check your connection.');
                 return;
             }
-            html2canvas(gridGrid, { backgroundColor: '#0f1419', scale: 2 }).then(canvas => {
+
+            if (lightMode) {
+                gridGrid.classList.add('snapshot-light');
+            }
+
+            const bgColor = lightMode ? '#ffffff' : '#0f1419';
+
+            html2canvas(gridGrid, { backgroundColor: bgColor, scale: 2 }).then(canvas => {
+                if (lightMode) {
+                    gridGrid.classList.remove('snapshot-light');
+                }
                 canvas.toBlob(blob => {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -2245,6 +2305,11 @@
                     link.click();
                     URL.revokeObjectURL(url);
                 }, 'image/png');
+            }).catch(err => {
+                if (lightMode) {
+                    gridGrid.classList.remove('snapshot-light');
+                }
+                console.error('Snapshot failed:', err);
             });
         }
         
