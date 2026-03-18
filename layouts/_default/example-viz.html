@@ -2367,7 +2367,7 @@
             if (changeLog.length === 0) {
                 section.style.display = currentData ? 'block' : 'none';
                 badge.textContent = '0';
-                preview.panelHTML = '<div class="changelog-empty">No changes recorded yet</div>';
+                preview.innerHTML = '<div class="changelog-empty">No changes recorded yet</div>';
                 return;
             }
             
@@ -2376,7 +2376,7 @@
             
             // Show last 20 entries, most recent first
             const recent = changeLog.slice(-20).reverse();
-            preview.panelHTML = recent.map(entry => {
+            preview.innerHTML = recent.map(entry => {
                 const time = new Date(entry.timestamp);
                 const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 return `
@@ -2902,7 +2902,7 @@
             if (currentData && activeDims.length > 0) {
                 renderVisualization(currentData, encodings);
             } else {
-                document.getElementById('vizContainer').panelHTML = `
+                document.getElementById('vizContainer').innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📊</div>
                         <div class="empty-state-text">No dimensions enabled</div>
@@ -3084,7 +3084,7 @@
             // --- Color Section ---
             if (hasColor) {
                 const currentColorValue = row[dimKey(encodings.color)];
-                colorGrid.panelHTML = '';
+                colorGrid.innerHTML = '';
                 colorGrid.parentElement.querySelector('.context-menu-title').style.display = '';
                 colorGrid.style.display = '';
                 colorLabel.style.display = '';
@@ -3100,7 +3100,7 @@
                 
                 colorLabel.textContent = `Current: ${currentColorValue}`;
             } else {
-                colorGrid.panelHTML = '';
+                colorGrid.innerHTML = '';
                 colorGrid.parentElement.querySelector('.context-menu-title').style.display = 'none';
                 colorGrid.style.display = 'none';
                 colorLabel.style.display = 'none';
@@ -3111,7 +3111,7 @@
                 const currentShapeValue = row[dimKey(encodings.shape)];
                 shapeDivider.style.display = hasColor ? '' : 'none';
                 shapeSection.style.display = '';
-                shapeGrid.panelHTML = '';
+                shapeGrid.innerHTML = '';
                 
                 encodings.shape.uniqueValues.forEach((value, idx) => {
                     const shape = getShapeForValue(encodings, value);
@@ -3144,8 +3144,8 @@
             }
             
             // Position menu
-            const x = Math.min(e.clientX, window.panelWidth - 220);
-            const y = Math.min(e.clientY, window.panelHeight - 300);
+            const x = Math.min(e.clientX, window.innerWidth - 220);
+            const y = Math.min(e.clientY, window.innerHeight - 300);
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
             menu.classList.add('visible');
@@ -3222,7 +3222,7 @@
         // ============================================================
         function renderDimensionList() {
             const list = document.getElementById('dimensionList');
-            list.panelHTML = '';
+            list.innerHTML = '';
             
             userDimensionOrder.forEach((name, idx) => {
                 const dim = allDimensions.find(d => d.name === name);
@@ -3237,7 +3237,7 @@
                 li.draggable = true;
                 li.dataset.name = name;
                 
-                li.panelHTML = `
+                li.innerHTML = `
                     <span class="drag-handle">⋮⋮</span>
                     <input type="checkbox" class="dimension-toggle" 
                            ${isEnabled ? 'checked' : ''} 
@@ -3280,13 +3280,13 @@
                 return;
             }
             section.style.display = 'block';
-            list.panelHTML = '';
+            list.innerHTML = '';
             used.forEach(dim => {
                 const k = dimKey(dim);
                 const isFiltered = dimensionValueFilters[k];
                 const div = document.createElement('div');
                 div.className = 'value-filter-dim';
-                div.panelHTML = `<div class="value-filter-dim-title">${dim.name}</div><div class="value-filter-checkboxes"></div>`;
+                div.innerHTML = `<div class="value-filter-dim-title">${dim.name}</div><div class="value-filter-checkboxes"></div>`;
                 const cbContainer = div.querySelector('.value-filter-checkboxes');
                 dim.uniqueValues.forEach(val => {
                     const checked = !isFiltered || dimensionValueFilters[k].has(val);
@@ -3336,7 +3336,7 @@
             const panelCols = getVisibleValues(encodings.panelX).length || 1;
             const panelRows = getVisibleValues(encodings.panelY).length || 1;
             
-            gridInfo.panelHTML = `
+            gridInfo.innerHTML = `
                 <div class="grid-info-row">
                     <span class="grid-info-label">grid Grid:</span>
                     <span class="grid-info-value">${gridCols} × ${gridRows}</span>
@@ -3359,7 +3359,7 @@
             
             section.style.display = 'block';
             section.querySelector('.section-title').textContent = `Color: ${encodings.color.name}`;
-            container.panelHTML = '';
+            container.innerHTML = '';
             
             encodings.color.uniqueValues.forEach((value, idx) => {
                 const color = getColorForValue(encodings, value);
@@ -3412,7 +3412,7 @@
             
             section.style.display = 'block';
             section.querySelector('.section-title').textContent = `Shape: ${encodings.shape.name}`;
-            container.panelHTML = '';
+            container.innerHTML = '';
             
             encodings.shape.uniqueValues.forEach((value, idx) => {
                 const shape = getShapeForValue(encodings, value);
@@ -3422,7 +3422,7 @@
                 const shapeBtn = document.createElement('div');
                 shapeBtn.className = 'legend-shape-btn';
                 shapeBtn.title = `Click to change shape for "${value}" (current: ${shape})`;
-                shapeBtn.panelHTML = `
+                shapeBtn.innerHTML = `
                     <div class="legend-shape">
                         <div class="data-point shape-${shape}" style="background: #888; width: 10px; height: 10px;"></div>
                     </div>
@@ -3453,7 +3453,7 @@
             const popup = document.getElementById('shapeSelectorPopup');
             const grid = document.getElementById('shapeSelectorGrid');
             
-            grid.panelHTML = '';
+            grid.innerHTML = '';
             
             const currentShape = getShapeForValue(encodings, dimensionValue);
             
@@ -3485,8 +3485,8 @@
             
             // Position near the click
             const rect = e.target.getBoundingClientRect();
-            const x = Math.min(rect.right + 10, window.panelWidth - 250);
-            const y = Math.min(rect.top, window.panelHeight - 120);
+            const x = Math.min(rect.right + 10, window.innerWidth - 250);
+            const y = Math.min(rect.top, window.innerHeight - 120);
             popup.style.left = x + 'px';
             popup.style.top = y + 'px';
             popup.classList.add('visible');
@@ -3524,7 +3524,7 @@
                 });
             }
             
-            content.panelHTML = html;
+            content.innerHTML = html;
         }
         
         // ============================================================
@@ -3589,7 +3589,7 @@
                 container.classList.remove('uniform-grids');
             }
             applyLabelStyle();
-            container.panelHTML = '';
+            container.innerHTML = '';
             container.appendChild(grid);
         }
         
@@ -3692,10 +3692,10 @@
                 axisLabels.className = 'grid-axis-labels';
                 
                 if (encodings.panelY) {
-                    axisLabels.panelHTML += `<span class="grid-axis-label">Y: ${encodings.panelY.name}</span>`;
+                    axisLabels.innerHTML += `<span class="grid-axis-label">Y: ${encodings.panelY.name}</span>`;
                 }
                 if (encodings.panelX) {
-                    axisLabels.panelHTML += `<span class="grid-axis-label">X: ${encodings.panelX.name}</span>`;
+                    axisLabels.innerHTML += `<span class="grid-axis-label">X: ${encodings.panelX.name}</span>`;
                 }
                 
                 grid.appendChild(axisLabels);
@@ -3762,7 +3762,7 @@
                         `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
                     ).join('<br>');
                     html += `<div class="tooltip-hint">Preserves dimension values in export</div>`;
-                    tooltip.panelHTML = html;
+                    tooltip.innerHTML = html;
                     tooltip.classList.add('visible');
                     moveTooltip(e);
                 });
@@ -3843,7 +3843,7 @@
             }
             html += `Drag to move • Right-click for color</div>`;
             
-            tooltip.panelHTML = html;
+            tooltip.innerHTML = html;
             tooltip.classList.add('visible');
             moveTooltip(e);
         }
@@ -3854,8 +3854,8 @@
             const y = e.clientY + 15;
             
             const rect = tooltip.getBoundingClientRect();
-            const maxX = window.panelWidth - rect.width - 20;
-            const maxY = window.panelHeight - rect.height - 20;
+            const maxX = window.innerWidth - rect.width - 20;
+            const maxY = window.innerHeight - rect.height - 20;
             
             tooltip.style.left = `${Math.min(x, maxX)}px`;
             tooltip.style.top = `${Math.min(y, maxY)}px`;
@@ -3934,7 +3934,7 @@
                 tableHTML += `</div>`;
             }
             
-            modalBody.panelHTML = tableHTML;
+            modalBody.innerHTML = tableHTML;
             document.getElementById('modalOverlay').classList.add('active');
         }
         
@@ -3992,11 +3992,11 @@
             }
             document.getElementById('reportOverview').checked = true;
             const dimStats = document.getElementById('reportDimStats');
-            dimStats.panelHTML = '';
+            dimStats.innerHTML = '';
             allDimensions.forEach(dim => {
                 const row = document.createElement('div');
                 row.className = 'report-dim-row';
-                row.panelHTML = `
+                row.innerHTML = `
                     <span class="report-dim-name">${dim.name}</span>
                     <div class="report-dim-opts">
                         <label><input type="checkbox" data-dim="${dimKey(dim)}" data-stat="count"> Count per value</label>
@@ -4007,7 +4007,7 @@
             });
             reportCrosstabs = [];
             renderCrosstabsList();
-            document.getElementById('reportOutput').panelHTML = '';
+            document.getElementById('reportOutput').innerHTML = '';
             document.getElementById('downloadReportBtn').disabled = true;
             document.getElementById('reportModalOverlay').classList.add('active');
         }
@@ -4029,17 +4029,17 @@
         
         function renderCrosstabsList() {
             const list = document.getElementById('reportCrosstabsList');
-            list.panelHTML = '';
+            list.innerHTML = '';
             reportCrosstabs.forEach((c, idx) => {
                 const row = document.createElement('div');
                 row.className = 'report-crosstab-row';
                 const sel1 = document.createElement('select');
-                sel1.panelHTML = '<option value="">—</option>' + allDimensions.map(d => 
+                sel1.innerHTML = '<option value="">—</option>' + allDimensions.map(d => 
                     `<option value="${dimKey(d)}" ${c.dim1 === dimKey(d) ? 'selected' : ''}>${d.name}</option>`
                 ).join('');
                 sel1.onchange = () => { reportCrosstabs[idx].dim1 = sel1.value; };
                 const sel2 = document.createElement('select');
-                sel2.panelHTML = '<option value="">—</option>' + allDimensions.map(d => 
+                sel2.innerHTML = '<option value="">—</option>' + allDimensions.map(d => 
                     `<option value="${dimKey(d)}" ${c.dim2 === dimKey(d) ? 'selected' : ''}>${d.name}</option>`
                 ).join('');
                 sel2.onchange = () => { reportCrosstabs[idx].dim2 = sel2.value; };
@@ -4088,7 +4088,7 @@
         function generateReport() {
             const data = currentData;
             if (!data || data.length === 0) {
-                document.getElementById('reportOutput').panelHTML = '<span style="color:#ff6b6b;">No data to report.</span>';
+                document.getElementById('reportOutput').innerHTML = '<span style="color:#ff6b6b;">No data to report.</span>';
                 return;
             }
             const includeOverview = document.getElementById('reportOverview').checked;
@@ -4143,7 +4143,7 @@
             });
             
             const html = parts.length ? parts.join('') : '<p style="color:#888;">Select at least one option above and click Generate.</p>';
-            document.getElementById('reportOutput').panelHTML = html;
+            document.getElementById('reportOutput').innerHTML = html;
             lastReportHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report</title><style>body{font-family:system-ui,sans-serif;background:#0f1419;color:#e8e8e8;padding:24px}table{border-collapse:collapse;margin:12px 0}th,td{padding:8px 12px;text-align:left;border:1px solid #2d3640}th{background:#1a1f26;color:#4ecdc4}h4{margin:20px 0 8px;color:#ccc}</style></head><body>' + html + '</body></html>';
             document.getElementById('downloadReportBtn').disabled = false;
         }
@@ -4151,7 +4151,7 @@
         function escapeHtml(s) {
             const div = document.createElement('div');
             div.textContent = s;
-            return div.panelHTML;
+            return div.innerHTML;
         }
         
         function downloadReportHtml() {
