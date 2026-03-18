@@ -1839,6 +1839,7 @@
                         </div>
                     </div>
                     <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="toggleUniformgrids()"> Uniform grid sizes</label>
+                    <label class="viz-checkbox"><input type="checkbox" id="showItemCounts" onchange="toggleItemCounts()"> Show item counts</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot()">📷 Snapshot</button>
                     <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
@@ -1942,9 +1943,9 @@
         const ENCODING_LABELS = [
             { key: 'grid-x', label: 'grid X', class: 'encoding-grid-x' },
             { key: 'grid-y', label: 'grid Y', class: 'encoding-grid-y' },
+            { key: 'color', label: 'Color', class: 'encoding-color' },
             { key: 'panel-x', label: 'panel X', class: 'encoding-panel-x' },
             { key: 'panel-y', label: 'panel Y', class: 'encoding-panel-y' },
-            { key: 'color', label: 'Color', class: 'encoding-color' },
             { key: 'shape', label: 'Shape', class: 'encoding-shape' }
         ];
         
@@ -2063,6 +2064,8 @@
         };
         let preservedDimValues = {};
         let dimensionValueFilters = {};
+
+        let showItemCounts = false;
         
         // Undo/Redo state
         let undoStack = [];
@@ -2911,9 +2914,9 @@
             dims.forEach((dim, idx) => {
                 if (idx === 0) encodings.gridX = dim;
                 else if (idx === 1) encodings.gridY = dim;
-                else if (idx === 2) encodings.panelX = dim;
-                else if (idx === 3) encodings.panelY = dim;
-                else if (idx === 4) encodings.color = dim;
+                else if (idx === 2) encodings.color = dim;
+                else if (idx === 3) encodings.panelX = dim;
+                else if (idx === 4) encodings.panelY = dim;
                 else if (idx === 5) encodings.shape = dim;
             });
             
@@ -3408,6 +3411,7 @@
             }
             
             section.style.display = 'block';
+            section.querySelector('.section-title').textContent = `Color: ${encodings.color.name}`;
             container.innerHTML = '';
             
             encodings.color.uniqueValues.forEach((value, idx) => {
@@ -3460,6 +3464,7 @@
             }
             
             section.style.display = 'block';
+            section.querySelector('.section-title').textContent = `Shape: ${encodings.shape.name}`;
             container.innerHTML = '';
             
             encodings.shape.uniqueValues.forEach((value, idx) => {
@@ -3645,6 +3650,13 @@
             uniformgridSizes = document.getElementById('uniformgrids').checked;
             if (currentData && encodings) updateVisualization();
         }
+
+        function toggleItemCounts() {
+            showItemCounts = document.getElementById('showItemCounts').checked;
+            document.querySelectorAll('.grid-title').forEach(el => {
+                el.style.display = showItemCounts ? '' : 'none';
+            });
+        }
         
         function toggleLabelStylegrid(ev) {
             ev?.stopPropagation();
@@ -3692,6 +3704,7 @@
             const dummyCount = gridData.filter(r => r._isDummy).length;
             title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             grid.appendChild(title);
+            if (!showItemCounts) title.style.display = 'none';
             
             const panelXValues = getVisibleValues(encodings.panelX);
             const panelYValues = getVisibleValues(encodings.panelY);
