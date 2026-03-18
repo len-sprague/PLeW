@@ -3550,15 +3550,15 @@
             const gridCols = gridXValues.length;
             const gridRows = gridYValues.length;
             
-            const grid = document.createElement('div');
-            grid.className = 'grid-grid' + (uniformgridSizes ? ' uniform-grids' : '');
-            grid.style.gridTemplateColumns = `40px repeat(${gridCols}, minmax(100px, 1fr))`;
-            grid.style.gridTemplateRows = uniformgridSizes
+            const outerGrid = document.createElement('div');
+            outerGrid.className = 'grid-grid' + (uniformgridSizes ? ' uniform-grids' : '');
+            outerGrid.style.gridTemplateColumns = `40px repeat(${gridCols}, minmax(100px, 1fr))`;
+            outerGrid.style.gridTemplateRows = uniformgridSizes
                 ? `30px repeat(${gridRows}, minmax(200px, 1fr))`
                 : `30px repeat(${gridRows}, auto)`;
             
             // Corner cell
-            grid.appendChild(createCell(''));
+            outerGrid.appendChild(createCell(''));
             
             // Column headers
             gridXValues.forEach(val => {
@@ -3566,7 +3566,7 @@
                 cell.className = 'grid-col-label';
                 cell.textContent = val;
                 cell.title = `${encodings.gridX?.name}: ${val}`;
-                grid.appendChild(cell);
+                outerGrid.appendChild(cell);
             });
             
             // Rows
@@ -3575,11 +3575,11 @@
                 rowLabel.className = 'grid-row-label';
                 rowLabel.textContent = yVal;
                 rowLabel.title = `${encodings.gridY?.name}: ${yVal}`;
-                grid.appendChild(rowLabel);
+                outerGrid.appendChild(rowLabel);
                 
                 gridXValues.forEach(xVal => {
-                    const grid = creategrid(renderData, encodings, xVal, yVal);
-                    grid.appendChild(grid);
+                    const gridCell = creategrid(renderData, encodings, xVal, yVal);
+                    outerGrid.appendChild(gridCell);
                 });
             });
             
@@ -3590,7 +3590,7 @@
             }
             applyLabelStyle();
             container.innerHTML = '';
-            container.appendChild(grid);
+            container.appendChild(outerGrid);
         }
         
         function toggleUniformgrids() {
