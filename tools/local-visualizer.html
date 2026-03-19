@@ -3614,7 +3614,7 @@
                 outerGrid.appendChild(rowLabel);
                 
                 gridXValues.forEach(xVal => {
-                    const grid = creategrid(renderData, encodings, xVal, yVal);
+                    const gridCell = creategrid(renderData, encodings, xVal, yVal);
                     outerGrid.appendChild(gridCell);
                 });
             });
