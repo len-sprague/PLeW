@@ -4323,32 +4323,32 @@
             e.preventDefault();
             fileDrop.classList.remove('dragover');
 
+            // Capture files synchronously, before any await
+            const files = [...e.dataTransfer.files];
+            const droppedUrl = e.dataTransfer.getData('text/uri-list') || '';
+
             // Check if a directory was dropped (File System Access API)
             if (e.dataTransfer.items && window.FileSystemDirectoryHandle) {
                 for (const item of e.dataTransfer.items) {
                     if (item.kind === 'file' && typeof item.getAsFileSystemHandle === 'function') {
                         const handle = await item.getAsFileSystemHandle();
-                        if (handle && handle.kind === 'directory') {
-                            loadMediaFolder(handle);
-                            return;
-                        }
-                    }
+                    if (handle && handle.kind === 'directory') {
+                        loadMediaFolder(handle);
+                    return;
                 }
             }
+        }
+    }
 
-            const files = e.dataTransfer.files;
-            if (files.length > 1) {
-                // Multiple files dropped — treat as combined CSV + media selection
-                handleMixedFiles(files);
-            } else if (files.length === 1 && files[0].name.endsWith('.csv')) {
-                // Single CSV — preserve base URL capture for server-hosted CSVs
-                const droppedUrl = e.dataTransfer.getData('text/uri-list') || '';
-                const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
-                    ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
-                    : '';
-                loadFile(files[0], baseUrl);
-            }
-        });
+    if (files.length > 1) {
+        handleMixedFiles(files);
+    } else if (files.length === 1 && files[0].name.endsWith('.csv')) {
+        const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
+            ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
+            : '';
+        loadFile(files[0], baseUrl);
+    }
+});
         
         fileInput.addEventListener('change', (e) => {
             const files = e.target.files;
