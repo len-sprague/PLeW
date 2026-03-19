@@ -1928,9 +1928,9 @@
         const ENCODING_LABELS = [
             { key: 'grid-x', label: 'grid X', class: 'encoding-grid-x' },
             { key: 'grid-y', label: 'grid Y', class: 'encoding-grid-y' },
+            { key: 'color', label: 'Color', class: 'encoding-color' },
             { key: 'panel-x', label: 'panel X', class: 'encoding-panel-x' },
             { key: 'panel-y', label: 'panel Y', class: 'encoding-panel-y' },
-            { key: 'color', label: 'Color', class: 'encoding-color' },
             { key: 'shape', label: 'Shape', class: 'encoding-shape' }
         ];
         
@@ -2899,9 +2899,9 @@
             dims.forEach((dim, idx) => {
                 if (idx === 0) encodings.gridX = dim;
                 else if (idx === 1) encodings.gridY = dim;
-                else if (idx === 2) encodings.panelX = dim;
-                else if (idx === 3) encodings.panelY = dim;
-                else if (idx === 4) encodings.color = dim;
+                else if (idx === 2) encodings.color = dim;
+                else if (idx === 3) encodings.panelX = dim;
+                else if (idx === 4) encodings.panelY = dim;
                 else if (idx === 5) encodings.shape = dim;
             });
             
