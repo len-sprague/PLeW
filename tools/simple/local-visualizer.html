@@ -2009,7 +2009,7 @@
         }
         
         function getVisibleValues(dim) {
-            if (!dim) return ['All'];
+            if (!dim) return [''];
             const filter = dimensionValueFilters[dimKey(dim)];
             if (!filter) return dim.uniqueValues;
             return dim.uniqueValues.filter(v => filter.has(v));
