@@ -1,0 +1,13 @@
+﻿ID,audio_url,image_url,class,danger,confidence,desc::correct_class,desc::correct_danger,desc::name,desc::license
+1,/bat.wav,bat.jpg,undecided,undecided,undecided,mammal,safe,bat,public domain
+2,/elk.ogg,elk.jpg,undecided,undecided,undecided,mammal,intermediate,elk,public domain
+3,/bear.ogg,bear.jpg,undecided,undecided,undecided,mammal,dangerous,bear,"Shizhao, CC BY 3.0"
+4,/crane.ogg,crane.jpg,undecided,undecided,undecided,bird,safe,crane,"Wikimalte, CC BY-SA 4.0"
+5,/eagle.ogg,eagle.jpg,undecided,undecided,undecided,bird,intermediate,eagle,public domain
+6,/cassowary.mp3,cassowary.jpg,undecided,undecided,undecided,bird,dangerous,cassowary,"Marc Anderson, CC BY-NC-ND 4.0"
+7,/gecko.ogg,gecko.jpg,undecided,undecided,undecided,reptile,safe,gecko,public domain
+8,/rattlesnake.ogg,rattlesnake.jpg,undecided,undecided,undecided,reptile,intermediate,rattlesnake,public domain
+9,/crocodile.wav,crocodile.jpg,undecided,undecided,undecided,reptile,dangerous,crocodile,public domain
+10,/dog.ogg,dog.jpg,mammal,intermediate,tentative,mammal,intermediate,dog,"Amada44, CC BY-SA 3.0"
+11,/kookaburra.ogg,kookaburra.jpg,bird,safe,tentative,bird,safe,kookaburra,public domain
+12,/alligator.ogg,alligator.jpg,reptile,dangerous,certain,reptile,dangerous,alligator,public domain
