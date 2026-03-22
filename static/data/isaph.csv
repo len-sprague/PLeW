@@ -1,4 +1,4 @@
-﻿ID,medi::video_url,med::audio_url,desc::durat,duration,desc::silen,silence,desc::syll,syllables,desc::disflu,disfluences,annotated,desc::transcript
+﻿ID,med::video_url,med::audio_url,desc::durat,duration,desc::silen,silence,desc::syll,syllables,desc::disflu,disfluences,annotated,desc::transcript
 00_0841,https://youtu.be/cmQoMNCoZzw&t=0841,isaph/00_0841.wav,35,short,11,low,92,lots,5,negligeable,no,have you ever hear of um what is it called um spirit island
 00_1308,https://youtu.be/cmQoMNCoZzw&t=1308,isaph/00_1308.wav,35,short,18,intermediate,98,lots,10,some,no,so if you had obtained both of them you would have won
 00_1479,https://youtu.be/cmQoMNCoZzw&t=1479,isaph/00_1479.wav,42,medium,14,low,77,inbetween,7,negligeable,no,ok so we are fifteen inches away and after the shooting scenario
