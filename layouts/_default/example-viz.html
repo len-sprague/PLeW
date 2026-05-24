@@ -561,14 +561,29 @@
         }
         
         .viz-checkbox input { accent-color: #4ecdc4; }
-        
-        .grid-grid-container.uniform-grids {
-            min-height: 80vh;
+
+        .viz-number-wrap input[type="number"] {
+            width: 64px;
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 6px;
+            color: #e8e8e8;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+
+        .viz-number-wrap input[type="number"]:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        #vizContainer.unified-inner-panels .panel-cell {
+            overflow: auto;
         }
         
-        .grid-grid.uniform-grids {
+        .grid-grid.uniform-grids > .grid {
             height: 100%;
-            min-height: 80vh;
+            box-sizing: border-box;
         }
         
         /* Label styling dropdown (in viz-actions) */
@@ -794,8 +809,8 @@
             display: flex;
             justify-content: space-between;
             margin-top: 4px;
-            font-size: 0.5rem;
-            color: #666;
+            font-size: var(--panel-label-font-size);
+            color: var(--panel-label-color);
         }
         
         .grid-axis-label {
@@ -1837,14 +1852,14 @@
                 </div>
                 <div class="viz-actions">
                     <div class="label-style-wrap">
-                        <button class="label-style-btn" id="labelStyleBtn" onclick="toggleLabelStylegrid(event)" title="Adjust size and color of labels and counts">Label styling ▾</button>
+                        <button class="label-style-btn" id="labelStyleBtn" onclick="toggleLabelStylegrid(event)" title="Adjust size and color of outer and inner panel labels">Label styling ▾</button>
                         <div class="label-style-dropdown" id="labelStyleDropdown">
                             <div class="control-row">
                                 <label>Column labels size</label>
                                 <input type="range" id="labelSize" min="0.5" max="1.2" step="0.05" value="0.7" oninput="applyLabelStyle()">
                             </div>
                             <div class="control-row">
-                                <label>Count size</label>
+                                <label>Inner panel size</label>
                                 <input type="range" id="countSize" min="0.4" max="1" step="0.05" value="0.6" oninput="applyLabelStyle()">
                             </div>
                             <div class="control-row">
@@ -1852,12 +1867,21 @@
                                 <input type="color" id="labelColor" value="#888888" oninput="applyLabelStyle()">
                             </div>
                             <div class="control-row">
-                                <label>Count color</label>
+                                <label>Inner panel color</label>
                                 <input type="color" id="countColor" value="#555555" oninput="applyLabelStyle()">
                             </div>
                         </div>
                     </div>
-                    <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="toggleUniformgrids()"> Uniform grid sizes</label>
+                    <label class="viz-checkbox"><input type="checkbox" id="uniformgrids" onchange="applyUniformGrids()"> Unify grid sizes</label>
+                    <label class="viz-checkbox viz-number-wrap">
+                        <span>Height (px)</span>
+                        <input type="number" id="outerPanelRowHeight" min="80" max="800" step="1" value="200" disabled oninput="applyUniformGrids()">
+                    </label>
+                    <label class="viz-checkbox"><input type="checkbox" id="unifyInnerPanel" onchange="applyUnifiedInnerPanels()"> Unify inner panel</label>
+                    <label class="viz-checkbox viz-number-wrap">
+                        <span>Height (px)</span>
+                        <input type="number" id="innerPanelRowHeight" min="24" max="400" step="1" value="56" disabled oninput="applyUnifiedInnerPanels()">
+                    </label>
                     <label class="viz-checkbox"><input type="checkbox" id="showItemCounts" onchange="toggleItemCounts()"> Show item counts</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot(false)">📷 Dark</button>
@@ -2096,6 +2120,8 @@
         let customShapeMap = {};   // { dimensionValue: 'shapeName' }
         
         let uniformgridSizes = false;
+        let unifyInnerPanel = false;
+        const PANEL_HEADER_HEIGHT = 16;
         
         // Drag and drop state
         let draggedDimensionItem = null;
@@ -2244,6 +2270,33 @@
             return csv;
         }
         
+        function fixSnapshotLabels(doc, clonedRoot) {
+            clonedRoot.querySelectorAll('.grid-row-label, .panel-axis-label.y-header').forEach(el => {
+                const text = el.textContent.trim();
+                el.textContent = '';
+                el.style.writingMode = 'horizontal-tb';
+                el.style.transform = 'none';
+                el.style.textOrientation = 'mixed';
+                el.style.overflow = 'visible';
+                el.style.maxHeight = 'none';
+                el.style.display = 'flex';
+                el.style.alignItems = 'center';
+                el.style.justifyContent = 'center';
+
+                const span = doc.createElement('span');
+                span.textContent = text;
+                span.style.display = 'inline-block';
+                span.style.whiteSpace = 'nowrap';
+                span.style.transform = 'rotate(-90deg)';
+                span.style.transformOrigin = 'center center';
+                el.appendChild(span);
+            });
+
+            clonedRoot.querySelectorAll('.panel-grid').forEach(el => {
+                el.style.overflow = 'visible';
+            });
+        }
+
         function downloadSnapshot(lightMode) {
             const el = document.getElementById('vizContainer');
             const gridGrid = el.querySelector('.grid-grid');
@@ -2262,7 +2315,14 @@
 
             const bgColor = lightMode ? '#ffffff' : '#0f1419';
 
-            html2canvas(gridGrid, { backgroundColor: bgColor, scale: 2 }).then(canvas => {
+            html2canvas(gridGrid, {
+                backgroundColor: bgColor,
+                scale: 2,
+                onclone: (clonedDoc, clonedGrid) => {
+                    if (lightMode) clonedGrid.classList.add('snapshot-light');
+                    fixSnapshotLabels(clonedDoc, clonedGrid);
+                }
+            }).then(canvas => {
                 if (lightMode) {
                     gridGrid.classList.remove('snapshot-light');
                 }
@@ -2276,7 +2336,7 @@
                 }, 'image/png');
             }).catch(err => {
                 if (lightMode) {
-                      gridGrid.classList.remove('snapshot-light');
+                    gridGrid.classList.remove('snapshot-light');
                 }
                 console.error('Snapshot failed:', err);
             });
@@ -3623,7 +3683,7 @@
             outerGrid.className = 'grid-grid' + (uniformgridSizes ? ' uniform-grids' : '');
             outerGrid.style.gridTemplateColumns = `40px repeat(${gridCols}, minmax(100px, 1fr))`;
             outerGrid.style.gridTemplateRows = uniformgridSizes
-                ? `30px repeat(${gridRows}, minmax(200px, 1fr))`
+                ? `30px repeat(${gridRows}, ${getOuterPanelRowHeight()}px)`
                 : `30px repeat(${gridRows}, auto)`;
             
             // Corner cell
@@ -3657,13 +3717,39 @@
             } else {
                 container.classList.remove('uniform-grids');
             }
+            if (unifyInnerPanel) {
+                container.classList.add('unified-inner-panels');
+            } else {
+                container.classList.remove('unified-inner-panels');
+            }
             applyLabelStyle();
             container.innerHTML = '';
             container.appendChild(outerGrid);
         }
         
-        function toggleUniformgrids() {
+        function getOuterPanelRowHeight() {
+            const raw = parseInt(document.getElementById('outerPanelRowHeight')?.value ?? '200', 10);
+            if (!Number.isFinite(raw)) return 200;
+            return Math.min(800, Math.max(80, raw));
+        }
+
+        function applyUniformGrids() {
             uniformgridSizes = document.getElementById('uniformgrids').checked;
+            const input = document.getElementById('outerPanelRowHeight');
+            if (input) input.disabled = !uniformgridSizes;
+            if (currentData && encodings) updateVisualization();
+        }
+
+        function getInnerPanelRowHeight() {
+            const raw = parseInt(document.getElementById('innerPanelRowHeight')?.value ?? '56', 10);
+            if (!Number.isFinite(raw)) return 56;
+            return Math.min(400, Math.max(24, raw));
+        }
+
+        function applyUnifiedInnerPanels() {
+            unifyInnerPanel = document.getElementById('unifyInnerPanel').checked;
+            const input = document.getElementById('innerPanelRowHeight');
+            if (input) input.disabled = !unifyInnerPanel;
             if (currentData && encodings) updateVisualization();
         }
 
@@ -3731,7 +3817,15 @@
             const panelGrid = document.createElement('div');
             panelGrid.className = 'panel-grid';
             panelGrid.style.gridTemplateColumns = `20px repeat(${panelCols}, 1fr)`;
-            panelGrid.style.gridTemplateRows = `16px repeat(${panelRows}, 1fr)`;
+            if (unifyInnerPanel) {
+                const rowHeight = getInnerPanelRowHeight();
+                const panelGridHeight = PANEL_HEADER_HEIGHT + panelRows * rowHeight;
+                panelGrid.style.gridTemplateRows = `${PANEL_HEADER_HEIGHT}px repeat(${panelRows}, ${rowHeight}px)`;
+                panelGrid.style.height = `${panelGridHeight}px`;
+            } else {
+                panelGrid.style.gridTemplateRows = `${PANEL_HEADER_HEIGHT}px repeat(${panelRows}, 1fr)`;
+                panelGrid.style.height = '';
+            }
             
             // Corner cell
             const corner = document.createElement('div');
