@@ -954,6 +954,25 @@
             font-weight: 500;
         }
         
+        .modal-snap-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #aaa;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .modal-snap-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
         .modal-close {
             background: rgba(255, 255, 255, 0.1);
             border: none;
@@ -1934,7 +1953,11 @@
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="modalTitle">Record Details</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="modal-snap-btn" onclick="snapshotModal('full')" title="Capture full modal as one stacked image">📷 Stacked</button>
+                    <button class="modal-snap-btn" onclick="snapshotModal('horizontal')" title="Capture fields and media side by side">📷 Side-by-side</button>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
             </div>
             <div class="modal-body" id="modalBody"></div>
         </div>
@@ -4111,16 +4134,27 @@
         
         function switchMediaTab(btn, idx) {
             const section = btn.closest('.media-section');
-            section.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
-            section.querySelectorAll('.media-grid').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            section.querySelector(`.media-grid[data-media-idx="${idx}"]`).classList.add('active');
-            
-            // Pause all media when switching tabs
-            section.querySelectorAll('video, audio').forEach(el => {
-                el.pause();
-                el.currentTime = 0;
-            });
+            const isActive = btn.classList.contains('active');
+
+            // Toggle this tab
+            btn.classList.toggle('active');
+            const grid = section.querySelector(`.media-grid[data-media-idx="${idx}"]`);
+            if (grid) grid.classList.toggle('active', !isActive);
+
+            // If deactivating, pause any media in this grid
+            if (isActive && grid) {
+                grid.querySelectorAll('video, audio').forEach(el => {
+                    el.pause();
+                    el.currentTime = 0;
+                });
+            }
+
+            // If no tab is active, re-activate this one (always keep at least one)
+            const anyActive = section.querySelectorAll('.media-tab.active').length > 0;
+            if (!anyActive) {
+                btn.classList.add('active');
+                if (grid) grid.classList.add('active');
+            }
         }
         
         function toYouTubeEmbedUrl(url) {
@@ -4335,6 +4369,88 @@
             URL.revokeObjectURL(a.href);
         }
         
+        function snapshotModal(mode) {
+            const modal = document.querySelector('#modalOverlay .modal');
+            if (!modal) return;
+            if (typeof html2canvas === 'undefined') {
+                alert('Snapshot requires html2canvas. Please check your connection.');
+                return;
+            }
+
+            const title = (document.getElementById('modalTitle')?.textContent || 'record').replace(/\s+/g, '_');
+            const BG = '#1e1e2f';
+
+            function downloadCanvas(canvas, filename) {
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            }
+
+            function expandClone(el) {
+                el.style.maxHeight = 'none';
+                el.style.overflowY = 'visible';
+            }
+
+            if (mode === 'full') {
+                html2canvas(modal, {
+                    backgroundColor: BG,
+                    scale: 2,
+                    onclone: (_doc, el) => expandClone(el)
+                }).then(canvas => downloadCanvas(canvas, `${title}_stacked.png`));
+
+            } else {
+                // Two captures via onclone — live DOM never touched
+                const fieldsPromise = html2canvas(modal, {
+                    backgroundColor: BG, scale: 2,
+                    onclone: (_doc, el) => {
+                        expandClone(el);
+                        const ms = el.querySelector('.media-section');
+                        if (ms) ms.style.display = 'none';
+                    }
+                });
+                const mediaPromise = html2canvas(modal, {
+                    backgroundColor: BG, scale: 2,
+                    onclone: (_doc, el) => {
+                        expandClone(el);
+                        const tbl = el.querySelector('table');
+                        if (tbl) tbl.style.display = 'none';
+                        // hide snap buttons from the media-only image
+                        el.querySelectorAll('.modal-snap-btn, .modal-close').forEach(b => b.style.display = 'none');
+                    }
+                });
+
+                Promise.all([fieldsPromise, mediaPromise]).then(([fieldsCanvas, mediaCanvas]) => {
+                    const pad = 40;
+                    // Scale both canvases so the taller one shrinks to match the
+                    // shorter one — no cropping, both panels end up identical in size.
+                    const targetH = Math.min(fieldsCanvas.height, mediaCanvas.height);
+                    const scaleF  = targetH / fieldsCanvas.height;
+                    const scaleM  = targetH / mediaCanvas.height;
+                    const dw_f = Math.round(fieldsCanvas.width * scaleF);
+                    const dw_m = Math.round(mediaCanvas.width  * scaleM);
+                    const cellW = Math.max(dw_f, dw_m);
+
+                    const out = document.createElement('canvas');
+                    out.width  = cellW * 2 + pad;
+                    out.height = targetH;
+                    const ctx = out.getContext('2d');
+                    ctx.fillStyle = BG;
+                    ctx.fillRect(0, 0, out.width, out.height);
+                    // Left: fields panel, right: media panel — both at targetH
+                    ctx.drawImage(fieldsCanvas, 0, 0, fieldsCanvas.width, fieldsCanvas.height,
+                                               (cellW - dw_f) / 2,           0, dw_f, targetH);
+                    ctx.drawImage(mediaCanvas,  0, 0, mediaCanvas.width,  mediaCanvas.height,
+                                               cellW + pad + (cellW - dw_m) / 2, 0, dw_m, targetH);
+                    downloadCanvas(out, `${title}_side-by-side.png`);
+                });
+            }
+        }
+
         function closeModal(event) {
             if (event && event.target !== event.currentTarget) return;
             document.getElementById('modalOverlay').classList.remove('active');
