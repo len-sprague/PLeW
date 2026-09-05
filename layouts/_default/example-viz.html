@@ -156,6 +156,13 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* --- FEATURE: grid-toolbar (start) --- */
+        .floating-legend.encoding-legend-suppressed {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        /* --- FEATURE: grid-toolbar (end) --- */
         
         .floating-legend-title {
             font-size: 0.7rem;
@@ -682,9 +689,6 @@
         }
         
         .grid-row-label {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            transform: rotate(180deg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -693,9 +697,8 @@
             padding: 6px 4px;
             background: #1a1f26;
             border-radius: 6px;
-            max-height: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            min-width: 0;
         }
         
         .grid-col-label {
@@ -771,9 +774,18 @@
         }
         
         .panel-axis-label.y-header {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
             border-radius: 0 4px 4px 0;
+        }
+
+        .vertical-axis-label-text {
+            display: inline-block;
+            white-space: nowrap;
+            transform: rotate(-90deg);
+            transform-origin: center center;
         }
         
         .corner-cell {
@@ -839,6 +851,57 @@
             padding: 2px 4px;
             border-radius: 3px;
         }
+
+        /* --- FEATURE: grid-toolbar (start) --- */
+        .grid-viz-wrap {
+            display: inline-block;
+        }
+
+        .grid-viz-body {
+            display: flex;
+            align-items: stretch;
+            gap: 6px;
+        }
+
+        .encoding-axis-title {
+            display: none;
+            font-size: calc(var(--label-font-size) * 0.95);
+            color: var(--label-color);
+        }
+
+        #vizContainer.show-dimension-names .encoding-axis-title {
+            display: block;
+        }
+
+        .encoding-axis-title-x {
+            text-align: center;
+            margin-bottom: 4px;
+            padding: 2px 6px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .encoding-axis-title-y {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.1rem;
+            padding: 4px 2px;
+            background: #1a1f26;
+            border-radius: 6px;
+        }
+
+        #vizContainer.show-dimension-names .encoding-axis-title-y {
+            display: flex;
+        }
+
+        .encoding-axis-title-color {
+            margin-top: 8px;
+            text-align: left;
+            font-size: calc(var(--label-font-size) * 0.9);
+            font-weight: 600;
+        }
+        /* --- FEATURE: grid-toolbar (end) --- */
         
         /* Hover Tooltip */
         .tooltip {
@@ -1297,6 +1360,94 @@
         .edit-hint li {
             margin: 3px 0;
         }
+
+        /* --- FEATURE: grid-toolbar (start) --- */
+        .viz-toolbar {
+            display: none;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 10px 20px;
+            background: #1a1f26;
+            border-bottom: 1px solid #2d3640;
+            flex-wrap: wrap;
+        }
+
+        .encoding-legend-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: #c8d0d8;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .encoding-legend-toggle input {
+            accent-color: #4ecdc4;
+        }
+
+        .encoding-legend-bar {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #151a20;
+            border-bottom: 1px solid #2d3640;
+        }
+
+        .encoding-swatch-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .encoding-swatch-title {
+            font-size: 0.72rem;
+            color: #8899a6;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        .encoding-swatch-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid #2d3640;
+            background: #1a1f26;
+            color: #c8d0d8;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .encoding-swatch-chip:hover {
+            border-color: #4ecdc4;
+        }
+
+        .encoding-swatch-chip.filtered-out {
+            opacity: 0.35;
+            text-decoration: line-through;
+        }
+
+        .encoding-swatch-chip .legend-swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .encoding-swatch-chip .legend-shape {
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* --- FEATURE: grid-toolbar (end) --- */
         
         /* Dummy Settings */
         .dummy-settings {
@@ -1930,12 +2081,31 @@
                         <input type="number" id="innerPanelRowHeight" min="24" max="400" step="1" value="56" disabled oninput="applyUnifiedInnerPanels()">
                     </label>
                     <label class="viz-checkbox"><input type="checkbox" id="showItemCounts" onchange="toggleItemCounts()"> Show item counts</label>
+                    <label class="viz-checkbox"><input type="checkbox" id="showDimensionNames" onchange="toggleDimensionNames()"> Show dimension names</label>
                     <button class="btn btn-success btn-small" onclick="downloadCSV()">📥 Download CSV</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot(false)">📷 Dark</button>
                     <button class="btn btn-secondary btn-small" onclick="downloadSnapshot(true)">📷 Light</button>
                     <button class="btn btn-secondary btn-small" onclick="openReportModal()">📋 Report</button>
                 </div>
             </div>
+
+            <!-- --- FEATURE: grid-toolbar (start) --- -->
+            <div class="viz-toolbar" id="vizToolbar">
+                <label class="encoding-legend-toggle" title="Show color and shape keys above the grid">
+                    <input type="checkbox" id="showEncodingLegendToggle" onchange="toggleEncodingLegend(this.checked)">
+                    Show color & shape
+                </label>
+                <label class="encoding-legend-toggle" title="Group points by color/shape within each panel">
+                    <input type="checkbox" id="clusterPoints" onchange="toggleClusterPoints()">
+                    Cluster by color
+                </label>
+            </div>
+
+            <div class="encoding-legend-bar" id="encodingLegendBar">
+                <div class="encoding-swatch-row" id="encodingColorLegend"></div>
+                <div class="encoding-swatch-row" id="encodingShapeLegend"></div>
+            </div>
+            <!-- --- FEATURE: grid-toolbar (end) --- -->
             
             <div class="grid-grid-container" id="vizContainer">
                 <div class="empty-state">
@@ -2262,6 +2432,12 @@
 
         // For the item counts above panels/sectors
         let showItemCounts = false;
+
+        // --- FEATURE: grid-toolbar (start) ---
+        let showEncodingLegend = false;
+        let showDimensionNames = false;
+        let clusterPoints = false;
+        // --- FEATURE: grid-toolbar (end) ---
         
         // Undo/Redo state
         let undoStack = [];
@@ -2472,8 +2648,16 @@
             return csv;
         }
         
+        function setVerticalAxisLabel(el, text) {
+            el.textContent = '';
+            const span = document.createElement('span');
+            span.className = 'vertical-axis-label-text';
+            span.textContent = text;
+            el.appendChild(span);
+        }
+
         function fixSnapshotLabels(doc, clonedRoot) {
-            clonedRoot.querySelectorAll('.grid-row-label, .panel-axis-label.y-header').forEach(el => {
+            clonedRoot.querySelectorAll('.grid-row-label, .panel-axis-label.y-header, .encoding-axis-title-y').forEach(el => {
                 const text = el.textContent.trim();
                 el.textContent = '';
                 el.style.writingMode = 'horizontal-tb';
@@ -2486,11 +2670,8 @@
                 el.style.justifyContent = 'center';
 
                 const span = doc.createElement('span');
+                span.className = 'vertical-axis-label-text';
                 span.textContent = text;
-                span.style.display = 'inline-block';
-                span.style.whiteSpace = 'nowrap';
-                span.style.transform = 'rotate(-90deg)';
-                span.style.transformOrigin = 'center center';
                 el.appendChild(span);
             });
 
@@ -3205,6 +3386,23 @@
             renderDimensionList();
             updateVisualization();
         }
+
+        // --- FEATURE: grid-toolbar (start) ---
+        function toggleEncodingLegend(enabled) {
+            showEncodingLegend = !!enabled;
+            const floating = document.getElementById('floatingLegend');
+            if (floating) floating.classList.toggle('encoding-legend-suppressed', showEncodingLegend);
+            if (encodings) {
+                updateEncodingLegendBar(encodings);
+                updateFloatingLegend(encodings);
+            }
+        }
+
+        function syncEncodingLegendToggle() {
+            const toggle = document.getElementById('showEncodingLegendToggle');
+            if (toggle) toggle.checked = showEncodingLegend;
+        }
+        // --- FEATURE: grid-toolbar (end) ---
         
         function updateVisualization() {
             encodings = buildEncodings();
@@ -3213,10 +3411,15 @@
             renderValueFilters(encodings);
             updateColorLegend(encodings);
             updateShapeLegend(encodings);
+            updateEncodingLegendBar(encodings);
             updateGridInfo(encodings);
             
             const hasLayout = encodings.gridX || encodings.gridY || encodings.color
                 || encodings.panelX || encodings.panelY || encodings.shape;
+            const toolbar = document.getElementById('vizToolbar');
+            const hasColorOrShape = encodings.color || encodings.shape;
+            if (toolbar) toolbar.style.display = hasColorOrShape ? 'flex' : 'none';
+            syncEncodingLegendToggle();
 
             if (currentData && hasLayout) {
                 renderVisualization(currentData, encodings);
@@ -3844,8 +4047,83 @@
             popup.classList.add('visible');
         }
         
+        function updateEncodingLegendBar(encodings) {
+            const bar = document.getElementById('encodingLegendBar');
+            const colorEl = document.getElementById('encodingColorLegend');
+            const shapeEl = document.getElementById('encodingShapeLegend');
+            if (!bar || !colorEl || !shapeEl) return;
+
+            if (!showEncodingLegend) {
+                bar.style.display = 'none';
+                return;
+            }
+
+            const hasColorOrShape = encodings && (encodings.color || encodings.shape);
+            if (!hasColorOrShape) {
+                bar.style.display = 'none';
+                return;
+            }
+
+            bar.style.display = 'flex';
+
+            colorEl.innerHTML = '';
+            if (encodings.color) {
+                const colorKey = dimKey(encodings.color);
+                const title = document.createElement('span');
+                title.className = 'encoding-swatch-title';
+                title.textContent = `${encodings.color.name}:`;
+                colorEl.appendChild(title);
+
+                encodings.color.uniqueValues.forEach(value => {
+                    const color = getColorForValue(encodings, value);
+                    const visible = !dimensionValueFilters[colorKey] || dimensionValueFilters[colorKey].has(value);
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'encoding-swatch-chip' + (visible ? '' : ' filtered-out');
+                    chip.title = visible ? `Hide “${value}”` : `Show “${value}”`;
+                    chip.innerHTML = `<span class="legend-swatch" style="background:${color}"></span><span>${value}</span>`;
+                    chip.addEventListener('click', () => setValueFilter(colorKey, value, !visible));
+                    colorEl.appendChild(chip);
+                });
+            }
+            colorEl.style.display = encodings.color ? 'flex' : 'none';
+
+            shapeEl.innerHTML = '';
+            if (encodings.shape) {
+                const shapeKey = dimKey(encodings.shape);
+                const title = document.createElement('span');
+                title.className = 'encoding-swatch-title';
+                title.textContent = `${encodings.shape.name}:`;
+                shapeEl.appendChild(title);
+
+                encodings.shape.uniqueValues.forEach(value => {
+                    const shape = getShapeForValue(encodings, value);
+                    const visible = !dimensionValueFilters[shapeKey] || dimensionValueFilters[shapeKey].has(value);
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'encoding-swatch-chip' + (visible ? '' : ' filtered-out');
+                    chip.title = visible ? `Hide “${value}”` : `Show “${value}”`;
+                    chip.innerHTML = `
+                        <span class="legend-shape">
+                            <span class="data-point shape-${shape}" style="background:#888;width:10px;height:10px;"></span>
+                        </span>
+                        <span>${value}</span>
+                    `;
+                    chip.addEventListener('click', () => setValueFilter(shapeKey, value, !visible));
+                    shapeEl.appendChild(chip);
+                });
+            }
+            shapeEl.style.display = encodings.shape ? 'flex' : 'none';
+        }
+
         function updateFloatingLegend(encodings) {
             const content = document.getElementById('floatingLegendContent');
+            const legend = document.getElementById('floatingLegend');
+            if (showEncodingLegend) {
+                content.innerHTML = '';
+                if (legend) legend.classList.remove('has-legend');
+                return;
+            }
             let html = '';
             
             if (encodings && encodings.color) {
@@ -3877,6 +4155,9 @@
             }
             
             content.innerHTML = html;
+            if (legend) {
+                legend.classList.toggle('has-legend', !!html);
+            }
         }
         
         // ============================================================
@@ -3925,7 +4206,7 @@
             gridYValues.forEach(yVal => {
                 const rowLabel = document.createElement('div');
                 rowLabel.className = 'grid-row-label';
-                rowLabel.textContent = yVal;
+                setVerticalAxisLabel(rowLabel, yVal);
                 rowLabel.title = `${encodings.gridY?.name}: ${yVal}`;
                 outerGrid.appendChild(rowLabel);
                 
@@ -3947,7 +4228,39 @@
             }
             applyLabelStyle();
             container.innerHTML = '';
-            container.appendChild(outerGrid);
+
+            const wrap = document.createElement('div');
+            wrap.className = 'grid-viz-wrap';
+
+            if (encodings.gridX) {
+                const xTitle = document.createElement('div');
+                xTitle.className = 'encoding-axis-title encoding-axis-title-x';
+                xTitle.textContent = getDisplayName(encodings.gridX.name);
+                wrap.appendChild(xTitle);
+            }
+
+            const body = document.createElement('div');
+            body.className = 'grid-viz-body';
+
+            if (encodings.gridY) {
+                const yTitle = document.createElement('div');
+                yTitle.className = 'encoding-axis-title encoding-axis-title-y';
+                setVerticalAxisLabel(yTitle, getDisplayName(encodings.gridY.name));
+                body.appendChild(yTitle);
+            }
+
+            body.appendChild(outerGrid);
+            wrap.appendChild(body);
+
+            if (encodings.color) {
+                const colorTitle = document.createElement('div');
+                colorTitle.className = 'encoding-axis-title encoding-axis-title-color';
+                colorTitle.textContent = `Color: ${getDisplayName(encodings.color.name)}`;
+                wrap.appendChild(colorTitle);
+            }
+
+            container.appendChild(wrap);
+            container.classList.toggle('show-dimension-names', showDimensionNames);
         }
         
         function getOuterPanelRowHeight() {
@@ -3979,8 +4292,21 @@
         function toggleItemCounts() {
             showItemCounts = document.getElementById('showItemCounts').checked;
             document.querySelectorAll('.grid-title').forEach(el => {
-                el.style.display = showItemCounts ? '' : 'none'; 
+                el.style.display = showItemCounts ? '' : 'none';
             });
+        }
+
+        function toggleDimensionNames() {
+            showDimensionNames = !!document.getElementById('showDimensionNames')?.checked;
+            const container = document.getElementById('vizContainer');
+            if (container) {
+                container.classList.toggle('show-dimension-names', showDimensionNames);
+            }
+        }
+
+        function toggleClusterPoints() {
+            clusterPoints = !!document.getElementById('clusterPoints')?.checked;
+            updateVisualization();
         }
         
         function toggleLabelStylegrid(ev) {
@@ -4069,7 +4395,7 @@
             panelYValues.slice().reverse().forEach(yVal => {
                 const yHeader = document.createElement('div');
                 yHeader.className = 'panel-axis-label y-header';
-                yHeader.textContent = yVal;
+                setVerticalAxisLabel(yHeader, yVal);
                 yHeader.title = `${encodings.panelY?.name}: ${yVal}`;
                 panelGrid.appendChild(yHeader);
                 
@@ -4119,7 +4445,23 @@
             cell.addEventListener('dragleave', handleCellDragLeave);
             cell.addEventListener('drop', (e) => handleCellDrop(e, gridXVal, gridYVal, panelXVal, panelYVal));
             
-            cellData.forEach(row => {
+            let orderedData = cellData;
+            if (clusterPoints && (encodings.color || encodings.shape)) {
+                const colorIdx = v => encodings.color ? encodings.color.uniqueValues.indexOf(v) : 0;
+                const shapeIdx = v => encodings.shape ? encodings.shape.uniqueValues.indexOf(v) : 0;
+                orderedData = [...cellData].sort((a, b) => {
+                    if (!!a._isDummy !== !!b._isDummy) return a._isDummy ? 1 : -1;
+                    const colorDiff = encodings.color
+                        ? colorIdx(a[dimKey(encodings.color)]) - colorIdx(b[dimKey(encodings.color)])
+                        : 0;
+                    if (colorDiff) return colorDiff;
+                    return encodings.shape
+                        ? shapeIdx(a[dimKey(encodings.shape)]) - shapeIdx(b[dimKey(encodings.shape)])
+                        : 0;
+                });
+            }
+
+            orderedData.forEach(row => {
                 const point = createDataPoint(row, encodings);
                 cell.appendChild(point);
             });
