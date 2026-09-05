@@ -1733,8 +1733,8 @@
                     <div class="section-title">Data Input</div>
                     <div class="file-drop" id="fileDrop">
                         <div class="file-drop-icon">📁</div>
-                        <div class="file-drop-text">Drop CSV + media files (or folder) here, or click</div>
-                        <input type="file" class="file-input" id="fileInput" multiple accept=".csv,.wav,.mp3,.ogg,.flac,.aac,.m4a,.opus,.webm,.mp4,.ogv,.mov,.avi,.mkv,.jpg,.jpeg,.png,.gif,.webp,.svg">
+                        <div class="file-drop-text">Drop CSV/JSON + media files (or folder) here, or click</div>
+                        <input type="file" class="file-input" id="fileInput" multiple accept=".csv,.json,.jsonl,.ndjson,.wav,.mp3,.ogg,.flac,.aac,.m4a,.opus,.webm,.mp4,.ogv,.mov,.avi,.mkv,.jpg,.jpeg,.png,.gif,.webp,.svg">
                     </div>
                     <input type="file" class="file-input" id="mediaFolderInput" multiple>
                     <button class="btn btn-secondary" id="mediaFolderBtn" onclick="loadMediaFolder(null)">Load media files…</button>
@@ -1948,7 +1948,7 @@
                     <div class="empty-state-icon">📈</div>
                     <div class="empty-state-text">No data loaded</div>
                     <div class="empty-state-subtext">
-                        Upload a CSV file and media files. Drag points to reclassify them, then download the updated CSV.
+                        Upload a CSV or JSON/JSONL file and media files. Drag points to reclassify them, then download the updated CSV.
                     </div>
                 </div>
             </div>
@@ -2337,6 +2337,56 @@
             result.push(current);
             return result;
         }
+
+        // --- FEATURE: json-loader (start) ---
+        // Accepts: JSON array, single object, Hugging Face { rows: [...] }, or JSONL.
+        function parseJSON(text) {
+            let rows = [];
+            try {
+                const parsed = JSON.parse(text);
+                if (Array.isArray(parsed)) {
+                    rows = parsed;
+                } else if (parsed && Array.isArray(parsed.rows)) {
+                    rows = parsed.rows.map(r => (r && typeof r.row === 'object') ? r.row : r);
+                } else if (parsed && Array.isArray(parsed.data)) {
+                    rows = parsed.data;
+                } else if (parsed && typeof parsed === 'object') {
+                    rows = [parsed];
+                }
+            } catch (e) {
+                rows = text.split('\n')
+                    .map(line => line.replace(/\r$/, '').trim())
+                    .filter(line => line.length > 0)
+                    .map(line => {
+                        try { return JSON.parse(line); } catch (e2) { return null; }
+                    })
+                    .filter(row => row !== null);
+            }
+
+            rows = rows.map(r => (r && typeof r === 'object' && !Array.isArray(r)) ? r : { value: r });
+
+            const headerSet = new Set();
+            rows.forEach(r => Object.keys(r).forEach(k => headerSet.add(k)));
+            const headers = Array.from(headerSet);
+
+            const data = rows.map((r, idx) => {
+                const row = { _index: idx };
+                headers.forEach(header => {
+                    const v = r[header];
+                    if (v === undefined || v === null) row[header] = '';
+                    else if (typeof v === 'object') row[header] = JSON.stringify(v);
+                    else row[header] = String(v);
+                });
+                return row;
+            });
+
+            return { headers, data };
+        }
+
+        function isJsonFilename(name) {
+            return /\.(json|jsonl|ndjson)$/i.test(name || '');
+        }
+        // --- FEATURE: json-loader (end) ---
         
         // ============================================================
         // CSV EXPORT
@@ -4617,7 +4667,7 @@
 
     if (files.length > 1) {
         handleMixedFiles(files);
-    } else if (files.length === 1 && files[0].name.endsWith('.csv')) {
+    } else if (files.length === 1 && (files[0].name.toLowerCase().endsWith('.csv') || isJsonFilename(files[0].name))) {
         const baseUrl = (droppedUrl && /^https?:\/\//i.test(droppedUrl))
             ? droppedUrl.substring(0, droppedUrl.lastIndexOf('/') + 1)
             : '';
@@ -4648,7 +4698,7 @@
             csvBaseUrl = baseUrl || '';
             const reader = new FileReader();
             reader.onload = (e) => {
-                processCSV(e.target.result);
+                processDataFile(e.target.result, file.name);
             };
             reader.readAsText(file);
         }
@@ -4701,15 +4751,15 @@
             updateMediaFolderButton(count);
         }
 
-        // Handle a FileList that may contain a mix of one CSV and media files.
-        // Populates the media map first, then loads the CSV.
+        // Handle a FileList that may contain a mix of one data file and media files.
+        // Populates the media map first, then loads the data file.
         function handleMixedFiles(fileList) {
             let csvFile = null;
             clearLocalMediaMap();
             let mediaCount = 0;
             for (const file of fileList) {
                 const ext = file.name.split('.').pop().toLowerCase();
-                if (file.name.toLowerCase().endsWith('.csv') && !csvFile) {
+                if ((file.name.toLowerCase().endsWith('.csv') || isJsonFilename(file.name)) && !csvFile) {
                     csvFile = file;
                 } else if (MEDIA_EXTENSIONS.has(ext)) {
                     const blobUrl = URL.createObjectURL(file);
@@ -4750,7 +4800,24 @@
         }
 
         function processCSV(text) {
-            const { headers, data } = parseCSV(text);
+            processParsedRows(parseCSV(text));
+        }
+
+        // --- FEATURE: json-loader (start) ---
+        function processJSON(text) {
+            processParsedRows(parseJSON(text));
+        }
+
+        function processDataFile(text, filename) {
+            if (isJsonFilename(filename)) {
+                processJSON(text);
+            } else {
+                processCSV(text);
+            }
+        }
+        // --- FEATURE: json-loader (end) ---
+
+        function processParsedRows({ headers, data }) {
             csvHeaders = headers;
 
             // Detect media columns from headers
