@@ -1233,11 +1233,17 @@
         .value-filter-dim {
             margin-bottom: 12px;
         }
+
+        .value-filter-dim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
         
         .value-filter-dim-title {
             font-size: 0.7rem;
             color: #888;
-            margin-bottom: 6px;
         }
         
         .value-filter-checkboxes {
@@ -2089,6 +2095,54 @@
             }
             if (currentData && encodings) updateVisualization();
         }
+
+        // --- FEATURE: filters-plus (start) ---
+        function getDimensionValueCountLabel(dim) {
+            const total = dim.uniqueValues?.length ?? dim.cardinality ?? 0;
+            const visible = getVisibleValues(dim).length;
+            const plural = total === 1 ? 'value' : 'values';
+            if (!dimensionValueFilters[dimKey(dim)] || visible === total) {
+                return `${total} ${plural}`;
+            }
+            return `${visible} of ${total} ${plural}`;
+        }
+
+        function rowPassesColorShapeFilters(row, encodings) {
+            for (const dim of [encodings.color, encodings.shape]) {
+                if (!dim) continue;
+                const key = dimKey(dim);
+                const filter = dimensionValueFilters[key];
+                if (filter && !filter.has(row[key])) return false;
+            }
+            return true;
+        }
+
+        function setAllValueFilters(key, visible) {
+            if (visible) {
+                delete dimensionValueFilters[key];
+            } else {
+                dimensionValueFilters[key] = new Set();
+            }
+            if (currentData && encodings) updateVisualization();
+        }
+
+        function addFilterToggleActions(parent, key) {
+            const actions = document.createElement('div');
+            actions.className = 'section-title-actions';
+            const allBtn = document.createElement('button');
+            allBtn.type = 'button';
+            allBtn.className = 'section-btn';
+            allBtn.textContent = 'All';
+            allBtn.addEventListener('click', () => setAllValueFilters(key, true));
+            const noneBtn = document.createElement('button');
+            noneBtn.type = 'button';
+            noneBtn.className = 'section-btn';
+            noneBtn.textContent = 'None';
+            noneBtn.addEventListener('click', () => setAllValueFilters(key, false));
+            actions.append(allBtn, noneBtn);
+            parent.appendChild(actions);
+        }
+        // --- FEATURE: filters-plus (end) ---
         
         function shouldExcludeFromTooltip(key) {
             const parsed = parseColumnPrefix(key);
@@ -3444,7 +3498,7 @@
                     <div class="dimension-rank">${activeIndex >= 0 ? activeIndex + 1 : '-'}</div>
                     <div class="dimension-info">
                         <div class="dimension-name">${dim.name}</div>
-                        <div class="dimension-meta">${dim.cardinality} values</div>
+                        <div class="dimension-meta">${getDimensionValueCountLabel(dim)}</div>
                     </div>
                     ${encoding ? `<div class="dimension-encoding ${encoding.class}">${encoding.label}</div>` : ''}
                 `;
@@ -3465,7 +3519,10 @@
         function renderValueFilters(encodings) {
             const section = document.getElementById('valueFiltersSection');
             const list = document.getElementById('valueFiltersList');
-            const dims = [encodings.gridX, encodings.gridY, encodings.panelX, encodings.panelY].filter(Boolean);
+            const dims = [
+                encodings.gridX, encodings.gridY, encodings.panelX, encodings.panelY,
+                encodings.color, encodings.shape
+            ].filter(Boolean);
             const seen = new Set();
             const used = [];
             dims.forEach(d => {
@@ -3485,8 +3542,16 @@
                 const isFiltered = dimensionValueFilters[k];
                 const div = document.createElement('div');
                 div.className = 'value-filter-dim';
-                div.innerHTML = `<div class="value-filter-dim-title">${dim.name}</div><div class="value-filter-checkboxes"></div>`;
-                const cbContainer = div.querySelector('.value-filter-checkboxes');
+                const header = document.createElement('div');
+                header.className = 'value-filter-dim-header';
+                const title = document.createElement('div');
+                title.className = 'value-filter-dim-title';
+                title.textContent = dim.name;
+                header.appendChild(title);
+                addFilterToggleActions(header, k);
+                const cbContainer = document.createElement('div');
+                cbContainer.className = 'value-filter-checkboxes';
+                div.append(header, cbContainer);
                 dim.uniqueValues.forEach(val => {
                     const checked = !isFiltered || dimensionValueFilters[k].has(val);
                     const label = document.createElement('label');
@@ -3872,8 +3937,9 @@
             
             const title = document.createElement('div');
             title.className = 'grid-title';
-            const realCount = gridData.filter(r => !r._isDummy).length;
-            const dummyCount = gridData.filter(r => r._isDummy).length;
+            const visibleGridData = gridData.filter(row => rowPassesColorShapeFilters(row, encodings));
+            const realCount = visibleGridData.filter(r => !r._isDummy).length;
+            const dummyCount = visibleGridData.filter(r => r._isDummy).length;
             title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             grid.appendChild(title);
             if (!showItemCounts) title.style.display = 'none';
@@ -3957,6 +4023,7 @@
             if (encodings.panelY && allpanelYVals.length > 1) {
                 cellData = cellData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
             }
+            cellData = cellData.filter(row => rowPassesColorShapeFilters(row, encodings));
             
             // Drop zone setup
             cell.addEventListener('dragover', handleCellDragOver);
