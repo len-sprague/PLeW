@@ -1505,6 +1505,29 @@
         }
         
         .value-filter-checkboxes input { accent-color: #4ecdc4; }
+
+        /* --- FEATURE: viz-config-io (start) --- */
+        .viz-config-notice {
+            margin-top: 8px;
+            padding: 6px 8px;
+            font-size: 0.72rem;
+            color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 4px;
+        }
+
+        .sr-only-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        /* --- FEATURE: viz-config-io (end) --- */
         
         /* Edit mode hint */
         .edit-hint {
@@ -2146,6 +2169,19 @@
                     <div class="grid-info" id="gridInfo"></div>
                 </div>
                 
+                <!-- --- FEATURE: viz-config-io (start) --- -->
+                <div class="section" id="vizConfigSection" style="display: none;">
+                    <div class="section-title">Visualization setup</div>
+                    <div class="value-filters-hint">Export your dimension order, filters, colors/shapes, and display options as JSON. Import a saved file to restore that setup.</div>
+                    <div id="vizConfigNotice" class="viz-config-notice" style="display: none;"></div>
+                    <div class="changes-actions" style="margin-top: 8px;">
+                        <button class="btn btn-secondary btn-small" onclick="downloadVisualizationConfig()">📤 Export setup</button>
+                        <button class="btn btn-secondary btn-small" onclick="openVizConfigImport()">📥 Import setup</button>
+                        <input type="file" id="vizConfigImportInput" class="sr-only-input" accept=".json,application/json" onchange="importVisualizationConfigFromFile(event)">
+                    </div>
+                </div>
+                <!-- --- FEATURE: viz-config-io (end) --- -->
+                
                 <div class="section" id="valueFiltersSection" style="display: none;">
                     <div class="section-title">Filter values</div>
                     <div class="value-filters-hint">Choose which values to show per dimension. Default: all visible.</div>
@@ -2569,6 +2605,218 @@
             parent.appendChild(actions);
         }
         // --- FEATURE: filters-plus (end) ---
+
+        // --- FEATURE: viz-config-io (start) ---
+        const VIZ_CONFIG_KIND = 'plew-visualization-config';
+        const VIZ_CONFIG_VERSION = 2;
+
+        function datasetIdFromFilename(filename) {
+            const path = String(filename || 'dataset');
+            return path.split('/').pop().split('?')[0] || path;
+        }
+
+        function buildVisualizationConfig() {
+            const valueFilters = {};
+            Object.entries(dimensionValueFilters).forEach(([key, visibleSet]) => {
+                valueFilters[key] = [...visibleSet];
+            });
+            return {
+                version: VIZ_CONFIG_VERSION,
+                kind: VIZ_CONFIG_KIND,
+                exportedAt: new Date().toISOString(),
+                dataset: {
+                    id: currentDatasetId,
+                    label: currentDatasetId
+                },
+                dimensions: {
+                    order: [...userDimensionOrder],
+                    enabled: [...enabledDimensions],
+                    encodings: { ...dimensionEncodings }
+                },
+                valueFilters,
+                styling: {
+                    customColors: { ...customColorMap },
+                    customShapes: { ...customShapeMap }
+                },
+                display: {
+                    showItemCounts: !!document.getElementById('showItemCounts')?.checked,
+                    showDimensionNames: !!document.getElementById('showDimensionNames')?.checked,
+                    clusterPoints: !!document.getElementById('clusterPoints')?.checked,
+                    uniformGridSizes: !!document.getElementById('uniformgrids')?.checked,
+                    outerPanelRowHeight: document.getElementById('outerPanelRowHeight')?.value ?? '200',
+                    unifyInnerPanel: !!document.getElementById('unifyInnerPanel')?.checked,
+                    innerPanelRowHeight: document.getElementById('innerPanelRowHeight')?.value ?? '56',
+                    labelSize: document.getElementById('labelSize')?.value ?? '0.7',
+                    labelColor: document.getElementById('labelColor')?.value ?? '#888888',
+                    countSize: document.getElementById('countSize')?.value ?? '0.6',
+                    countColor: document.getElementById('countColor')?.value ?? '#555555'
+                },
+                dummySettings: { ...dummySettings },
+                columns: {
+                    visibility: { ...columnVisibility },
+                    recordOrder: [...columnRecordOrder]
+                }
+            };
+        }
+
+        function applyConfigState(config, options = {}) {
+            const { silent = false } = options;
+            if (!config || config.kind !== VIZ_CONFIG_KIND) {
+                if (!silent) alert('Not a PLeW visualization setup file.');
+                return false;
+            }
+            if (!allDimensions) return false;
+
+            if (!silent && config.dataset?.id && currentDatasetId && config.dataset.id !== currentDatasetId) {
+                const saved = config.dataset.label || config.dataset.id;
+                const ok = confirm(
+                    `This setup was saved for "${saved}".\nCurrent dataset is "${currentDatasetId}".\n\nApply anyway?`
+                );
+                if (!ok) return false;
+            }
+
+            const knownNames = new Set(allDimensions.map(d => d.name));
+            const order = [];
+            (config.dimensions?.order || []).forEach(name => {
+                if (knownNames.has(name)) order.push(name);
+            });
+            allDimensions.forEach(dim => {
+                if (!order.includes(dim.name)) order.push(dim.name);
+            });
+            userDimensionOrder = order;
+
+            const enabled = (config.dimensions?.enabled || order).filter(name => knownNames.has(name));
+            enabledDimensions = new Set(enabled.length ? enabled : order);
+
+            dimensionEncodings = {};
+            if (config.dimensions?.encodings && typeof config.dimensions.encodings === 'object') {
+                Object.entries(config.dimensions.encodings).forEach(([name, key]) => {
+                    if (!knownNames.has(name)) return;
+                    if (key && ENCODING_LABELS.some(e => e.key === key)) {
+                        dimensionEncodings[name] = key;
+                    }
+                });
+            } else {
+                autoAssignEncodingsFromOrder();
+            }
+
+            dimensionValueFilters = {};
+            Object.entries(config.valueFilters || {}).forEach(([key, visible]) => {
+                if (!Array.isArray(visible)) return;
+                const dim = allDimensions.find(d => dimKey(d) === key);
+                if (!dim) return;
+                const validVisible = visible.filter(v => dim.uniqueValues.includes(v));
+                if (validVisible.length > 0 && validVisible.length < dim.uniqueValues.length) {
+                    dimensionValueFilters[key] = new Set(validVisible);
+                }
+            });
+
+            customColorMap = { ...(config.styling?.customColors || {}) };
+            customShapeMap = { ...(config.styling?.customShapes || {}) };
+
+            const display = config.display || {};
+            const setChecked = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.checked = !!value;
+            };
+            const setValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el && value != null) el.value = value;
+            };
+            setChecked('showItemCounts', display.showItemCounts);
+            showItemCounts = !!display.showItemCounts;
+            setChecked('showDimensionNames', display.showDimensionNames);
+            showDimensionNames = !!display.showDimensionNames;
+            setChecked('clusterPoints', display.clusterPoints);
+            clusterPoints = !!display.clusterPoints;
+            setChecked('uniformgrids', display.uniformGridSizes);
+            uniformgridSizes = !!display.uniformGridSizes;
+            setValue('outerPanelRowHeight', display.outerPanelRowHeight);
+            setValue('innerPanelRowHeight', display.innerPanelRowHeight);
+            setChecked('unifyInnerPanel', display.unifyInnerPanel);
+            unifyInnerPanel = !!display.unifyInnerPanel;
+            setValue('labelSize', display.labelSize);
+            setValue('labelColor', display.labelColor);
+            setValue('countSize', display.countSize);
+            setValue('countColor', display.countColor);
+            document.getElementById('outerPanelRowHeight')?.toggleAttribute('disabled', !uniformgridSizes);
+            document.getElementById('innerPanelRowHeight')?.toggleAttribute('disabled', !unifyInnerPanel);
+            applyLabelStyle();
+
+            if (config.dummySettings) {
+                dummySettings = { ...dummySettings, ...config.dummySettings };
+            }
+
+            if (config.columns?.visibility && typeof config.columns.visibility === 'object') {
+                columnVisibility = { ...config.columns.visibility };
+                ensureColumnVisibilityDefaults(getEditableColumns());
+            }
+
+            if (Array.isArray(config.columns?.recordOrder)) {
+                columnRecordOrder = config.columns.recordOrder.filter(h => getEditableColumns().includes(h));
+            }
+            ensureColumnRecordOrderDefaults(getEditableColumns());
+
+            return true;
+        }
+
+        function applyVisualizationConfig(config, options = {}) {
+            const { silent = false } = options;
+            if (!applyConfigState(config, { silent })) return false;
+            renderColumnRolesSection();
+            renderDimensionList();
+            renderDummySettingsUI();
+            updateVisualization();
+            if (!silent) showVizConfigNotice('Visualization setup applied.');
+            return true;
+        }
+
+        function downloadVisualizationConfig() {
+            if (!allDimensions) {
+                alert('Load a dataset first.');
+                return;
+            }
+            const config = buildVisualizationConfig();
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            const base = (currentDatasetId || 'dataset').replace(/\.[^.]+$/, '');
+            link.href = URL.createObjectURL(blob);
+            link.download = `plew-setup-${base}.json`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showVizConfigNotice('Setup exported.');
+        }
+
+        function importVisualizationConfigFromFile(event) {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    applyVisualizationConfig(JSON.parse(e.target.result), { silent: false });
+                } catch (err) {
+                    alert('Could not read setup file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function openVizConfigImport() {
+            document.getElementById('vizConfigImportInput')?.click();
+        }
+
+        function showVizConfigNotice(message) {
+            const el = document.getElementById('vizConfigNotice');
+            if (!el) return;
+            el.textContent = message;
+            el.style.display = 'block';
+            clearTimeout(showVizConfigNotice._timer);
+            showVizConfigNotice._timer = setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+        // --- FEATURE: viz-config-io (end) ---
         
         function shouldExcludeFromTooltip(key) {
             const parsed = parseColumnPrefix(key);
@@ -2707,6 +2955,7 @@
         };
         let preservedDimValues = {};
         let dimensionValueFilters = {};
+        let currentDatasetId = null;
 
         let showItemCounts = false;
 
@@ -5798,6 +6047,7 @@
         }
 
         function processDataFile(text, filename) {
+            currentDatasetId = datasetIdFromFilename(filename);
             if (isJsonFilename(filename)) {
                 processJSON(text);
             } else {
@@ -5863,6 +6113,7 @@
             dimensionValueFilters = {};
             columnVisibility = {};
             columnRecordOrder = [];
+            toggleEncodingLegend(false);
             
             userDimensionOrder = allDimensions.map(d => d.name);
             enabledDimensions = new Set(userDimensionOrder);
@@ -5871,6 +6122,7 @@
             ensureColumnVisibilityDefaults(headers);
             ensureColumnRecordOrderDefaults(headers);
             
+            document.getElementById('vizConfigSection').style.display = 'block';
             renderColumnRolesSection();
             renderDimensionList();
             renderDummySettingsUI();
