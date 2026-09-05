@@ -989,6 +989,23 @@
         .data-point.modified {
             box-shadow: 0 0 0 2px #ffd93d;
         }
+
+        /* --- FEATURE: record-compare (start) --- */
+        .data-point.selected {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #bbb;
+            z-index: 11;
+            transform: scale(1.25);
+        }
+
+        .data-point.compare-b {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #666;
+            z-index: 10;
+        }
+
+        .data-point.selected.compare-b {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #888;
+        }
+        /* --- FEATURE: record-compare (end) --- */
         
         .data-point.shape-circle { border-radius: 50%; }
         .data-point.shape-square { border-radius: 2px; }
@@ -998,6 +1015,15 @@
         }
         .data-point.shape-diamond:hover {
             transform: rotate(45deg) scale(1.4);
+        }
+        .data-point.shape-diamond.selected {
+            transform: rotate(45deg) scale(1.25);
+        }
+        .data-point.shape-diamond.compare-b {
+            transform: rotate(45deg) scale(1.15);
+        }
+        .data-point.shape-diamond.selected.compare-b {
+            transform: rotate(45deg) scale(1.25);
         }
         .data-point.shape-triangle {
             width: 0;
@@ -1195,6 +1221,12 @@
         .modal-overlay.active .modal {
             transform: scale(1) translateY(0);
         }
+
+        /* --- FEATURE: record-compare (start) --- */
+        .modal.compare-modal {
+            max-width: min(920px, 95vw);
+        }
+        /* --- FEATURE: record-compare (end) --- */
         
         .modal-header {
             padding: 20px 25px;
@@ -1315,6 +1347,91 @@
             font-size: 0.8rem;
             margin: 2px;
         }
+
+        /* --- FEATURE: record-compare (start) --- */
+        .compare-slot-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 16px;
+            padding: 10px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        .compare-slot-label strong {
+            color: #d4d4d4;
+        }
+
+        .compare-slot-label.compare-slot-b strong {
+            color: #888;
+        }
+
+        .compare-slot-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 6px;
+        }
+
+        .compare-hint {
+            font-size: 0.65rem;
+            color: #666;
+            margin: 0;
+            padding: 0 25px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .compare-diff-table th {
+            color: #888;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: left;
+            padding: 8px 10px 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .compare-diff-table th:nth-child(2),
+        .compare-diff-table th:nth-child(3) {
+            color: #888;
+        }
+
+        .compare-diff-table td {
+            padding: 8px 10px 8px 0;
+            vertical-align: top;
+            font-size: 0.85rem;
+        }
+
+        .compare-diff-table td:first-child {
+            color: #888;
+            width: 28%;
+            font-size: 0.8rem;
+        }
+
+        .compare-diff-row .compare-diff-cell {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 2px;
+        }
+
+        .compare-media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .compare-media-col-title {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .compare-empty {
+            font-size: 0.75rem;
+            color: #555;
+            margin: 0;
+        }
+        /* --- FEATURE: record-compare (end) --- */
         
         /* Media Container */
         .media-section {
@@ -2366,7 +2483,7 @@
     
     <!-- Keyboard hint -->
     <div class="keyboard-hint">
-        <kbd>B</kbd> sidebar • <kbd>Right-click</kbd> change color/shape • <kbd>Drag</kbd> reclassify • <kbd>Ctrl+Z</kbd> undo • <kbd>Ctrl+Shift+Z</kbd> redo
+        <kbd>B</kbd> sidebar • <kbd>Shift+click</kbd> compare B • <kbd>Right-click</kbd> change color/shape • <kbd>Drag</kbd> reclassify • <kbd>Ctrl+Z</kbd> undo • <kbd>Ctrl+Shift+Z</kbd> redo
     </div>
     
     <!-- Hover Tooltip -->
@@ -2402,6 +2519,17 @@
                     <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
             </div>
+            <!-- --- FEATURE: record-compare (start) --- -->
+            <div class="compare-slot-bar" id="compareSlotBar" style="display: none;">
+                <span class="compare-slot-label">A: <strong id="compareSlotALabel">—</strong></span>
+                <span class="compare-slot-label compare-slot-b">B: <strong id="compareSlotBLabel">—</strong></span>
+                <div class="compare-slot-actions">
+                    <button type="button" class="modal-snap-btn" onclick="clearCompareSlot('b')">Clear B</button>
+                    <button type="button" class="modal-snap-btn" onclick="clearCompareSlots()">Clear all</button>
+                </div>
+            </div>
+            <p class="compare-hint" id="compareHint" style="display: none;">Click a point for slot A · Shift+click for slot B</p>
+            <!-- --- FEATURE: record-compare (end) --- -->
             <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
@@ -2890,10 +3018,30 @@
                     && !shouldExcludeFromModalTable(key));
         }
 
+        // --- FEATURE: record-compare (start) ---
+        function getCompareFieldKeys(rowA, rowB) {
+            const keySet = new Set([
+                ...Object.keys(rowA).filter(k => !k.startsWith('_') && !shouldExcludeFromModalTable(k)),
+                ...Object.keys(rowB).filter(k => !k.startsWith('_') && !shouldExcludeFromModalTable(k))
+            ]);
+            return getRecordColumnOrder().filter(k => keySet.has(k));
+        }
+
+        function compareValuesEqual(a, b) {
+            return String(a ?? '') === String(b ?? '');
+        }
+
+        function getCompareSlotLabel(rowIndex) {
+            if (rowIndex == null || !currentData?.[rowIndex]) return '—';
+            const row = currentData[rowIndex];
+            return `#${rowIndex + 1} · ${getModalTitleFromRow(row)}`;
+        }
+        // --- FEATURE: record-compare (end) ---
+
         function refreshOpenRecordModal() {
             const overlay = document.getElementById('modalOverlay');
-            if (overlay?.classList.contains('active') && openModalRowIndex != null && currentData?.[openModalRowIndex]) {
-                openModal(currentData[openModalRowIndex], encodings);
+            if (overlay?.classList.contains('active')) {
+                renderCompareModal();
             }
         }
 
@@ -2977,8 +3125,12 @@
         // --- FEATURE: column-roles (start) ---
         let columnVisibility = {}; // { header: boolean } — record-window visibility
         let columnRecordOrder = []; // header order for record modal fields
-        let openModalRowIndex = null;
         // --- FEATURE: column-roles (end) ---
+
+        // --- FEATURE: record-compare (start) ---
+        let selectedRowIndex = null;
+        let compareSlots = { a: null, b: null };
+        // --- FEATURE: record-compare (end) ---
         
         let uniformgridSizes = false;
         let unifyInnerPanel = false;
@@ -4598,6 +4750,14 @@
                 closeShapeSelectorPopup();
             }
         });
+
+        // --- FEATURE: record-compare (start) ---
+        document.getElementById('vizContainer').addEventListener('click', (e) => {
+            if (!e.target.closest('.data-point')) {
+                clearSelection();
+            }
+        });
+        // --- FEATURE: record-compare (end) ---
         
         // ============================================================
         // UI RENDERING
@@ -5372,9 +5532,16 @@
             
             // --- Normal (non-dummy) data point ---
             point.draggable = true;
+            point.dataset.rowIndex = rowIndex;
             
             if (isModified) {
                 point.classList.add('modified');
+            }
+            if (rowIndex === compareSlots.a) {
+                point.classList.add('selected');
+            }
+            if (compareSlots.b != null && rowIndex === compareSlots.b) {
+                point.classList.add('compare-b');
             }
             
             const hasMedia = rowHasMedia(row);
@@ -5403,8 +5570,10 @@
             point.addEventListener('mouseleave', hideTooltip);
             point.addEventListener('mousemove', moveTooltip);
             
-            // Click for modal
-            point.addEventListener('click', () => openModal(row, encodings));
+            // Click for record / compare slots
+            point.addEventListener('click', (e) => {
+                handleDataPointClick(e, rowIndex);
+            });
             
             // Right-click for color menu
             point.addEventListener('contextmenu', (e) => showContextMenu(e, rowIndex));
@@ -5439,7 +5608,7 @@
                 const uniqueIcons = [...new Set(icons)].join('');
                 html += `${uniqueIcons} Click to view • `;
             }
-            html += `Drag to move • Right-click for color</div>`;
+            html += `Drag to move • Right-click for color • Shift+click compare B</div>`;
             
             tooltip.innerHTML = html;
             tooltip.classList.add('visible');
@@ -5464,75 +5633,185 @@
         }
         
         // ============================================================
-        // MODAL
+        // MODAL & COMPARE
         // ============================================================
-        function openModal(row, encodings) {
-            openModalRowIndex = row._index;
+        // --- FEATURE: record-compare (start) ---
+        function formatModalCellValue(row, key) {
+            if (encodings?.color && key === dimKey(encodings.color)) {
+                const color = getColorForValue(encodings, row[key]);
+                return `<span class="data-tag" style="background: ${color}33; color: ${color}">${escapeHtml(row[key] ?? '')}</span>`;
+            }
+            return escapeHtml(row[key] ?? '');
+        }
+
+        function buildRecordMediaHTML(row) {
+            const media = getRowMedia(row);
+            if (media.length === 0) return '';
+
+            let html = `<div class="media-section">`;
+            html += `<div class="media-section-title"><span class="icon">🎛️</span> Media (${media.length})</div>`;
+
+            if (media.length > 1) {
+                html += `<div class="media-tabs">`;
+                media.forEach((m, idx) => {
+                    const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
+                    const label = m.label.charAt(0).toUpperCase() + m.label.slice(1);
+                    html += `<button class="media-tab ${idx === 0 ? 'active' : ''}" 
+                        onclick="switchMediaTab(this, ${idx})">${icon} ${label}</button>`;
+                });
+                html += `</div>`;
+
+                media.forEach((m, idx) => {
+                    html += `<div class="media-grid ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
+                        <div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                            ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                        </div>
+                    </div>`;
+                });
+            } else {
+                const m = media[0];
+                html += `<div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
+                    ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
+                </div>`;
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        function buildSingleRecordTableHTML(row) {
+            let html = '<table class="data-table">';
+            getModalTableColumnKeys(row).forEach(key => {
+                html += `<tr><td>${escapeHtml(getDisplayName(key))}</td><td>${formatModalCellValue(row, key)}</td></tr>`;
+            });
+            html += '</table>';
+            return html;
+        }
+
+        function buildCompareDiffTableHTML(rowA, rowB) {
+            const keys = getCompareFieldKeys(rowA, rowB);
+            let html = '<table class="data-table compare-diff-table"><thead><tr><th>Field</th><th>A</th><th>B</th></tr></thead><tbody>';
+            keys.forEach(key => {
+                const diff = !compareValuesEqual(rowA[key], rowB[key]);
+                html += `<tr class="${diff ? 'compare-diff-row' : ''}">`;
+                html += `<td>${escapeHtml(getDisplayName(key))}</td>`;
+                html += `<td class="${diff ? 'compare-diff-cell' : ''}">${formatModalCellValue(rowA, key)}</td>`;
+                html += `<td class="${diff ? 'compare-diff-cell' : ''}">${formatModalCellValue(rowB, key)}</td>`;
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function buildCompareMediaSection(rowA, rowB) {
+            const mediaA = getRowMedia(rowA);
+            const mediaB = getRowMedia(rowB);
+            if (!mediaA.length && !mediaB.length) return '';
+
+            let html = '<div class="compare-media-grid">';
+            html += `<div class="compare-media-col"><div class="compare-media-col-title slot-a">A · Media</div>`;
+            html += mediaA.length ? buildRecordMediaHTML(rowA) : '<p class="compare-empty">None</p>';
+            html += '</div>';
+            html += `<div class="compare-media-col"><div class="compare-media-col-title slot-b">B · Media</div>`;
+            html += mediaB.length ? buildRecordMediaHTML(rowB) : '<p class="compare-empty">None</p>';
+            html += '</div></div>';
+            return html;
+        }
+
+        function updateCompareSlotBar() {
+            const bar = document.getElementById('compareSlotBar');
+            const hint = document.getElementById('compareHint');
+            const aLabel = document.getElementById('compareSlotALabel');
+            const bLabel = document.getElementById('compareSlotBLabel');
+            const hasAny = compareSlots.a != null || compareSlots.b != null;
+
+            if (bar) bar.style.display = hasAny ? 'flex' : 'none';
+            if (hint) hint.style.display = hasAny ? 'block' : 'none';
+            if (aLabel) aLabel.textContent = getCompareSlotLabel(compareSlots.a);
+            if (bLabel) bLabel.textContent = getCompareSlotLabel(compareSlots.b);
+        }
+
+        function renderCompareModal() {
+            const modalEl = document.querySelector('#modalOverlay .modal');
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
-            
-            modalTitle.textContent = getModalTitleFromRow(row);
-            
-            let tableHTML = '<table class="data-table">';
-            
-            getModalTableColumnKeys(row).forEach(key => {
-                let valueHTML = row[key];
-                
-                if (encodings.color && key === dimKey(encodings.color)) {
-                    const color = getColorForValue(encodings, row[key]);
-                    valueHTML = `<span class="data-tag" style="background: ${color}33; color: ${color}">${row[key]}</span>`;
-                }
-                
-                tableHTML += `
-                    <tr>
-                        <td>${getDisplayName(key)}</td>
-                        <td>${valueHTML}</td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += '</table>';
-            
-            // Multi-media support
-            const media = getRowMedia(row);
-            
-            if (media.length > 0) {
-                tableHTML += `<div class="media-section">`;
-                tableHTML += `<div class="media-section-title"><span class="icon">🎛️</span> Media (${media.length})</div>`;
-                
-                if (media.length > 1) {
-                    // Tabbed interface for multiple media
-                    tableHTML += `<div class="media-tabs">`;
-                    media.forEach((m, idx) => {
-                        const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
-                        const label = m.label.charAt(0).toUpperCase() + m.label.slice(1);
-                        tableHTML += `<button class="media-tab ${idx === 0 ? 'active' : ''}" 
-                            onclick="switchMediaTab(this, ${idx})">${icon} ${label}</button>`;
-                    });
-                    tableHTML += `</div>`;
-                    
-                    media.forEach((m, idx) => {
-                        tableHTML += `<div class="media-grid ${idx === 0 ? 'active' : ''}" data-media-idx="${idx}">
-                            <div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
-                                ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
-                            </div>
-                        </div>`;
-                    });
-                } else {
-                    // Single media — no tabs
-                    const m = media[0];
-                    const icon = m.type === 'video' ? '🎬' : m.type === 'audio' ? '🎵' : '📷';
-                    tableHTML += `<div class="media-container ${m.type === 'audio' ? 'audio-container' : ''}">
-                        ${generateMediaHTML(m.type, m.url, row.title || 'Media')}
-                    </div>`;
-                }
-                
-                tableHTML += `</div>`;
+            if (!modalBody || !modalEl) return;
+
+            const rowA = compareSlots.a != null ? currentData[compareSlots.a] : null;
+            const rowB = compareSlots.b != null ? currentData[compareSlots.b] : null;
+
+            if (!rowA && !rowB) {
+                closeModal();
+                return;
             }
-            
-            modalBody.innerHTML = tableHTML;
+
+            updateCompareSlotBar();
+
+            if (rowA && rowB) {
+                modalEl.classList.add('compare-modal');
+                modalTitle.textContent = 'Compare records';
+                modalBody.innerHTML = buildCompareDiffTableHTML(rowA, rowB)
+                    + buildCompareMediaSection(rowA, rowB);
+            } else {
+                modalEl.classList.remove('compare-modal');
+                const row = rowA || rowB;
+                modalTitle.textContent = getModalTitleFromRow(row);
+                modalBody.innerHTML = buildSingleRecordTableHTML(row)
+                    + buildRecordMediaHTML(row);
+            }
+
             document.getElementById('modalOverlay').classList.add('active');
         }
+
+        function handleDataPointClick(e, rowIndex) {
+            e.stopPropagation();
+            if (e.shiftKey) {
+                compareSlots.b = rowIndex;
+            } else {
+                compareSlots.a = rowIndex;
+            }
+            selectedRowIndex = compareSlots.a;
+            syncPointSelectionClasses();
+            renderCompareModal();
+        }
+
+        function clearCompareSlot(slot) {
+            compareSlots[slot] = null;
+            selectedRowIndex = compareSlots.a;
+            syncPointSelectionClasses();
+            if (compareSlots.a == null && compareSlots.b == null) {
+                closeModal();
+            } else {
+                renderCompareModal();
+            }
+        }
+
+        function clearCompareSlots() {
+            compareSlots = { a: null, b: null };
+            selectedRowIndex = null;
+            syncPointSelectionClasses();
+            closeModal();
+        }
+
+        function clearSelection() {
+            clearCompareSlots();
+        }
+
+        function syncPointSelectionClasses() {
+            document.querySelectorAll('.data-point[data-row-index]').forEach(el => {
+                const idx = Number(el.dataset.rowIndex);
+                el.classList.toggle('selected', idx === compareSlots.a);
+                el.classList.toggle('compare-b', compareSlots.b != null && idx === compareSlots.b);
+            });
+        }
+
+        function openModal(row, enc) {
+            compareSlots.a = row._index;
+            selectedRowIndex = compareSlots.a;
+            syncPointSelectionClasses();
+            renderCompareModal();
+        }
+        // --- FEATURE: record-compare (end) ---
         
         function switchMediaTab(btn, idx) {
             const section = btn.closest('.media-section');
@@ -5856,6 +6135,7 @@
         function closeModal(event) {
             if (event && event.target !== event.currentTarget) return;
             document.getElementById('modalOverlay').classList.remove('active');
+            document.querySelector('#modalOverlay .modal')?.classList.remove('compare-modal');
             document.querySelectorAll('video, audio').forEach(el => {
                 el.pause();
                 el.currentTime = 0;
@@ -6114,6 +6394,8 @@
             columnVisibility = {};
             columnRecordOrder = [];
             toggleEncodingLegend(false);
+            selectedRowIndex = null;
+            compareSlots = { a: null, b: null };
             
             userDimensionOrder = allDimensions.map(d => d.name);
             enabledDimensions = new Set(userDimensionOrder);
