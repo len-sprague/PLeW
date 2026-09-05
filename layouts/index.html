@@ -473,6 +473,27 @@
             color: #aaa;
             white-space: nowrap;
         }
+
+        /* --- FEATURE: encoding-dropdown (start) --- */
+        .dimension-encoding-select {
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+            border: 1px solid #3d4650;
+            background: #2d3640;
+            color: #aaa;
+            max-width: 76px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .dimension-encoding-select.encoding-grid-x { background: #ff6b6b33; color: #ff6b6b; border-color: #ff6b6b55; }
+        .dimension-encoding-select.encoding-grid-y { background: #ffd93d33; color: #ffd93d; border-color: #ffd93d55; }
+        .dimension-encoding-select.encoding-panel-x { background: #6bcb7733; color: #6bcb77; border-color: #6bcb7755; }
+        .dimension-encoding-select.encoding-panel-y { background: #4d96ff33; color: #4d96ff; border-color: #4d96ff55; }
+        .dimension-encoding-select.encoding-color { background: #9b59b633; color: #c39bd3; border-color: #9b59b655; }
+        .dimension-encoding-select.encoding-shape { background: #e67e2233; color: #e67e22; border-color: #e67e2255; }
+        /* --- FEATURE: encoding-dropdown (end) --- */
         
         .encoding-grid-x { background: #ff6b6b33; color: #ff6b6b; }
         .encoding-grid-y { background: #ffd93d33; color: #ffd93d; }
@@ -1789,7 +1810,8 @@
                     <div class="edit-hint">
                         <strong>✏️ Edit Mode</strong>
                         <ul>
-                            <li>Drag dimensions to reorder axes</li>
+                            <li>Drag to reorder — roles auto-assign by list order</li>
+                            <li>Use the dropdown to override Grid X/Y, Color, Shape, etc.</li>
                             <li>Drag data points to reclassify</li>
                             <li>Right-click points to change color/shape</li>
                             <li>Click legend swatches to customize colors/shapes</li>
@@ -2049,6 +2071,59 @@
             { key: 'panel-y', label: 'panel Y', class: 'encoding-panel-y' },
             { key: 'shape', label: 'Shape', class: 'encoding-shape' }
         ];
+
+        // --- FEATURE: encoding-dropdown (start) ---
+        const ENCODING_KEY_TO_FIELD = {
+            'grid-x': 'gridX',
+            'grid-y': 'gridY',
+            'color': 'color',
+            'panel-x': 'panelX',
+            'panel-y': 'panelY',
+            'shape': 'shape'
+        };
+
+        function getEncodingLabel(key) {
+            return ENCODING_LABELS.find(e => e.key === key) || null;
+        }
+
+        function autoAssignEncodingsFromOrder() {
+            dimensionEncodings = {};
+            const slots = ENCODING_LABELS.map(e => e.key);
+            let slotIdx = 0;
+            userDimensionOrder.forEach(name => {
+                if (!enabledDimensions.has(name)) return;
+                if (slotIdx < slots.length) {
+                    dimensionEncodings[name] = slots[slotIdx++];
+                }
+            });
+        }
+
+        function buildEncodings() {
+            const encodings = {};
+            Object.entries(dimensionEncodings).forEach(([dimName, encKey]) => {
+                if (!encKey || !enabledDimensions.has(dimName)) return;
+                const dim = allDimensions.find(d => d.name === dimName);
+                const field = ENCODING_KEY_TO_FIELD[encKey];
+                if (dim && field && !encodings[field]) encodings[field] = dim;
+            });
+            return encodings;
+        }
+
+        function setDimensionEncoding(dimName, encKey) {
+            if (encKey) {
+                Object.keys(dimensionEncodings).forEach(name => {
+                    if (name !== dimName && dimensionEncodings[name] === encKey) {
+                        dimensionEncodings[name] = '';
+                    }
+                });
+                dimensionEncodings[dimName] = encKey;
+            } else {
+                dimensionEncodings[dimName] = '';
+            }
+            updateDimensionListEncodings();
+            updateVisualization();
+        }
+        // --- FEATURE: encoding-dropdown (end) ---
         
         const RESERVED_COLUMNS = ['description', 'title', 'name'];
         
@@ -2195,6 +2270,7 @@
         let allDimensions = null;
         let userDimensionOrder = [];
         let enabledDimensions = new Set();
+        let dimensionEncodings = {};
         let encodings = null;
         let modifiedRows = new Set();
         let changeLog = [];
@@ -3158,21 +3234,6 @@
                 .filter(Boolean);
         }
         
-        function assignEncodings(dims) {
-            const encodings = {};
-            
-            dims.forEach((dim, idx) => {
-                if (idx === 0) encodings.gridX = dim;
-                else if (idx === 1) encodings.gridY = dim;
-                else if (idx === 2) encodings.color = dim;
-                else if (idx === 3) encodings.panelX = dim;
-                else if (idx === 4) encodings.panelY = dim;
-                else if (idx === 5) encodings.shape = dim;
-            });
-            
-            return encodings;
-        }
-        
         // ============================================================
         // DIMENSION EDITING (same as before)
         // ============================================================
@@ -3188,13 +3249,13 @@
         function resetDimensionOrder() {
             userDimensionOrder = allDimensions.map(d => d.name);
             enabledDimensions = new Set(userDimensionOrder);
+            autoAssignEncodingsFromOrder();
             renderDimensionList();
             updateVisualization();
         }
         
         function updateVisualization() {
-            const activeDims = getActiveDimensions();
-            encodings = assignEncodings(activeDims);
+            encodings = buildEncodings();
             
             updateDimensionListEncodings();
             renderValueFilters(encodings);
@@ -3202,15 +3263,18 @@
             updateShapeLegend(encodings);
             updateGridInfo(encodings);
             
-            if (currentData && activeDims.length > 0) {
+            const hasLayout = encodings.gridX || encodings.gridY || encodings.color
+                || encodings.panelX || encodings.panelY || encodings.shape;
+
+            if (currentData && hasLayout) {
                 renderVisualization(currentData, encodings);
             } else {
                 document.getElementById('vizContainer').innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📊</div>
-                        <div class="empty-state-text">No dimensions enabled</div>
+                        <div class="empty-state-text">No dimensions assigned</div>
                         <div class="empty-state-subtext">
-                            Enable at least one dimension in the sidebar.
+                            Assign at least one dimension to Grid X, Y, Color, Shape, etc.
                         </div>
                     </div>
                 `;
@@ -3261,6 +3325,7 @@
             userDimensionOrder.splice(fromIndex, 1);
             userDimensionOrder.splice(toIndex, 0, draggedDimensionItem);
             
+            autoAssignEncodingsFromOrder();
             renderDimensionList();
             updateVisualization();
         }
@@ -3527,31 +3592,56 @@
             const list = document.getElementById('dimensionList');
             list.innerHTML = '';
             
-            userDimensionOrder.forEach((name, idx) => {
+            userDimensionOrder.forEach((name) => {
                 const dim = allDimensions.find(d => d.name === name);
                 if (!dim) return;
                 
                 const isEnabled = enabledDimensions.has(name);
-                const activeIndex = getActiveDimensions().findIndex(d => d.name === name);
-                const encoding = activeIndex >= 0 ? ENCODING_LABELS[activeIndex] : null;
+                const currentEnc = dimensionEncodings[name] || '';
+                const encLabel = getEncodingLabel(currentEnc);
                 
                 const li = document.createElement('li');
                 li.className = `dimension-item ${isEnabled ? '' : 'disabled'}`;
                 li.draggable = true;
                 li.dataset.name = name;
                 
-                li.innerHTML = `
-                    <span class="drag-handle">⋮⋮</span>
-                    <input type="checkbox" class="dimension-toggle" 
-                           ${isEnabled ? 'checked' : ''} 
-                           onchange="toggleDimension('${name}', this.checked)">
-                    <div class="dimension-rank">${activeIndex >= 0 ? activeIndex + 1 : '-'}</div>
-                    <div class="dimension-info">
-                        <div class="dimension-name">${dim.name}</div>
-                        <div class="dimension-meta">${getDimensionValueCountLabel(dim)}</div>
-                    </div>
-                    ${encoding ? `<div class="dimension-encoding ${encoding.class}">${encoding.label}</div>` : ''}
+                const handle = document.createElement('span');
+                handle.className = 'drag-handle';
+                handle.textContent = '⋮⋮';
+                
+                const toggle = document.createElement('input');
+                toggle.type = 'checkbox';
+                toggle.className = 'dimension-toggle';
+                toggle.checked = isEnabled;
+                toggle.addEventListener('change', () => toggleDimension(name, toggle.checked));
+                
+                const info = document.createElement('div');
+                info.className = 'dimension-info';
+                info.innerHTML = `
+                    <div class="dimension-name">${dim.name}</div>
+                    <div class="dimension-meta">${getDimensionValueCountLabel(dim)}</div>
                 `;
+                
+                const select = document.createElement('select');
+                select.className = 'dimension-encoding-select' + (encLabel ? ` ${encLabel.class}` : '');
+                select.title = 'Visual role for this dimension';
+                select.disabled = !isEnabled;
+                const noneOpt = document.createElement('option');
+                noneOpt.value = '';
+                noneOpt.textContent = '—';
+                select.appendChild(noneOpt);
+                ENCODING_LABELS.forEach(enc => {
+                    const opt = document.createElement('option');
+                    opt.value = enc.key;
+                    opt.textContent = enc.label;
+                    if (currentEnc === enc.key) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', () => {
+                    setDimensionEncoding(name, select.value);
+                });
+                
+                li.append(handle, toggle, info, select);
                 
                 li.addEventListener('dragstart', (e) => handleDimDragStart(e, name));
                 li.addEventListener('dragend', handleDimDragEnd);
@@ -3618,25 +3708,21 @@
         }
         
         function updateDimensionListEncodings() {
-            const activeDims = getActiveDimensions();
-            
             document.querySelectorAll('.dimension-item').forEach(item => {
                 const name = item.dataset.name;
-                const activeIndex = activeDims.findIndex(d => d.name === name);
+                const dim = allDimensions.find(d => d.name === name);
                 const isEnabled = enabledDimensions.has(name);
+                const currentEnc = dimensionEncodings[name] || '';
+                const encLabel = getEncodingLabel(currentEnc);
                 
-                const rankEl = item.querySelector('.dimension-rank');
-                rankEl.textContent = activeIndex >= 0 ? activeIndex + 1 : '-';
+                const metaEl = item.querySelector('.dimension-meta');
+                if (metaEl && dim) metaEl.textContent = getDimensionValueCountLabel(dim);
                 
-                const existingEncoding = item.querySelector('.dimension-encoding');
-                if (existingEncoding) existingEncoding.remove();
-                
-                if (activeIndex >= 0 && ENCODING_LABELS[activeIndex]) {
-                    const encoding = ENCODING_LABELS[activeIndex];
-                    const encodingEl = document.createElement('div');
-                    encodingEl.className = `dimension-encoding ${encoding.class}`;
-                    encodingEl.textContent = encoding.label;
-                    item.appendChild(encodingEl);
+                const select = item.querySelector('.dimension-encoding-select');
+                if (select) {
+                    select.disabled = !isEnabled;
+                    select.value = currentEnc;
+                    select.className = 'dimension-encoding-select' + (encLabel ? ` ${encLabel.class}` : '');
                 }
                 
                 item.classList.toggle('disabled', !isEnabled);
@@ -4875,6 +4961,7 @@
             
             userDimensionOrder = allDimensions.map(d => d.name);
             enabledDimensions = new Set(userDimensionOrder);
+            autoAssignEncodingsFromOrder();
             
             renderDimensionList();
             renderDummySettingsUI();
