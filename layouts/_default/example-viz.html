@@ -1248,6 +1248,12 @@
             color: white;
         }
 
+        .modal-snap-theme {
+            padding: 5px 8px;
+            min-width: 32px;
+            justify-content: center;
+        }
+
         .modal-close {
             background: rgba(255, 255, 255, 0.1);
             border: none;
@@ -1888,6 +1894,143 @@
         .snapshot-light .data-point.dummy-point {
             border-color: rgba(0, 0, 0, 0.3);
         }
+
+        /* --- FEATURE: snapshot-plus (start) --- */
+        .snapshot-light .encoding-axis-title-y {
+            background: #f0f0f0;
+        }
+
+        .snapshot-light .encoding-axis-title {
+            color: #333;
+        }
+
+        .snapshot-light .data-point.selected {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2a9d8f;
+        }
+
+        .snapshot-light .data-point.shape-triangle.modified,
+        .snapshot-light .data-point.shape-hexagon.modified {
+            filter: drop-shadow(0 0 1px #b8960a) drop-shadow(0 0 2px #b8960a);
+        }
+
+        .snapshot-light .data-point.shape-triangle.selected,
+        .snapshot-light .data-point.shape-hexagon.selected {
+            filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #2a9d8f);
+        }
+
+        .snapshot-capture-wrap {
+            display: inline-block;
+            background: #0f1419;
+        }
+
+        .snapshot-capture-wrap.snapshot-light {
+            background: #ffffff;
+        }
+
+        .snapshot-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #151a20;
+            border-bottom: 1px solid #2d3640;
+        }
+
+        .snapshot-light .snapshot-legend {
+            background: #f5f5f5;
+            border-bottom-color: #ddd;
+        }
+
+        .snapshot-legend .encoding-swatch-title {
+            color: #8899a6;
+        }
+
+        .snapshot-light .snapshot-legend .encoding-swatch-title {
+            color: #555;
+        }
+
+        .snapshot-legend .snapshot-legend-chip {
+            cursor: default;
+            border: 1px solid #2d3640;
+            background: #1a1f26;
+            color: #e8e8e8;
+        }
+
+        .snapshot-light .snapshot-legend .snapshot-legend-chip {
+            border-color: #ccc;
+            background: #fff;
+            color: #222;
+        }
+
+        .modal.snapshot-light {
+            background: linear-gradient(145deg, #fafafa, #eef1f5);
+            border-color: rgba(0, 0, 0, 0.12);
+            color: #1a1a1a;
+        }
+
+        .modal.snapshot-light .modal-header {
+            border-bottom-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .modal.snapshot-light .modal-header h3 {
+            color: #1a1a1a;
+        }
+
+        .modal.snapshot-light .compare-slot-bar {
+            border-bottom-color: rgba(0, 0, 0, 0.08);
+            color: #666;
+        }
+
+        .modal.snapshot-light .compare-hint {
+            color: #888;
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .modal.snapshot-light .data-table tr,
+        .modal.snapshot-light .compare-diff-table tr {
+            border-bottom-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .modal.snapshot-light .data-table td:first-child,
+        .modal.snapshot-light .compare-diff-table td:first-child,
+        .modal.snapshot-light .compare-diff-table th {
+            color: #666;
+        }
+
+        .modal.snapshot-light .data-table td:last-child,
+        .modal.snapshot-light .compare-diff-table td {
+            color: #1a1a1a;
+        }
+
+        .modal.snapshot-light .compare-slot-label strong {
+            color: #333;
+        }
+
+        .modal.snapshot-light .compare-slot-label.compare-slot-b strong {
+            color: #666;
+        }
+
+        .modal.snapshot-light .compare-diff-table th:nth-child(2),
+        .modal.snapshot-light .compare-diff-table th:nth-child(3) {
+            color: #666;
+        }
+
+        .modal.snapshot-light .compare-diff-row .compare-diff-cell {
+            background: #ebebeb;
+        }
+
+        .modal.snapshot-light .media-section-title {
+            color: #444;
+        }
+
+        .modal.snapshot-light .compare-media-col-title {
+            color: #666;
+        }
+
+        .modal.snapshot-light .compare-empty {
+            color: #999;
+        }
+        /* --- FEATURE: snapshot-plus (end) --- */
         
         /* Change Log Section */
         .changelog-section {
@@ -2488,6 +2631,7 @@
                 <div style="display:flex;align-items:center;gap:6px;">
                     <button class="modal-snap-btn" onclick="snapshotModal('full')" title="Capture full modal as one stacked image">📷 Stacked</button>
                     <button class="modal-snap-btn" onclick="snapshotModal('horizontal')" title="Capture fields and media side by side">📷 Side-by-side</button>
+                    <button class="modal-snap-btn modal-snap-theme" id="modalSnapThemeBtn" type="button" onclick="toggleModalSnapTheme()" title="Dark snapshot (click for light)">🌙</button>
                     <button class="modal-close" onclick="closeModal()">×</button>
                 </div>
             </div>
@@ -3336,10 +3480,77 @@
             });
         }
 
+        // --- FEATURE: snapshot-plus (start) ---
+        function snapshotHasLegendEncodings(activeEncodings) {
+            return !!(activeEncodings && (activeEncodings.color || activeEncodings.shape));
+        }
+
+        function buildSnapshotLegendElement(activeEncodings, lightMode) {
+            const legend = document.createElement('div');
+            legend.className = 'snapshot-legend' + (lightMode ? ' snapshot-light' : '');
+
+            const addRow = (dim, kind) => {
+                const row = document.createElement('div');
+                row.className = 'encoding-swatch-row';
+                const title = document.createElement('span');
+                title.className = 'encoding-swatch-title';
+                title.textContent = `${getDisplayName(dim.name)}:`;
+                row.appendChild(title);
+
+                getVisibleValues(dim).forEach(value => {
+                    const chip = document.createElement('span');
+                    chip.className = 'encoding-swatch-chip snapshot-legend-chip';
+                    if (kind === 'color') {
+                        const color = getColorForValue(activeEncodings, value);
+                        chip.innerHTML = `<span class="legend-swatch" style="background:${color}"></span><span>${value}</span>`;
+                    } else {
+                        const shape = getShapeForValue(activeEncodings, value);
+                        chip.innerHTML = `<span class="legend-shape"><span class="data-point shape-${shape}" style="background:#888;width:10px;height:10px;"></span></span><span>${value}</span>`;
+                    }
+                    row.appendChild(chip);
+                });
+                legend.appendChild(row);
+            };
+
+            if (activeEncodings.color) addRow(activeEncodings.color, 'color');
+            if (activeEncodings.shape) addRow(activeEncodings.shape, 'shape');
+            return legend;
+        }
+
+        function prepareSnapshotCaptureRoot(captureEl, activeEncodings, lightMode) {
+            if (!snapshotHasLegendEncodings(activeEncodings)) {
+                if (lightMode) captureEl.classList.add('snapshot-light');
+                return {
+                    root: captureEl,
+                    cleanup: () => {
+                        if (lightMode) captureEl.classList.remove('snapshot-light');
+                    }
+                };
+            }
+
+            const wrap = document.createElement('div');
+            wrap.className = 'snapshot-capture-wrap' + (lightMode ? ' snapshot-light' : '');
+            const parent = captureEl.parentNode;
+            const next = captureEl.nextSibling;
+            parent.insertBefore(wrap, captureEl);
+            wrap.appendChild(buildSnapshotLegendElement(activeEncodings, lightMode));
+            wrap.appendChild(captureEl);
+            if (lightMode) captureEl.classList.add('snapshot-light');
+
+            return {
+                root: wrap,
+                cleanup: () => {
+                    parent.insertBefore(captureEl, next);
+                    wrap.remove();
+                    if (lightMode) captureEl.classList.remove('snapshot-light');
+                }
+            };
+        }
+
         function downloadSnapshot(lightMode) {
             const el = document.getElementById('vizContainer');
-            const gridGrid = el.querySelector('.grid-grid');
-            if (!gridGrid) {
+            const captureEl = el.querySelector('.grid-viz-wrap') || el.querySelector('.grid-grid');
+            if (!captureEl) {
                 alert('No visualization to capture');
                 return;
             }
@@ -3348,23 +3559,21 @@
                 return;
             }
 
-            if (lightMode) {
-                gridGrid.classList.add('snapshot-light');
-            }
-
+            const { root: snapshotRoot, cleanup } = prepareSnapshotCaptureRoot(captureEl, encodings, lightMode);
             const bgColor = lightMode ? '#ffffff' : '#0f1419';
 
-            html2canvas(gridGrid, {
+            html2canvas(snapshotRoot, {
                 backgroundColor: bgColor,
                 scale: 2,
-                onclone: (clonedDoc, clonedGrid) => {
-                    if (lightMode) clonedGrid.classList.add('snapshot-light');
-                    fixSnapshotLabels(clonedDoc, clonedGrid);
+                onclone: (clonedDoc, clonedRoot) => {
+                    if (lightMode) clonedRoot.classList.add('snapshot-light');
+                    const gridPart = clonedRoot.querySelector('.grid-viz-wrap')
+                        || clonedRoot.querySelector('.grid-grid')
+                        || clonedRoot;
+                    fixSnapshotLabels(clonedDoc, gridPart);
                 }
             }).then(canvas => {
-                if (lightMode) {
-                    gridGrid.classList.remove('snapshot-light');
-                }
+                cleanup();
                 canvas.toBlob(blob => {
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
@@ -3374,12 +3583,11 @@
                     URL.revokeObjectURL(url);
                 }, 'image/png');
             }).catch(err => {
-                if (lightMode) {
-                    gridGrid.classList.remove('snapshot-light');
-                }
+                cleanup();
                 console.error('Snapshot failed:', err);
             });
         }
+        // --- FEATURE: snapshot-plus (end) ---
         
         function downloadCSV() {
             const csv = generateCSV();
@@ -5711,6 +5919,7 @@
                     + buildRecordMediaHTML(row);
             }
 
+            preloadModalImages(modalBody);
             document.getElementById('modalOverlay').classList.add('active');
         }
 
@@ -5815,6 +6024,111 @@
                     return `<div class="no-media">Unknown media type: ${type}</div>`;
             }
         }
+
+        // --- FEATURE: snapshot-plus (start) ---
+        const snapshotImageCache = new Map();
+
+        function getSnapshotFetchUrl(src) {
+            if (!src || src.startsWith('data:') || src.startsWith('blob:')) return src;
+            try {
+                if (new URL(src, window.location.href).origin === window.location.origin) return src;
+            } catch (_) {}
+            return 'https://wsrv.nl/?url=' + encodeURIComponent(src);
+        }
+
+        async function imageSrcToDataUrl(src) {
+            if (!src || src.startsWith('data:')) return src;
+            if (snapshotImageCache.has(src)) return snapshotImageCache.get(src);
+
+            async function blobToDataUrl(blob) {
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
+
+            const fetchUrl = getSnapshotFetchUrl(src);
+            try {
+                const response = await fetch(fetchUrl, { mode: 'cors', credentials: 'omit' });
+                const blob = await response.blob();
+                if (blob.size > 0) {
+                    const dataUrl = await blobToDataUrl(blob);
+                    snapshotImageCache.set(src, dataUrl);
+                    return dataUrl;
+                }
+            } catch (_) { /* fall through */ }
+            return null;
+        }
+
+        function preloadModalImages(root) {
+            root.querySelectorAll('img[src]').forEach(img => {
+                const src = img.getAttribute('src');
+                if (src && !src.startsWith('data:')) imageSrcToDataUrl(src);
+            });
+        }
+
+        async function inlineImagesForSnapshot(root) {
+            const restores = [];
+            const imgs = root.querySelectorAll('img[src]');
+            await Promise.all([...imgs].map(async (img) => {
+                const original = img.getAttribute('src');
+                if (!original || original.startsWith('data:')) return;
+                const dataUrl = await imageSrcToDataUrl(original);
+                if (dataUrl && dataUrl.startsWith('data:')) {
+                    restores.push({ img, original });
+                    img.removeAttribute('crossorigin');
+                    img.src = dataUrl;
+                    if (img.decode) {
+                        try { await img.decode(); } catch (_) { /* ignore */ }
+                    } else {
+                        await new Promise((resolve) => {
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                        });
+                    }
+                }
+            }));
+            return () => restores.forEach(({ img, original }) => {
+                img.src = original;
+            });
+        }
+
+        function syncInlineImagesToClone(liveRoot, cloneRoot) {
+            const liveImgs = liveRoot.querySelectorAll('img[src]');
+            const cloneImgs = cloneRoot.querySelectorAll('img[src]');
+            cloneImgs.forEach((cloneImg, i) => {
+                const liveImg = liveImgs[i];
+                if (!liveImg) return;
+                cloneImg.removeAttribute('crossorigin');
+                cloneImg.src = liveImg.currentSrc || liveImg.src;
+            });
+        }
+
+        function expandSnapshotClone(el) {
+            el.style.maxHeight = 'none';
+            el.style.overflowY = 'visible';
+        }
+
+        function makeSnapshotOnclone(liveModal, options = {}) {
+            const { lightMode } = options;
+            return (_doc, cloneEl) => {
+                expandSnapshotClone(cloneEl);
+                if (lightMode) cloneEl.classList.add('snapshot-light');
+                cloneEl.querySelectorAll('.modal-snap-btn, .modal-snap-theme, .modal-close, .compare-slot-actions, .compare-slot-bar, .compare-hint').forEach(el => {
+                    el.style.display = 'none';
+                });
+                syncInlineImagesToClone(liveModal, cloneEl);
+            };
+        }
+
+        const HTML2CANVAS_SNAPSHOT_OPTS = {
+            useCORS: false,
+            allowTaint: false,
+            logging: false
+        };
+        // --- FEATURE: snapshot-plus (end) ---
         
         // ============================================================
         // REPORT
@@ -6001,7 +6315,7 @@
             URL.revokeObjectURL(a.href);
         }
         
-        function snapshotModal(mode) {
+        async function snapshotModal(mode) {
             const modal = document.querySelector('#modalOverlay .modal');
             if (!modal) return;
             if (typeof html2canvas === 'undefined') {
@@ -6009,8 +6323,11 @@
                 return;
             }
 
+            const lightMode = modalSnapshotLight;
             const title = (document.getElementById('modalTitle')?.textContent || 'record').replace(/\s+/g, '_');
-            const BG = '#1e1e2f';
+            const BG = lightMode ? '#ffffff' : '#1e1e2f';
+            const suffix = lightMode ? '_light' : '';
+            const restoreImages = await inlineImagesForSnapshot(modal);
 
             function downloadCanvas(canvas, filename) {
                 canvas.toBlob(blob => {
@@ -6023,63 +6340,75 @@
                 }, 'image/png');
             }
 
-            function expandClone(el) {
-                el.style.maxHeight = 'none';
-                el.style.overflowY = 'visible';
-            }
+            const baseOpts = {
+                ...HTML2CANVAS_SNAPSHOT_OPTS,
+                backgroundColor: BG,
+                scale: 2
+            };
 
-            if (mode === 'full') {
-                html2canvas(modal, {
-                    backgroundColor: BG,
-                    scale: 2,
-                    onclone: (_doc, el) => expandClone(el)
-                }).then(canvas => downloadCanvas(canvas, `${title}_stacked.png`));
+            try {
+                if (mode === 'full') {
+                    const canvas = await html2canvas(modal, {
+                        ...baseOpts,
+                        onclone: makeSnapshotOnclone(modal, { lightMode })
+                    });
+                    downloadCanvas(canvas, `${title}_stacked${suffix}.png`);
+                } else {
+                    const fieldsPromise = html2canvas(modal, {
+                        ...baseOpts,
+                        onclone: (_doc, el) => {
+                            makeSnapshotOnclone(modal, { lightMode })(_doc, el);
+                            el.querySelectorAll('.media-section, .compare-media-grid').forEach(ms => {
+                                ms.style.display = 'none';
+                            });
+                        }
+                    });
+                    const mediaPromise = html2canvas(modal, {
+                        ...baseOpts,
+                        onclone: (_doc, el) => {
+                            makeSnapshotOnclone(modal, { lightMode })(_doc, el);
+                            el.querySelectorAll('table, .compare-diff-table').forEach(tbl => {
+                                tbl.style.display = 'none';
+                            });
+                        }
+                    });
 
-            } else {
-                // Two captures via onclone — live DOM never touched
-                const fieldsPromise = html2canvas(modal, {
-                    backgroundColor: BG, scale: 2,
-                    onclone: (_doc, el) => {
-                        expandClone(el);
-                        const ms = el.querySelector('.media-section');
-                        if (ms) ms.style.display = 'none';
-                    }
-                });
-                const mediaPromise = html2canvas(modal, {
-                    backgroundColor: BG, scale: 2,
-                    onclone: (_doc, el) => {
-                        expandClone(el);
-                        const tbl = el.querySelector('table');
-                        if (tbl) tbl.style.display = 'none';
-                        // hide snap buttons from the media-only image
-                        el.querySelectorAll('.modal-snap-btn, .modal-close').forEach(b => b.style.display = 'none');
-                    }
-                });
-
-                Promise.all([fieldsPromise, mediaPromise]).then(([fieldsCanvas, mediaCanvas]) => {
+                    const [fieldsCanvas, mediaCanvas] = await Promise.all([fieldsPromise, mediaPromise]);
                     const pad = 40;
-                    // Scale both canvases so the taller one shrinks to match the
-                    // shorter one — no cropping, both panels end up identical in size.
                     const targetH = Math.min(fieldsCanvas.height, mediaCanvas.height);
-                    const scaleF  = targetH / fieldsCanvas.height;
-                    const scaleM  = targetH / mediaCanvas.height;
+                    const scaleF = targetH / fieldsCanvas.height;
+                    const scaleM = targetH / mediaCanvas.height;
                     const dw_f = Math.round(fieldsCanvas.width * scaleF);
-                    const dw_m = Math.round(mediaCanvas.width  * scaleM);
+                    const dw_m = Math.round(mediaCanvas.width * scaleM);
                     const cellW = Math.max(dw_f, dw_m);
 
                     const out = document.createElement('canvas');
-                    out.width  = cellW * 2 + pad;
+                    out.width = cellW * 2 + pad;
                     out.height = targetH;
                     const ctx = out.getContext('2d');
                     ctx.fillStyle = BG;
                     ctx.fillRect(0, 0, out.width, out.height);
-                    // Left: fields panel, right: media panel — both at targetH
                     ctx.drawImage(fieldsCanvas, 0, 0, fieldsCanvas.width, fieldsCanvas.height,
-                                               (cellW - dw_f) / 2,           0, dw_f, targetH);
-                    ctx.drawImage(mediaCanvas,  0, 0, mediaCanvas.width,  mediaCanvas.height,
-                                               cellW + pad + (cellW - dw_m) / 2, 0, dw_m, targetH);
-                    downloadCanvas(out, `${title}_side-by-side.png`);
-                });
+                        (cellW - dw_f) / 2, 0, dw_f, targetH);
+                    ctx.drawImage(mediaCanvas, 0, 0, mediaCanvas.width, mediaCanvas.height,
+                        cellW + pad + (cellW - dw_m) / 2, 0, dw_m, targetH);
+                    downloadCanvas(out, `${title}_side-by-side${suffix}.png`);
+                }
+            } catch (err) {
+                console.error('Snapshot failed:', err);
+            } finally {
+                restoreImages();
+            }
+        }
+
+        let modalSnapshotLight = false;
+
+        function toggleModalSnapTheme() {
+            modalSnapshotLight = !modalSnapshotLight;
+            const btn = document.getElementById('modalSnapThemeBtn');
+            if (btn) {
+                btn.textContent = modalSnapshotLight ? '☀️' : '🌙';
+                btn.title = modalSnapshotLight ? 'Light snapshot (click for dark)' : 'Dark snapshot (click for light)';
             }
         }
 
