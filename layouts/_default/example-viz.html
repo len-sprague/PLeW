@@ -2308,6 +2308,55 @@
             result.push(current);
             return result;
         }
+
+        // --- FEATURE: json-loader (start) ---
+        function parseJSON(text) {
+            let rows = [];
+            try {
+                const parsed = JSON.parse(text);
+                if (Array.isArray(parsed)) {
+                    rows = parsed;
+                } else if (parsed && Array.isArray(parsed.rows)) {
+                    rows = parsed.rows.map(r => (r && typeof r.row === 'object') ? r.row : r);
+                } else if (parsed && Array.isArray(parsed.data)) {
+                    rows = parsed.data;
+                } else if (parsed && typeof parsed === 'object') {
+                    rows = [parsed];
+                }
+            } catch (e) {
+                rows = text.split('\n')
+                    .map(line => line.replace(/\r$/, '').trim())
+                    .filter(line => line.length > 0)
+                    .map(line => {
+                        try { return JSON.parse(line); } catch (e2) { return null; }
+                    })
+                    .filter(row => row !== null);
+            }
+
+            rows = rows.map(r => (r && typeof r === 'object' && !Array.isArray(r)) ? r : { value: r });
+
+            const headerSet = new Set();
+            rows.forEach(r => Object.keys(r).forEach(k => headerSet.add(k)));
+            const headers = Array.from(headerSet);
+
+            const data = rows.map((r, idx) => {
+                const row = { _index: idx };
+                headers.forEach(header => {
+                    const v = r[header];
+                    if (v === undefined || v === null) row[header] = '';
+                    else if (typeof v === 'object') row[header] = JSON.stringify(v);
+                    else row[header] = String(v);
+                });
+                return row;
+            });
+
+            return { headers, data };
+        }
+
+        function isJsonFilename(name) {
+            return /\.(json|jsonl|ndjson)$/i.test(name || '');
+        }
+        // --- FEATURE: json-loader (end) ---
         
         // ============================================================
         // CSV EXPORT
@@ -4531,7 +4580,24 @@
         }
         
         function processCSV(text) {
-            const { headers, data } = parseCSV(text);
+            processParsedRows(parseCSV(text));
+        }
+
+        // --- FEATURE: json-loader (start) ---
+        function processJSON(text) {
+            processParsedRows(parseJSON(text));
+        }
+
+        function processDataFile(text, filename) {
+            if (isJsonFilename(filename)) {
+                processJSON(text);
+            } else {
+                processCSV(text);
+            }
+        }
+        // --- FEATURE: json-loader (end) ---
+
+        function processParsedRows({ headers, data }) {
             csvHeaders = headers;
             
             // Detect media columns from headers
@@ -4606,7 +4672,7 @@
                 if (!r.ok) throw new Error('Dataset load failed: ' + r.status);
                 return r.text();
             })
-            .then(csv => processCSV(csv))
+            .then(text => processDataFile(text, DATASET_URL))
             .catch(err => {
                 console.error(err);
                 const errDiv = document.createElement('div');
