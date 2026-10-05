@@ -2702,7 +2702,7 @@
     <script>
         const DATASET_URL = "{{ .Params.dataset_url | relURL | safeJS }}";
         const CONFIG_URL = {{ if .Params.config_url }}"{{ .Params.config_url | relURL | safeJS }}"{{ else }}null{{ end }};
-        const SITE_BASE = '{{ "/" | relURL }}';
+        const SITE_BASE = "{{ (printf "%s/" (strings.TrimSuffix "/" (site.BaseURL | absURL | printf "%s" | urls.Parse).Path)) | safeJS }}";
         // ============================================================
         // CONFIGURATION
         // ============================================================
