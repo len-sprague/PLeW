@@ -3739,7 +3739,7 @@
             if (!url) return 'unknown';
             const lower = url.toLowerCase();
             if (/\.(jpe?g|png|gif|webp|svg|bmp|ico|tiff?)(\?|$)/i.test(lower)) return 'image';
-            if (/\.(mp4|webm|ogg|mov|avi|mkv)(\?|$)/i.test(lower)) return 'video';
+            if (/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(lower)) return 'video';
             if (/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?|$)/i.test(lower)) return 'audio';
             return 'unknown';
         }
@@ -6268,7 +6268,9 @@
                 case 'video':
                     return `<video controls muted><source src="${url}" type="video/mp4"></video>`;
                 case 'audio':
-                    return `<div class="audio-icon">🎵</div><audio controls><source src="${url}" type="audio/wav"><source src="${url}" type="audio/mpeg"></audio>`;
+                    const ext = (url.split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
+                    const mime = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', oga: 'audio/ogg', flac: 'audio/flac', aac: 'audio/aac', m4a: 'audio/mp4' }[(ext || '').toLowerCase()];
+                    return `<div class="audio-icon">🎵</div><audio controls preload="metadata"><source src="${url}"${mime ? ` type="${mime}"` : ''}></audio>`;
                 default:
                     return `<div class="no-media">Unknown media type: ${type}</div>`;
             }
