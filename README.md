@@ -89,6 +89,7 @@ Each example page is just a CSV file plus a small text file that tells PLeW abou
    - `med::` — always treat as media, audio/image/video/YouTube link (e.g. `med::recording`)
    - `desc::` — always treat as descriptive text, shown in the popup only (e.g. `desc::notes`)
 2. **Add any media files** (audio, image, video) referenced by your CSV into a new folder under `static/`, e.g. `static/<your-dataset-name>/`. In the CSV, reference them with a path relative to `static/`, e.g. `<your-dataset-name>/clip1.wav` — or use a full `https://` link (including YouTube URLs).
+   If your CSV only lists bare filenames (e.g. `clip1.wav`), see [Prefixing media filenames](#prefixing-media-filenames-with-the-csv-name) below.
 3. **Create the content page.** From a terminal in the project folder, run:
    ```
    hugo new content/examples/<your-dataset-name>.md
@@ -118,6 +119,23 @@ Each example page is just a CSV file plus a small text file that tells PLeW abou
    https://<your-github-username>.github.io/<your-repo-name>/examples/<your-dataset-name>/
    ```
 4. Share that link directly with collaborators — it opens straight into the visualizer with your dataset already loaded, no upload required.
+
+---
+
+## Prefixing media filenames with the CSV name
+
+PLeW looks up relative media paths from the `static/` folder, so for a dataset `21.csv` whose media sits in `static/21/`, the CSV cells must read `21/clip1.wav`, not just `clip1.wav`. If your CSVs were exported with bare filenames, `tools/prefix_media_paths.py` adds the prefix for you.
+
+1. Download `tools/prefix_media_paths.py` and put it in a folder together with the CSVs you want to fix. Use a working copy of your CSVs: the script overwrites them in place.
+2. Open a terminal in that folder and run (Python 3 is the only requirement):
+   ```
+   python prefix_media_paths.py
+   ```
+   Add `--dry-run` to preview without saving, or pass a folder path to process CSVs somewhere else.
+3. For each CSV, in alphabetical order, the script lists the columns that look like media (`audio_url`, `image_url`, `med::…`, etc.) with a few before/after examples, then asks, e.g. `Prefix 'audio_url' in 21.csv with '21/'? [y/n/q]`. Type `y` to edit that column, `n` (or just Enter) to skip it, or `q` to quit. Files already saved stay saved.
+4. Copy the fixed CSVs to `static/data/` and the media files to the matching `static/<csv-name>/` folders.
+
+Empty cells, full `https://` links (including YouTube), paths starting with `/`, and filenames that already start with the CSV name are left untouched, so running the script twice is safe.
 
 ---
 
