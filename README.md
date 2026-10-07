@@ -137,6 +137,8 @@ PLeW looks up relative media paths from the `static/` folder, so for a dataset `
 
 Empty cells, full `https://` links (including YouTube), paths starting with `/`, and filenames that already start with the CSV name are left untouched, so running the script twice is safe.
 
+CSVs saved by Excel are often not UTF-8. The script detects this, saves the file back in its original encoding, and offers to convert it to UTF-8 (which the website expects). If it can't identify the encoding, rerun with `--encoding` set to match, e.g. `python prefix_media_paths.py --encoding cp932` (Japanese) or `cp949` (Korean).
+
 ---
 
 ## Troubleshooting
