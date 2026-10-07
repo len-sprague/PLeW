@@ -14,9 +14,12 @@ Cells that are left alone: empty cells, full URLs (http://, https://, //, data:,
 blob: - including YouTube links), absolute paths starting with "/", and cells
 that already start with "<csv-stem>/" (so re-running is safe).
 
-Usage:
-    python tools/prefix_media_paths.py static/data
-    python tools/prefix_media_paths.py static/data --dry-run   # report only, write nothing
+Usage (copy your CSVs into a working folder, NOT the repo's static/data, then run from there):
+    python prefix_media_paths.py                  # every *.csv in the current folder
+    python prefix_media_paths.py path/to/folder   # every *.csv in another folder
+    python prefix_media_paths.py --dry-run        # report only, write nothing
+
+Needs only Python 3 (standard library). The CSVs are overwritten in place, so keep a backup.
 """
 import argparse
 import csv
@@ -133,7 +136,8 @@ def process(path, dry_run):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("directory", type=Path, help="folder containing the CSV files, e.g. static/data")
+    ap.add_argument("directory", type=Path, nargs="?", default=Path("."),
+                    help="folder containing the CSV files (default: current folder)")
     ap.add_argument("--dry-run", action="store_true", help="show what would change, but don't write any file")
     args = ap.parse_args()
 
