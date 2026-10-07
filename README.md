@@ -89,6 +89,7 @@ Each example page is just a CSV file plus a small text file that tells PLeW abou
    - `med::` — always treat as media, audio/image/video/YouTube link (e.g. `med::recording`)
    - `desc::` — always treat as descriptive text, shown in the popup only (e.g. `desc::notes`)
 2. **Add any media files** (audio, image, video) referenced by your CSV into a new folder under `static/`, e.g. `static/<your-dataset-name>/`. In the CSV, reference them with a path relative to `static/`, e.g. `<your-dataset-name>/clip1.wav` — or use a full `https://` link (including YouTube URLs).
+   If your CSV only lists bare filenames (e.g. `clip1.wav`), run `python tools/prefix_media_paths.py static/data` to prepend each CSV's name as the folder (`21.csv` → `21/clip1.wav`). It asks you to confirm each media column before overwriting the file; add `--dry-run` to preview.
 3. **Create the content page.** From a terminal in the project folder, run:
    ```
    hugo new content/examples/<your-dataset-name>.md
