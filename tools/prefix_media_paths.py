@@ -19,12 +19,18 @@ Usage (copy your CSVs into a working folder, NOT the repo's static/data, then ru
     python prefix_media_paths.py path/to/folder   # every *.csv in another folder
     python prefix_media_paths.py --dry-run        # report only, write nothing
 
+If a CSV isn't UTF-8 (e.g. saved by Excel), it is detected and saved back in the same
+encoding; you're offered a conversion to UTF-8, or force one with --encoding (e.g. cp932).
+
 Needs only Python 3 (standard library). The CSVs are overwritten in place, so keep a backup.
 """
 import argparse
 import csv
+import io
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 # Same header heuristics the visualizer uses (see MEDIA_URL_PATTERNS in example-viz.html).
@@ -35,6 +41,7 @@ MEDIA_HEADER_PATTERNS = [
 ]
 COLUMN_PREFIX = re.compile(r"^(dim|med|desc|res)::")
 MEDIA_EXT = re.compile(r"\.(jpe?g|png|gif|webp|svg|bmp|ico|tiff?|mp4|webm|mov|avi|mkv|mp3|wav|ogg|oga|flac|aac|m4a|wma)$", re.I)
+csv.field_size_limit(2**31 - 1)  # long transcripts shouldn't crash the reader
 EXTERNAL = re.compile(r"^(https?:)?//|^(data|blob):", re.I)
 
 
@@ -66,24 +73,62 @@ def candidate_columns(headers, rows):
     return cols
 
 
-def read_csv(path):
-    raw = path.read_bytes()
-    encoding = "utf-8-sig" if raw.startswith(b"\xef\xbb\xbf") else "utf-8"
-    text = raw.decode(encoding)
+def decode_bytes(raw, forced=None):
+    """Return (text, encoding). The same encoding is used to save, so untouched bytes survive.
+
+    Order tried: forced encoding, UTF-8 (with/without BOM), UTF-16 (BOM), Windows-1252
+    (Excel's default on Western Windows), then latin-1, which decodes any byte.
+    """
+    if forced:
+        return raw.decode(forced), forced
+    if raw.startswith(b"\xef\xbb\xbf"):
+        return raw.decode("utf-8-sig"), "utf-8-sig"
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return raw.decode("utf-16"), "utf-16"
+    for enc in ("utf-8", "cp1252"):
+        try:
+            return raw.decode(enc), enc
+        except UnicodeDecodeError:
+            pass
+    return raw.decode("latin-1"), "latin-1"
+
+
+def non_ascii_sample(text, width=12):
+    """A short snippet around the first non-ASCII character, so you can judge if decoding looks right."""
+    for m in re.finditer(r"[^\x00-\x7f]+", text):
+        return text[max(0, m.start() - width):m.end() + width].replace("\n", " ").replace("\r", " ")
+    return None
+
+
+def read_csv(path, forced=None):
+    text, encoding = decode_bytes(path.read_bytes(), forced)
     newline = "\r\n" if "\r\n" in text else "\n"
-    with path.open(encoding=encoding, newline="") as f:
-        rows = list(csv.reader(f))
-    return rows, encoding, newline
+    rows = list(csv.reader(io.StringIO(text, newline="")))
+    return rows, encoding, newline, text
 
 
 def write_csv(path, rows, encoding, newline):
-    with path.open("w", encoding=encoding, newline="") as f:
-        csv.writer(f, lineterminator=newline).writerows(rows)
+    """Write to a temp file in the same folder, then swap it in, so a failure can't truncate the original."""
+    buf = io.StringIO(newline="")
+    csv.writer(buf, lineterminator=newline).writerows(rows)
+    data = buf.getvalue().encode(encoding)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def ask(question):
     while True:
-        answer = input(question + " [y/n/q(uit)] ").strip().lower()
+        try:
+            answer = input(question + " [y/n/q(uit)] ").strip().lower()
+        except EOFError:
+            answer = "q"
         if answer in ("y", "yes"):
             return True
         if answer in ("n", "no", ""):
@@ -94,11 +139,18 @@ def ask(question):
         print("  Please type y, n, or q.")
 
 
-def process(path, dry_run):
+def process(path, dry_run, forced_encoding=None):
     stem = path.stem
     root = stem + "/"
     print(f"\n=== {path.name}  (prefix: {root}) ===")
-    rows, encoding, newline = read_csv(path)
+    rows, encoding, newline, text = read_csv(path, forced_encoding)
+    non_utf8 = encoding not in ("utf-8", "utf-8-sig")
+    unidentified = encoding == "latin-1" and not forced_encoding  # last-resort guess: bytes kept, text may look garbled
+    if non_utf8:
+        print(f"  Note: not UTF-8; read as {encoding}. Non-ASCII text looks like: {non_ascii_sample(text)!r}")
+    if unidentified:
+        print("  Couldn't identify this file's encoding, so its bytes will be saved unchanged. If you want it converted\n"
+              "  to UTF-8, rerun with --encoding that matches it (e.g. cp932 Japanese, cp949 Korean, cp1251 Cyrillic).")
     if len(rows) < 2:
         print("  No data rows; skipping.")
         return
@@ -130,8 +182,11 @@ def process(path, dry_run):
     elif dry_run:
         print(f"  [dry run] would update {changed} cell(s); file not written.")
     else:
+        if non_utf8 and not unidentified and ask(f"  Save {path.name} as UTF-8 instead of {encoding}? (the website expects UTF-8; "
+                            f"say n if the text above looks garbled)"):
+            encoding = "utf-8"
         write_csv(path, rows, encoding, newline)
-        print(f"  Saved {path.name} ({changed} cell(s) updated).")
+        print(f"  Saved {path.name} as {encoding} ({changed} cell(s) updated).")
 
 
 def main():
@@ -139,6 +194,8 @@ def main():
     ap.add_argument("directory", type=Path, nargs="?", default=Path("."),
                     help="folder containing the CSV files (default: current folder)")
     ap.add_argument("--dry-run", action="store_true", help="show what would change, but don't write any file")
+    ap.add_argument("--encoding", help="force how every CSV is read/saved, e.g. cp932 (Japanese Windows), "
+                                       "cp949 (Korean), latin-1; default: auto-detect per file")
     args = ap.parse_args()
 
     if not args.directory.is_dir():
@@ -147,9 +204,19 @@ def main():
     if not files:
         sys.exit(f"No .csv files in {args.directory}")
     print(f"Found {len(files)} CSV file(s) in {args.directory}")
+    failed = []
     for path in files:
-        process(path, args.dry_run)
+        try:
+            process(path, args.dry_run, args.encoding)
+        except KeyboardInterrupt:
+            sys.exit("\nInterrupted; files already processed stay saved.")
+        except Exception as e:  # keep going so one bad file doesn't stop the rest
+            print(f"  ERROR: could not process {path.name}: {type(e).__name__}: {e}")
+            failed.append(path.name)
     print("\nDone.")
+    if failed:
+        print("These files were NOT processed (see errors above): " + ", ".join(failed))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
