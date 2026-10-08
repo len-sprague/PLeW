@@ -2428,6 +2428,14 @@
                 <div class="section" id="vizConfigSection" style="display: none;">
                     <div class="section-title">Visualization setup</div>
                     <div class="value-filters-hint">Export your dimension order, filters, colors/shapes, and display options as JSON. Import a saved file to restore that setup.</div>
+                    <div class="dummy-setting-row" style="margin-top: 8px;">
+                        <span>Media playback</span>
+                    </div>
+                    <div class="dummy-setting-row">
+                        <label><input type="checkbox" id="mediaVideoMuted" checked onchange="updateMediaSettings()"> Mute video</label>
+                        <label><input type="checkbox" id="mediaAudioMuted" onchange="updateMediaSettings()"> Mute audio</label>
+                        <label><input type="checkbox" id="mediaLoop" onchange="updateMediaSettings()"> Loop</label>
+                    </div>
                     <div id="vizConfigNotice" class="viz-config-notice" style="display: none;"></div>
                     <div class="changes-actions" style="margin-top: 8px;">
                         <button class="btn btn-secondary btn-small" onclick="downloadVisualizationConfig()">📤 Export setup</button>
@@ -2871,7 +2879,7 @@
 
         // --- FEATURE: viz-config-io (start) ---
         const VIZ_CONFIG_KIND = 'plew-visualization-config';
-        const VIZ_CONFIG_VERSION = 2;
+        const VIZ_CONFIG_VERSION = 3;
 
         function datasetIdFromFilename(filename) {
             const path = String(filename || 'dataset');
@@ -2905,6 +2913,7 @@
                     showItemCounts: !!document.getElementById('showItemCounts')?.checked,
                     showDimensionNames: !!document.getElementById('showDimensionNames')?.checked,
                     clusterPoints: !!document.getElementById('clusterPoints')?.checked,
+                    showEncodingLegend: !!document.getElementById('showEncodingLegendToggle')?.checked,
                     uniformGridSizes: !!document.getElementById('uniformgrids')?.checked,
                     outerPanelRowHeight: document.getElementById('outerPanelRowHeight')?.value ?? '200',
                     unifyInnerPanel: !!document.getElementById('unifyInnerPanel')?.checked,
@@ -2915,6 +2924,11 @@
                     countColor: document.getElementById('countColor')?.value ?? '#555555'
                 },
                 dummySettings: { ...dummySettings },
+                media: { ...mediaSettings },
+                layout: {
+                    sidebarCollapsed: !!document.getElementById('sidebar')?.classList.contains('collapsed'),
+                    floatingLegendMinimized: !!document.getElementById('floatingLegend')?.classList.contains('minimized')
+                },
                 columns: {
                     visibility: { ...columnVisibility },
                     recordOrder: [...columnRecordOrder]
@@ -2992,6 +3006,10 @@
             showDimensionNames = !!display.showDimensionNames;
             setChecked('clusterPoints', display.clusterPoints);
             clusterPoints = !!display.clusterPoints;
+            if (display.showEncodingLegend !== undefined) {
+                setChecked('showEncodingLegendToggle', display.showEncodingLegend);
+                toggleEncodingLegend(!!display.showEncodingLegend);
+            }
             setChecked('uniformgrids', display.uniformGridSizes);
             uniformgridSizes = !!display.uniformGridSizes;
             setValue('outerPanelRowHeight', display.outerPanelRowHeight);
@@ -3010,6 +3028,25 @@
                 dummySettings = { ...dummySettings, ...config.dummySettings };
             }
 
+            if (config.media && typeof config.media === 'object') {
+                ['videoMuted', 'audioMuted', 'loop'].forEach(k => {
+                    if (typeof config.media[k] === 'boolean') mediaSettings[k] = config.media[k];
+                });
+                syncMediaSettingsUI();
+            }
+
+            if (config.layout && typeof config.layout === 'object') {
+                if (typeof config.layout.sidebarCollapsed === 'boolean') {
+                    document.getElementById('sidebar')?.classList.toggle('collapsed', config.layout.sidebarCollapsed);
+                }
+                if (typeof config.layout.floatingLegendMinimized === 'boolean') {
+                    const legend = document.getElementById('floatingLegend');
+                    const btn = legend?.querySelector('.floating-legend-toggle');
+                    legend?.classList.toggle('minimized', config.layout.floatingLegendMinimized);
+                    if (btn) btn.textContent = config.layout.floatingLegendMinimized ? '+' : '−';
+                }
+            }
+
             if (config.columns?.visibility && typeof config.columns.visibility === 'object') {
                 columnVisibility = { ...config.columns.visibility };
                 ensureColumnVisibilityDefaults(getEditableColumns());
@@ -3021,6 +3058,22 @@
             ensureColumnRecordOrderDefaults(getEditableColumns());
 
             return true;
+        }
+
+        function syncMediaSettingsUI() {
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+            set('mediaVideoMuted', mediaSettings.videoMuted);
+            set('mediaAudioMuted', mediaSettings.audioMuted);
+            set('mediaLoop', mediaSettings.loop);
+        }
+
+        function updateMediaSettings() {
+            mediaSettings.videoMuted = !!document.getElementById('mediaVideoMuted')?.checked;
+            mediaSettings.audioMuted = !!document.getElementById('mediaAudioMuted')?.checked;
+            mediaSettings.loop = !!document.getElementById('mediaLoop')?.checked;
+            // Update any players already open in the record window
+            document.querySelectorAll('video').forEach(el => { el.muted = mediaSettings.videoMuted; el.loop = mediaSettings.loop; });
+            document.querySelectorAll('audio').forEach(el => { el.muted = mediaSettings.audioMuted; el.loop = mediaSettings.loop; });
         }
 
         function applyVisualizationConfig(config, options = {}) {
@@ -3287,6 +3340,8 @@
         
         let uniformgridSizes = false;
         let unifyInnerPanel = false;
+        // Media playback defaults used when record-window media players are built
+        let mediaSettings = { videoMuted: true, audioMuted: false, loop: false };
         const PANEL_HEADER_HEIGHT = 16;
         
         // Drag and drop state
@@ -6266,11 +6321,11 @@
                 case 'image':
                     return `<img src="${url}" alt="${altText}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22250%22><rect fill=%22%23333%22 width=%22100%%22 height=%22100%%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23666%22 text-anchor=%22middle%22>Image unavailable</text></svg>'">`;
                 case 'video':
-                    return `<video controls muted><source src="${url}" type="video/mp4"></video>`;
+                    return `<video controls${mediaSettings.videoMuted ? ' muted' : ''}${mediaSettings.loop ? ' loop' : ''}><source src="${url}" type="video/mp4"></video>`;
                 case 'audio':
                     const ext = (url.split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i) || [])[1];
                     const mime = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', oga: 'audio/ogg', flac: 'audio/flac', aac: 'audio/aac', m4a: 'audio/mp4' }[(ext || '').toLowerCase()];
-                    return `<div class="audio-icon">🎵</div><audio controls preload="metadata"><source src="${url}"${mime ? ` type="${mime}"` : ''}></audio>`;
+                    return `<div class="audio-icon">🎵</div><audio controls preload="metadata"${mediaSettings.audioMuted ? ' muted' : ''}${mediaSettings.loop ? ' loop' : ''}><source src="${url}"${mime ? ` type="${mime}"` : ''}></audio>`;
                 default:
                     return `<div class="no-media">Unknown media type: ${type}</div>`;
             }
