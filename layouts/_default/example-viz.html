@@ -1012,6 +1012,165 @@
             box-shadow: 0 0 0 2px #fff, 0 0 0 4px #888;
         }
         /* --- FEATURE: record-compare (end) --- */
+
+        /* --- FEATURE: row-comments (start) --- */
+        .data-point.has-comment {
+            box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.95);
+        }
+        .data-point.has-comment:hover {
+            box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.95), 0 0 0 3px rgba(255,255,255,0.35);
+        }
+        .data-point.has-comment.selected {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(155, 89, 182, 0.85);
+        }
+        .data-point.has-comment::after {
+            content: '';
+            position: absolute;
+            right: -1px;
+            top: -1px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #9b59b6;
+            border: 1px solid #0f1419;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .record-comment-block {
+            margin-top: 14px;
+            padding: 12px;
+            background: #1a1f26;
+            border: 1px solid #2d3640;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+        .record-comment-block h4 {
+            margin: 0 0 8px 0;
+            font-size: 0.72rem;
+            color: #9b59b6;
+            font-weight: 600;
+        }
+        .record-comment-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .record-comment-presets button {
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #3d4650;
+            background: #232a33;
+            color: #ccc;
+            cursor: pointer;
+        }
+        .record-comment-presets button:hover {
+            border-color: #9b59b6;
+            color: #e8e8e8;
+        }
+        .record-comment-textarea {
+            width: 100%;
+            min-height: 72px;
+            box-sizing: border-box;
+            margin: 6px 0;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #2d3640;
+            background: #0f1419;
+            color: #e8e8e8;
+            font-family: inherit;
+            font-size: 0.75rem;
+            resize: vertical;
+        }
+        .record-comment-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .record-comment-actions .btn-small {
+            font-size: 0.68rem;
+        }
+        .comment-presets-textarea {
+            width: 100%;
+            min-height: 52px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #2d3640;
+            background: #0f1419;
+            color: #e8e8e8;
+            font-family: inherit;
+            font-size: 0.68rem;
+            resize: vertical;
+        }
+        .comment-tag-filter-wrap {
+            margin-top: 8px;
+            display: none;
+        }
+        .viz-toolbar .comment-tag-filter-wrap {
+            margin-top: 0;
+            flex: 1 1 200px;
+            min-width: 160px;
+            max-width: 340px;
+        }
+        .comment-tag-filter-row-ui {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .comment-tag-filter-label {
+            flex: 0 0 auto;
+            font-size: 0.65rem;
+            color: #999;
+            padding-top: 4px;
+            line-height: 1.2;
+            max-width: 72px;
+        }
+        .comment-tag-filter-list-wrap {
+            flex: 1;
+            min-width: 0;
+            max-height: 96px;
+            overflow-y: auto;
+            padding: 4px 6px;
+            border-radius: 4px;
+            border: 1px solid #2d3640;
+            background: #0f1419;
+        }
+        .comment-tag-filter-cb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.62rem;
+            line-height: 1.2;
+            color: #bbb;
+            margin: 0;
+            padding: 2px 0;
+            cursor: pointer;
+        }
+        .comment-tag-filter-cb input {
+            flex-shrink: 0;
+            margin: 0;
+        }
+        .comment-tag-filter-cb.other-label {
+            color: #889;
+            font-style: italic;
+        }
+        .comment-tag-filter-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+        .comment-tag-filter-actions .section-btn {
+            font-size: 0.58rem;
+            padding: 2px 6px;
+            white-space: nowrap;
+        }
+        /* --- FEATURE: row-comments (end) --- */
         
         .data-point.shape-circle { border-radius: 50%; }
         .data-point.shape-square { border-radius: 2px; }
@@ -1761,7 +1920,7 @@
         /* --- FEATURE: grid-toolbar (start) --- */
         .viz-toolbar {
             display: none;
-            align-items: center;
+            align-items: flex-start;
             justify-content: flex-end;
             gap: 12px;
             padding: 10px 20px;
@@ -1779,6 +1938,7 @@
             cursor: pointer;
             white-space: nowrap;
             user-select: none;
+            padding-top: 3px;
         }
 
         .encoding-legend-toggle input {
@@ -2536,6 +2696,23 @@
                     </div>
                     <div id="valueFiltersList"></div>
                 </div>
+
+                <!-- --- FEATURE: row-comments (start) --- -->
+                <div class="section" id="commentsSection" style="display: none;">
+                    <div class="section-title">Comments</div>
+                    <div class="value-filters-hint">
+                        <strong>Row notes (<code>desc::comment</code>)</strong>
+                        <ul>
+                            <li>The column is added to your data if missing; included in <strong>Download CSV</strong></li>
+                            <li>Open a record to edit · purple ring + dot = has a comment · notes save as you type</li>
+                            <li>Optional: define your own tag list below (one per line) — buttons insert <code>Tag:</code> in the record editor; use <strong>Show only rows with comments</strong> and <strong>Tags to show</strong> in the bar above the grid</li>
+                        </ul>
+                    </div>
+                    <div style="font-size:0.68rem;color:#888;margin-bottom:4px;">Your tags (one per line, optional)</div>
+                    <textarea class="comment-presets-textarea" id="commentPresetsInput" rows="4" placeholder="Add labels you want as quick-insert buttons…" onchange="applyCommentPresetsFromInput()"></textarea>
+                    <button type="button" class="btn btn-secondary btn-small" style="margin-top:6px;" onclick="applyCommentPresetsFromInput()">Update tag buttons</button>
+                </div>
+                <!-- --- FEATURE: row-comments (end) --- -->
                 
                 <div class="section" id="legendSection" style="display: none;">
                     <div class="section-title">Color Legend</div>
@@ -2680,6 +2857,20 @@
 
             <!-- --- FEATURE: grid-toolbar (start) --- -->
             <div class="viz-toolbar" id="vizToolbar">
+                <label class="encoding-legend-toggle" title="Hide rows without a note in desc::comment (tag filters to the right apply when tags are defined)">
+                    <input type="checkbox" id="commentsOnlyToggle" onchange="toggleCommentsOnly()">
+                    Show only rows with comments
+                </label>
+                <div class="comment-tag-filter-wrap" id="commentTagFilterWrap">
+                    <div class="comment-tag-filter-row-ui">
+                        <span class="comment-tag-filter-label">Tags to show</span>
+                        <div class="comment-tag-filter-list-wrap" id="commentTagFilterList"></div>
+                        <div class="comment-tag-filter-actions">
+                            <button type="button" class="section-btn" onclick="setAllCommentTagFilters(true)">All</button>
+                            <button type="button" class="section-btn" onclick="setAllCommentTagFilters(false)">None</button>
+                        </div>
+                    </div>
+                </div>
                 <label class="encoding-legend-toggle" title="Show color and shape keys above the grid">
                     <input type="checkbox" id="showEncodingLegendToggle" onchange="toggleEncodingLegend(this.checked)">
                     Show color & shape
@@ -3022,16 +3213,6 @@
             return `${visible} of ${total} ${plural}`;
         }
 
-        function rowPassesColorShapeFilters(row, encodings) {
-            for (const dim of [encodings.color, encodings.shape]) {
-                if (!dim) continue;
-                const key = dimKey(dim);
-                const filter = dimensionValueFilters[key];
-                if (filter && !filter.has(row[key])) return false;
-            }
-            return true;
-        }
-
         function setAllValueFilters(key, visible) {
             if (visible) {
                 delete dimensionValueFilters[key];
@@ -3059,9 +3240,294 @@
         }
         // --- FEATURE: filters-plus (end) ---
 
+        // --- FEATURE: row-comments (start) ---
+        const COMMENT_COLUMN_KEY = 'desc::comment';
+        const COMMENT_FILTER_OTHER = '__plew_comment_other__';
+        let commentPresetLabels = [];
+        let showCommentsOnly = false;
+        let commentVisibleTags = new Set();
+
+        let recordCommentAutosaveTimer = null;
+        const RECORD_COMMENT_AUTOSAVE_MS = 350;
+
+        function clearRecordCommentAutosaveTimer() {
+            if (recordCommentAutosaveTimer != null) {
+                clearTimeout(recordCommentAutosaveTimer);
+                recordCommentAutosaveTimer = null;
+            }
+        }
+
+        function flushPendingRecordCommentSave() {
+            clearRecordCommentAutosaveTimer();
+            const ta = document.getElementById('recordCommentTextarea');
+            if (!ta || !ta.isConnected) return;
+            const idxRaw = ta.dataset.commentRowIndex;
+            if (idxRaw === undefined || idxRaw === '') return;
+            const idx = Number(idxRaw);
+            if (Number.isNaN(idx) || !currentData?.[idx]) return;
+            saveRecordCommentFromValues(idx, ta.value);
+        }
+
+        function scheduleRecordCommentAutosave(rowIndex, ta) {
+            clearRecordCommentAutosaveTimer();
+            recordCommentAutosaveTimer = setTimeout(() => {
+                recordCommentAutosaveTimer = null;
+                if (!ta.isConnected || !currentData[rowIndex]) return;
+                saveRecordCommentFromValues(rowIndex, ta.value);
+            }, RECORD_COMMENT_AUTOSAVE_MS);
+        }
+
+        function saveRecordCommentFromValues(rowIndex, rawText) {
+            if (!currentData[rowIndex]) return;
+            ensureCommentColumn();
+            const newVal = String(rawText ?? '').trim();
+            const oldVal = String(currentData[rowIndex][COMMENT_COLUMN_KEY] ?? '').trim();
+            if (newVal === oldVal) return;
+
+            currentData[rowIndex][COMMENT_COLUMN_KEY] = newVal;
+            modifiedRows.add(rowIndex);
+            pushUndoAction({
+                type: 'comment-edit',
+                changes: [{ rowIndex, field: COMMENT_COLUMN_KEY, oldValue: oldVal, newValue: newVal }]
+            });
+            logChange(rowIndex, COMMENT_COLUMN_KEY, oldVal, newVal);
+            updateChangesIndicator();
+            updateVisualization();
+        }
+
+        function ensureCommentColumn() {
+            if (!csvHeaders) return;
+            if (csvHeaders.includes(COMMENT_COLUMN_KEY)) return;
+            csvHeaders.push(COMMENT_COLUMN_KEY);
+            [currentData, originalData, dummyRows].filter(Boolean).forEach(arr => {
+                arr.forEach(row => {
+                    if (row && row[COMMENT_COLUMN_KEY] === undefined) row[COMMENT_COLUMN_KEY] = '';
+                });
+            });
+        }
+
+        function getCommentCellValue(row) {
+            return String(row[COMMENT_COLUMN_KEY] ?? '').trim();
+        }
+
+        function rowHasComment(row) {
+            return getCommentCellValue(row).length > 0;
+        }
+
+        function commentTextMentionedPresetLabels(text) {
+            const t = String(text || '');
+            const found = [];
+            for (const label of commentPresetLabels) {
+                if (!label) continue;
+                const needle = `${label}:`;
+                if (t.includes(needle)) found.push(label);
+            }
+            return found;
+        }
+
+        function rowPassesCommentFilter(row) {
+            if (!showCommentsOnly) return true;
+            if (!rowHasComment(row)) return false;
+            if (commentPresetLabels.length === 0) return true;
+            if (commentVisibleTags.size === 0) return false;
+            const text = getCommentCellValue(row);
+            const mentioned = commentTextMentionedPresetLabels(text);
+            if (mentioned.length === 0) {
+                return commentVisibleTags.has(COMMENT_FILTER_OTHER);
+            }
+            return mentioned.some(l => commentVisibleTags.has(l));
+        }
+
+        function syncCommentPresetsTextarea() {
+            const el = document.getElementById('commentPresetsInput');
+            if (el) el.value = commentPresetLabels.join('\n');
+        }
+
+        function applyCommentPresetsFromInput() {
+            const el = document.getElementById('commentPresetsInput');
+            if (!el) return;
+            const prevLabels = [...commentPresetLabels];
+            commentPresetLabels = el.value.split('\n').map(s => s.trim()).filter(Boolean);
+            if (commentPresetLabels.length === 0) {
+                commentVisibleTags = new Set();
+            } else if (prevLabels.length === 0) {
+                commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+            } else {
+                const next = new Set();
+                for (const l of commentPresetLabels) {
+                    if (!prevLabels.includes(l)) next.add(l);
+                    else if (commentVisibleTags.has(l)) next.add(l);
+                }
+                if (commentVisibleTags.has(COMMENT_FILTER_OTHER)) next.add(COMMENT_FILTER_OTHER);
+                commentVisibleTags = next;
+                if (commentVisibleTags.size === 0) {
+                    commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+                }
+            }
+            renderCommentTagFilters();
+            refreshRecordCommentBlock();
+            updateVisualization();
+        }
+
+        function setAllCommentTagFilters(visible) {
+            if (commentPresetLabels.length === 0) return;
+            if (visible) {
+                commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+            } else {
+                commentVisibleTags = new Set();
+            }
+            renderCommentTagFilters();
+            updateVisualization();
+        }
+
+        function onCommentTagFilterCheckboxChange(label, checked) {
+            if (checked) commentVisibleTags.add(label);
+            else commentVisibleTags.delete(label);
+            updateVisualization();
+        }
+
+        function renderCommentTagFilters() {
+            const wrap = document.getElementById('commentTagFilterWrap');
+            const list = document.getElementById('commentTagFilterList');
+            if (!wrap || !list) return;
+            if (commentPresetLabels.length === 0 || !showCommentsOnly) {
+                wrap.style.display = 'none';
+                list.replaceChildren();
+                return;
+            }
+            wrap.style.display = 'block';
+            list.replaceChildren();
+            commentPresetLabels.forEach(label => {
+                const row = document.createElement('label');
+                row.className = 'comment-tag-filter-cb';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = commentVisibleTags.has(label);
+                cb.addEventListener('change', () => onCommentTagFilterCheckboxChange(label, cb.checked));
+                const span = document.createElement('span');
+                span.textContent = label;
+                row.append(cb, span);
+                list.appendChild(row);
+            });
+            const otherRow = document.createElement('label');
+            otherRow.className = 'comment-tag-filter-cb other-label';
+            const ocb = document.createElement('input');
+            ocb.type = 'checkbox';
+            ocb.checked = commentVisibleTags.has(COMMENT_FILTER_OTHER);
+            ocb.addEventListener('change', () => onCommentTagFilterCheckboxChange(COMMENT_FILTER_OTHER, ocb.checked));
+            const ospan = document.createElement('span');
+            ospan.textContent = 'Other (no tag prefix)';
+            otherRow.append(ocb, ospan);
+            list.appendChild(otherRow);
+        }
+
+        function toggleCommentsOnly() {
+            const el = document.getElementById('commentsOnlyToggle');
+            showCommentsOnly = !!(el && el.checked);
+            if (showCommentsOnly && commentPresetLabels.length > 0 && commentVisibleTags.size === 0) {
+                commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+            }
+            renderCommentTagFilters();
+            updateVisualization();
+        }
+
+        function refreshRecordCommentBlock() {
+            const overlay = document.getElementById('modalOverlay');
+            if (overlay?.classList.contains('active') && compareSlots.b == null && compareSlots.a != null) {
+                renderCompareModal();
+            }
+        }
+
+        function appendRecordCommentEditor(modalBody) {
+            if (!modalBody || compareSlots.b != null) return;
+            const idx = compareSlots.a;
+            if (idx == null || !currentData?.[idx]) return;
+            ensureCommentColumn();
+            const row = currentData[idx];
+            const cur = String(row[COMMENT_COLUMN_KEY] ?? '');
+
+            const block = document.createElement('div');
+            block.className = 'record-comment-block';
+            block.id = 'recordCommentBlock';
+
+            const h = document.createElement('h4');
+            h.append('Comment (');
+            const code = document.createElement('code');
+            code.style.fontSize = '0.68rem';
+            code.textContent = COMMENT_COLUMN_KEY;
+            h.appendChild(code);
+            h.append(')');
+
+            const presets = document.createElement('div');
+            presets.className = 'record-comment-presets';
+            commentPresetLabels.forEach(label => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.textContent = label;
+                b.addEventListener('click', () => {
+                    const ta = document.getElementById('recordCommentTextarea');
+                    if (!ta) return;
+                    const prefix = `${label}: `;
+                    const v = ta.value.trim();
+                    if (!v) ta.value = prefix;
+                    else if (!v.includes(prefix.trim())) ta.value = `${v} ${prefix}`.trim();
+                    ta.focus();
+                    scheduleRecordCommentAutosave(idx, ta);
+                });
+                presets.appendChild(b);
+            });
+
+            const ta = document.createElement('textarea');
+            ta.className = 'record-comment-textarea';
+            ta.id = 'recordCommentTextarea';
+            ta.dataset.commentRowIndex = String(idx);
+            ta.value = cur;
+            ta.addEventListener('input', () => scheduleRecordCommentAutosave(idx, ta));
+            ta.addEventListener('blur', () => {
+                clearRecordCommentAutosaveTimer();
+                saveRecordCommentFromValues(idx, ta.value);
+            });
+
+            const actions = document.createElement('div');
+            actions.className = 'record-comment-actions';
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'btn btn-secondary btn-small';
+            clearBtn.textContent = 'Clear';
+            clearBtn.addEventListener('click', () => {
+                const textarea = document.getElementById('recordCommentTextarea');
+                if (textarea) textarea.value = '';
+                clearRecordCommentAutosaveTimer();
+                saveRecordCommentFromValues(idx, '');
+            });
+            actions.append(clearBtn);
+
+            block.append(h, presets, ta, actions);
+            modalBody.appendChild(block);
+        }
+
+        function saveRecordComment(rowIndex) {
+            const ta = document.getElementById('recordCommentTextarea');
+            if (!ta || !currentData[rowIndex]) return;
+            clearRecordCommentAutosaveTimer();
+            saveRecordCommentFromValues(rowIndex, ta.value);
+        }
+        // --- FEATURE: row-comments (end) ---
+
+        function rowPassesColorShapeFilters(row, encodings) {
+            if (!rowPassesCommentFilter(row)) return false;
+            for (const dim of [encodings.color, encodings.shape]) {
+                if (!dim) continue;
+                const key = dimKey(dim);
+                const filter = dimensionValueFilters[key];
+                if (filter && !filter.has(row[key])) return false;
+            }
+            return true;
+        }
+
         // --- FEATURE: viz-config-io (start) ---
         const VIZ_CONFIG_KIND = 'plew-visualization-config';
-        const VIZ_CONFIG_VERSION = 3;
+        const VIZ_CONFIG_VERSION = 5;
 
         function datasetIdFromFilename(filename) {
             const path = String(filename || 'dataset');
@@ -3114,6 +3580,13 @@
                 columns: {
                     visibility: { ...columnVisibility },
                     recordOrder: [...columnRecordOrder]
+                },
+                comments: {
+                    showCommentsOnly: !!showCommentsOnly,
+                    presetLabels: [...commentPresetLabels],
+                    visibleTags: [...commentVisibleTags].map(k =>
+                        k === COMMENT_FILTER_OTHER ? 'other' : k
+                    )
                 }
             };
         }
@@ -3217,6 +3690,38 @@
                 columnRecordOrder = config.columns.recordOrder.filter(h => getEditableColumns().includes(h));
             }
             ensureColumnRecordOrderDefaults(getEditableColumns());
+
+            if (config.comments && typeof config.comments === 'object') {
+                if (typeof config.comments.showCommentsOnly === 'boolean') {
+                    showCommentsOnly = config.comments.showCommentsOnly;
+                    const tgl = document.getElementById('commentsOnlyToggle');
+                    if (tgl) tgl.checked = showCommentsOnly;
+                }
+                if (Array.isArray(config.comments.presetLabels)) {
+                    commentPresetLabels = config.comments.presetLabels.map(s => String(s).trim()).filter(Boolean);
+                    syncCommentPresetsTextarea();
+                }
+                if (Array.isArray(config.comments.visibleTags) && commentPresetLabels.length > 0) {
+                    const labelSet = new Set(commentPresetLabels);
+                    commentVisibleTags = new Set();
+                    for (const raw of config.comments.visibleTags) {
+                        const s = String(raw).trim();
+                        if (s === 'other' || s === COMMENT_FILTER_OTHER) {
+                            commentVisibleTags.add(COMMENT_FILTER_OTHER);
+                        } else if (labelSet.has(s)) {
+                            commentVisibleTags.add(s);
+                        }
+                    }
+                    if (commentVisibleTags.size === 0) {
+                        commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+                    }
+                } else if (commentPresetLabels.length > 0) {
+                    commentVisibleTags = new Set([...commentPresetLabels, COMMENT_FILTER_OTHER]);
+                } else {
+                    commentVisibleTags = new Set();
+                }
+                renderCommentTagFilters();
+            }
 
             return true;
         }
@@ -3364,10 +3869,15 @@
         }
 
         function getModalTableColumnKeys(row) {
-            return getRecordColumnOrder()
+            const keys = getRecordColumnOrder()
                 .filter(key => Object.prototype.hasOwnProperty.call(row, key)
                     && !key.startsWith('_')
                     && !shouldExcludeFromModalTable(key));
+            if (rowHasComment(row) && keys.includes(COMMENT_COLUMN_KEY) === false
+                && Object.prototype.hasOwnProperty.call(row, COMMENT_COLUMN_KEY)) {
+                keys.push(COMMENT_COLUMN_KEY);
+            }
+            return keys;
         }
 
         // --- FEATURE: record-compare (start) ---
@@ -3823,6 +4333,14 @@
             };
         }
 
+        /** Remove comment-indicator styling from cloned DOM so grid PNGs match “clean” dots */
+        function stripHasCommentFromSnapshotClone(root) {
+            if (!root?.querySelectorAll) return;
+            root.querySelectorAll('.data-point.has-comment').forEach(el => {
+                el.classList.remove('has-comment');
+            });
+        }
+
         function downloadSnapshot(lightMode) {
             const el = document.getElementById('vizContainer');
             const captureEl = el.querySelector('.grid-viz-wrap') || el.querySelector('.grid-grid');
@@ -3847,6 +4365,7 @@
                         || clonedRoot.querySelector('.grid-grid')
                         || clonedRoot;
                     fixSnapshotLabels(clonedDoc, gridPart);
+                    stripHasCommentFromSnapshotClone(gridPart);
                 }
             }).then(canvas => {
                 cleanup();
@@ -4858,6 +5377,9 @@
         // --- FEATURE: grid-toolbar (end) ---
         
         function updateVisualization() {
+            const commentsSec = document.getElementById('commentsSection');
+            if (commentsSec) commentsSec.style.display = currentData ? 'block' : 'none';
+
             encodings = buildEncodings();
             
             updateDimensionListEncodings();
@@ -4870,8 +5392,7 @@
             const hasLayout = encodings.gridX || encodings.gridY || encodings.color
                 || encodings.panelX || encodings.panelY || encodings.shape;
             const toolbar = document.getElementById('vizToolbar');
-            const hasColorOrShape = encodings.color || encodings.shape;
-            if (toolbar) toolbar.style.display = hasColorOrShape ? 'flex' : 'none';
+            if (toolbar) toolbar.style.display = currentData ? 'flex' : 'none';
             syncEncodingLegendToggle();
 
             if (currentData && hasLayout) {
@@ -6341,6 +6862,9 @@
             if (isModified) {
                 point.classList.add('modified');
             }
+            if (rowHasComment(row)) {
+                point.classList.add('has-comment');
+            }
             if (rowIndex === compareSlots.a) {
                 point.classList.add('selected');
             }
@@ -6398,6 +6922,11 @@
                 `<strong>${getDisplayName(key)}:</strong> ${row[key]}`
             ).join('<br>');
             
+            if (rowHasComment(row)) {
+                const c = escapeHtml(getCommentCellValue(row));
+                html += `<div style="color:#9b59b6;margin-top:6px;font-size:0.7rem;"><strong>💬</strong> ${c}</div>`;
+            }
+            
             if (isModified) {
                 html += `<div style="color: #ffd93d; margin-top: 6px; font-size: 0.7rem;">⚠️ Modified</div>`;
             }
@@ -6443,6 +6972,9 @@
             if (encodings?.color && key === dimKey(encodings.color)) {
                 const color = getColorForValue(encodings, row[key]);
                 return `<span class="data-tag" style="background: ${color}33; color: ${color}">${escapeHtml(row[key] ?? '')}</span>`;
+            }
+            if (key === COMMENT_COLUMN_KEY) {
+                return `<span style="white-space: pre-wrap;">${escapeHtml(row[key] ?? '')}</span>`;
             }
             return escapeHtml(row[key] ?? '');
         }
@@ -6535,6 +7067,7 @@
         }
 
         function renderCompareModal() {
+            flushPendingRecordCommentSave();
             const modalEl = document.querySelector('#modalOverlay .modal');
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
@@ -6561,6 +7094,7 @@
                 modalTitle.textContent = getModalTitleFromRow(row);
                 modalBody.innerHTML = buildSingleRecordTableHTML(row)
                     + buildRecordMediaHTML(row);
+                appendRecordCommentEditor(modalBody);
             }
 
             preloadModalImages(modalBody);
@@ -7060,6 +7594,7 @@
 
         function closeModal(event) {
             if (event && event.target !== event.currentTarget) return;
+            flushPendingRecordCommentSave();
             document.getElementById('modalOverlay').classList.remove('active');
             document.querySelector('#modalOverlay .modal')?.classList.remove('compare-modal');
             document.querySelectorAll('video, audio').forEach(el => {
@@ -7092,6 +7627,12 @@
 
         function processParsedRows({ headers, data }) {
             csvHeaders = headers;
+            if (!csvHeaders.includes(COMMENT_COLUMN_KEY)) {
+                csvHeaders.push(COMMENT_COLUMN_KEY);
+            }
+            data.forEach(row => {
+                if (row[COMMENT_COLUMN_KEY] === undefined) row[COMMENT_COLUMN_KEY] = '';
+            });
             
             // Detect media columns from headers
             mediaColumns = detectMediaColumns(headers);
@@ -7140,6 +7681,13 @@
             // Store original and working copy (real data only)
             originalData = JSON.parse(JSON.stringify(realData));
             currentData = realData;
+            ensureCommentColumn();
+            showCommentsOnly = false;
+            const comTgl = document.getElementById('commentsOnlyToggle');
+            if (comTgl) comTgl.checked = false;
+            commentVisibleTags = new Set();
+            syncCommentPresetsTextarea();
+            renderCommentTagFilters();
             modifiedRows.clear();
             changeLog = [];
             undoStack = [];
