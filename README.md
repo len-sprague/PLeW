@@ -107,7 +107,7 @@ Each example page is just a CSV file plus a small text file that tells PLeW abou
    +++
    ```
    `weight` controls where the page appears in the example gallery (lower numbers first).
-4. **(Optional) Ship a pre-calibrated setup.** If you've already arranged the dimension mappings, encodings, filters, and styling the way you want, click "Export setup" in the sidebar to download a `plew-setup-*.json` file. Save it as `static/config/<your-dataset-name>.json` (or anywhere under `static/`), then add `config_url = "config/<your-dataset-name>.json"` to the front matter above. When someone opens the page, PLeW loads the dataset first and then automatically applies that setup — no manual "Import setup" click needed.
+4. **(Optional) Ship a pre-calibrated setup.** If you've already arranged the dimension mappings, encodings, filters, styling, and **custom order of dimension values** (e.g. vowel order on axes), click "Export setup" in the sidebar to download a `plew-setup-*.json` file. The export includes a `valueOrder` map (column key → ordered values). Save it as `static/config/<your-dataset-name>.json` (or anywhere under `static/`), then add `config_url = "config/<your-dataset-name>.json"` to the front matter above. When someone opens the page, PLeW loads the dataset first and then automatically applies that setup — no manual "Import setup" click needed.
 5. **Test locally.** Run `hugo server`, then open `http://localhost:1313/examples/<your-dataset-name>/` and confirm your data loads, your dimensions look right, and any media plays correctly. Adjust column names/prefixes as needed.
 
 ### Step 3: Publish and share
