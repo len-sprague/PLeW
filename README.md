@@ -3,6 +3,10 @@
 
 Interactive multi-dimensional data visualizer. Load CSV data, map dimensions to axes, and explore in a grid of scatter plots.
 
+**Grid snapshots** (Dark / Light): exported PNGs omit the purple **comment** ring and corner marker on dots so the image matches plain markers; the live chart still shows comment styling.
+
+**Row comments:** When editing data, PLeW adds a `desc::comment` column if your CSV does not include it. Define tags in the **Comments** sidebar (one per line, **Update tag buttons**), then use **Show only rows with comments** and **Tags to show** in the bar above the grid (next to cluster / legend options), and the **record** view to edit notes (comments save as you type); a row “matches” a tag if the comment text contains `Tag:` for that line (e.g. from the quick-insert button). **Other** covers comments that have no such prefix. Comments are saved in **Download CSV** and comment options are stored in **Export setup** (`version` 5, field `comments.visibleTags`).
+
 ## Quick start
 
 1. **Install Hugo Extended** — Windows: `winget install Hugo.Hugo.Extended` (or [download](https://github.com/gohugoio/hugo/releases))
