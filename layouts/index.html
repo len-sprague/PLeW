@@ -1608,10 +1608,28 @@
             font-weight: 500;
         }
         
+        /* Match .edit-hint visibility (teal card) for sidebar helper text */
         .value-filters-hint {
-            font-size: 0.65rem;
-            color: #666;
-            margin-bottom: 10px;
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.7rem;
+            color: #4ecdc4;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        /* Only the card title is block; inline <strong> in bullets stays in the sentence */
+        .value-filters-hint > strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        .value-filters-hint ul {
+            margin: 6px 0 0 16px;
+            padding: 0;
+        }
+        .value-filters-hint li {
+            margin: 3px 0;
         }
         
         .value-filter-dim {
@@ -1646,6 +1664,64 @@
         }
         
         .value-filter-checkboxes input { accent-color: #4ecdc4; }
+
+        /* --- FEATURE: value-order-drag (start) --- */
+        .value-order-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 0;
+            font-size: 0.75rem;
+        }
+        .value-order-handle {
+            cursor: grab;
+            color: #5a6570;
+            font-size: 0.7rem;
+            line-height: 1;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .value-order-handle:active { cursor: grabbing; }
+        .value-order-row input[type="checkbox"] { flex-shrink: 0; }
+        .value-order-row .value-order-label-text { flex: 1; min-width: 0; word-break: break-word; }
+        .value-order-row.drag-over,
+        .axis-value-header.drag-over {
+            outline: 1px dashed #4ecdc4;
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .axis-value-header {
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            gap: 4px;
+            padding: 4px;
+            min-width: 0;
+        }
+        .axis-value-header .axis-order-handle {
+            cursor: grab;
+            color: #5a6570;
+            font-size: 0.65rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            opacity: 0.85;
+            user-select: none;
+        }
+        .axis-value-header .axis-order-handle:active { cursor: grabbing; }
+        .axis-value-header .axis-value-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            word-break: break-word;
+        }
+        /* --- FEATURE: value-order-drag (end) --- */
 
         /* --- FEATURE: viz-config-io (start) --- */
         .viz-config-notice {
@@ -2417,7 +2493,13 @@
                         <span class="column-roles-summary" id="columnRolesSummary"></span>
                     </button>
                     <div class="column-roles-body" id="columnRolesBody">
-                        <div class="value-filters-hint">Also in the grid header: <strong>Column roles ▾</strong>. Drag to reorder record fields · 👁 toggles visibility.</div>
+                        <div class="value-filters-hint">
+                            <strong>Column roles</strong>
+                            <ul>
+                                <li>Also in the grid header: <strong>Column roles ▾</strong></li>
+                                <li>Drag to reorder record fields · 👁 toggles visibility</li>
+                            </ul>
+                        </div>
                         <ul class="column-role-list" id="columnRoleList"></ul>
                     </div>
                 </div>
@@ -2450,7 +2532,13 @@
                 <!-- --- FEATURE: viz-config-io (start) --- -->
                 <div class="section" id="vizConfigSection" style="display: none;">
                     <div class="section-title">Visualization setup</div>
-                    <div class="value-filters-hint">Export your dimension order, filters, colors/shapes, and display options as JSON. Import a saved file to restore that setup.</div>
+                    <div class="value-filters-hint">
+                        <strong>Save &amp; share setup</strong>
+                        <ul>
+                            <li>Exports dimension order, value level order, filters, colors/shapes, and display options as JSON</li>
+                            <li>Use <strong>Import setup</strong> to restore from a file</li>
+                        </ul>
+                    </div>
                     <div id="vizConfigNotice" class="viz-config-notice" style="display: none;"></div>
                     <div class="changes-actions" style="margin-top: 8px;">
                         <button class="btn btn-secondary btn-small" onclick="downloadVisualizationConfig()">📤 Export setup</button>
@@ -2462,7 +2550,15 @@
                 
                 <div class="section" id="valueFiltersSection" style="display: none;">
                     <div class="section-title">Filter values</div>
-                    <div class="value-filters-hint">Choose which values to show per dimension. Default: all visible.</div>
+                    <div class="value-filters-hint">
+                        <strong>Filter &amp; order levels</strong>
+                        <ul>
+                            <li>Checkboxes choose which values are visible (default: all)</li>
+                            <li>Drag <strong>⋮⋮</strong> next to a value to reorder levels</li>
+                            <li>Same reordering on <strong>grid</strong> and <strong>panel</strong> axis headers (⋮)</li>
+                            <li>Custom order is included in <strong>Export setup</strong></li>
+                        </ul>
+                    </div>
                     <div id="valueFiltersList"></div>
                 </div>
                 
@@ -2827,18 +2923,114 @@
         function dimKey(dim) {
             return dim.key != null ? dim.key : dim.name;
         }
+
+        // --- FEATURE: value-order-drag (start) ---
+        function sortUniqueValuesDefault(values) {
+            return [...new Set(values)].sort();
+        }
+
+        function sortValuesCanonical(values) {
+            return [...values].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
+        }
+
+        function mergeOrderedWithCanon(ordered, canon) {
+            const canonSet = new Set(canon);
+            const seen = new Set();
+            const out = [];
+            (ordered || []).forEach(v => {
+                if (!canonSet.has(v) || seen.has(v)) return;
+                seen.add(v);
+                out.push(v);
+            });
+            canon.forEach(v => {
+                if (!seen.has(v)) {
+                    seen.add(v);
+                    out.push(v);
+                }
+            });
+            return out;
+        }
+
+        function syncDimensionValueOrderForDim(dim) {
+            const key = dimKey(dim);
+            const canon = sortValuesCanonical(dim.uniqueValues);
+            const prev = dimensionValueOrder[key];
+            dimensionValueOrder[key] = mergeOrderedWithCanon(prev, canon);
+        }
+
+        function syncAllDimensionValueOrders() {
+            if (!allDimensions) return;
+            Object.keys(dimensionValueOrder).forEach(k => {
+                if (!allDimensions.some(d => dimKey(d) === k)) delete dimensionValueOrder[k];
+            });
+            allDimensions.forEach(syncDimensionValueOrderForDim);
+        }
+
+        function moveValueInOrder(key, value, delta) {
+            const dim = allDimensions?.find(d => dimKey(d) === key);
+            if (!dim) return;
+            const canon = sortValuesCanonical(dim.uniqueValues);
+            let order = dimensionValueOrder[key] ? [...dimensionValueOrder[key]] : [...canon];
+            order = mergeOrderedWithCanon(order, canon);
+            const i = order.indexOf(value);
+            if (i < 0) return;
+            const j = Math.max(0, Math.min(order.length - 1, i + delta));
+            if (j === i) return;
+            const t = order[i];
+            order[i] = order[j];
+            order[j] = t;
+            dimensionValueOrder[key] = order;
+            if (currentData && encodings) updateVisualization();
+        }
+
+        function reorderValueRelative(key, value, otherValue) {
+            const dim = allDimensions?.find(d => dimKey(d) === key);
+            if (!dim) return;
+            const canon = sortValuesCanonical(dim.uniqueValues);
+            let order = dimensionValueOrder[key] ? [...dimensionValueOrder[key]] : [...canon];
+            order = mergeOrderedWithCanon(order, canon);
+            const from = order.indexOf(value);
+            const to = order.indexOf(otherValue);
+            if (from < 0 || to < 0 || from === to) return;
+            order.splice(from, 1);
+            order.splice(to, 0, value);
+            dimensionValueOrder[key] = order;
+            if (currentData && encodings) updateVisualization();
+        }
+
+        function applyImportedValueOrder(obj) {
+            if (!obj || typeof obj !== 'object') return;
+            Object.entries(obj).forEach(([key, arr]) => {
+                if (!Array.isArray(arr)) return;
+                const dim = allDimensions?.find(d => dimKey(d) === key);
+                if (!dim) return;
+                const canon = sortValuesCanonical(dim.uniqueValues);
+                dimensionValueOrder[key] = mergeOrderedWithCanon(arr, canon);
+            });
+        }
+
+        function getOrderedDimensionValues(dim) {
+            if (!dim) return [];
+            const key = dimKey(dim);
+            const canon = sortValuesCanonical(dim.uniqueValues);
+            return dimensionValueOrder[key]
+                ? mergeOrderedWithCanon(dimensionValueOrder[key], canon)
+                : canon;
+        }
+        // --- FEATURE: value-order-drag (end) ---
         
         function getVisibleValues(dim) {
             if (!dim) return [''];
+            const fullOrder = getOrderedDimensionValues(dim);
             const filter = dimensionValueFilters[dimKey(dim)];
-            if (!filter) return dim.uniqueValues;
-            return dim.uniqueValues.filter(v => filter.has(v));
+            if (!filter) return fullOrder;
+            return fullOrder.filter(v => filter.has(v));
         }
         
         function setValueFilter(key, value, visible) {
             if (!dimensionValueFilters[key]) {
                 const dim = allDimensions?.find(d => dimKey(d) === key);
-                dimensionValueFilters[key] = new Set(dim?.uniqueValues || []);
+                dimensionValueFilters[key] = new Set(dim ? getOrderedDimensionValues(dim) : []);
             }
             if (visible) {
                 dimensionValueFilters[key].add(value);
@@ -2898,7 +3090,7 @@
 
         // --- FEATURE: viz-config-io (start) ---
         const VIZ_CONFIG_KIND = 'plew-visualization-config';
-        const VIZ_CONFIG_VERSION = 2;
+        const VIZ_CONFIG_VERSION = 3;
 
         function datasetIdFromFilename(filename) {
             const path = String(filename || 'dataset');
@@ -2906,9 +3098,14 @@
         }
 
         function buildVisualizationConfig() {
+            syncAllDimensionValueOrders();
             const valueFilters = {};
             Object.entries(dimensionValueFilters).forEach(([key, visibleSet]) => {
                 valueFilters[key] = [...visibleSet];
+            });
+            const valueOrder = {};
+            Object.keys(dimensionValueOrder).forEach(k => {
+                if (dimensionValueOrder[k]?.length) valueOrder[k] = [...dimensionValueOrder[k]];
             });
             return {
                 version: VIZ_CONFIG_VERSION,
@@ -2924,6 +3121,7 @@
                     encodings: { ...dimensionEncodings }
                 },
                 valueFilters,
+                valueOrder,
                 styling: {
                     customColors: { ...customColorMap },
                     customShapes: { ...customShapeMap }
@@ -3000,6 +3198,8 @@
                     dimensionValueFilters[key] = new Set(validVisible);
                 }
             });
+
+            applyImportedValueOrder(config.valueOrder);
 
             customColorMap = { ...(config.styling?.customColors || {}) };
             customShapeMap = { ...(config.styling?.customShapes || {}) };
@@ -3265,6 +3465,8 @@
         };
         let preservedDimValues = {};
         let dimensionValueFilters = {};
+        /** columnKey -> ordered list of unique values (user order for axes, filters, legends) */
+        let dimensionValueOrder = {};
         let currentDatasetId = null;
 
         let showItemCounts = false;
@@ -4065,7 +4267,8 @@
                     }
                 });
                 
-                const mergedValues = [...realValues].sort();
+                const canon = sortValuesCanonical([...realValues]);
+                const mergedValues = mergeOrderedWithCanon(dimensionValueOrder[dimKey(dim)], canon);
                 return {
                     name: dim.name,
                     key: dim.key,
@@ -4274,15 +4477,17 @@
         function getColorForValue(encodings, value) {
             if (customColorMap[value]) return customColorMap[value];
             if (!encodings.color) return COLORS[0];
-            const idx = encodings.color.uniqueValues.indexOf(value);
-            return COLORS[idx % COLORS.length];
+            const vals = getOrderedDimensionValues(encodings.color);
+            const idx = vals.indexOf(value);
+            return COLORS[(idx >= 0 ? idx : 0) % COLORS.length];
         }
         
         function getShapeForValue(encodings, value) {
             if (customShapeMap[value]) return customShapeMap[value];
             if (!encodings.shape) return 'circle';
-            const idx = encodings.shape.uniqueValues.indexOf(value);
-            return SHAPES[idx % SHAPES.length];
+            const vals = getOrderedDimensionValues(encodings.shape);
+            const idx = vals.indexOf(value);
+            return SHAPES[(idx >= 0 ? idx : 0) % SHAPES.length];
         }
         
         function closeShapeSelectorPopup() {
@@ -4315,7 +4520,7 @@
             
             const dims = validHeaders.map(header => {
                 const values = data.map(row => row[header]);
-                const uniqueValues = [...new Set(values)].sort();
+                const uniqueValues = sortUniqueValuesDefault(values);
                 return {
                     name: getDisplayName(header),
                     key: header,
@@ -4386,6 +4591,10 @@
                 dimensionValueFilters[newKey] = dimensionValueFilters[oldKey];
                 delete dimensionValueFilters[oldKey];
             }
+            if (Object.prototype.hasOwnProperty.call(dimensionValueOrder, oldKey)) {
+                dimensionValueOrder[newKey] = dimensionValueOrder[oldKey];
+                delete dimensionValueOrder[oldKey];
+            }
             if (Object.prototype.hasOwnProperty.call(columnVisibility, oldKey)) {
                 columnVisibility[newKey] = columnVisibility[oldKey];
                 delete columnVisibility[oldKey];
@@ -4411,6 +4620,8 @@
             }
 
             allDimensions = nextDimensions;
+
+            syncAllDimensionValueOrders();
 
             preservedDimValues = {};
             allDimensions.forEach(dim => {
@@ -4757,6 +4968,109 @@
             renderDimensionList();
             updateVisualization();
         }
+
+        // --- FEATURE: value-order-drag (start) ---
+        let draggedDimValueKey = null;
+        let draggedDimValue = null;
+
+        function dimensionValueDragPayload(key, value) {
+            return JSON.stringify({ t: 'dimval', key, value: String(value) });
+        }
+
+        function handleDimValueDragStart(e, key, value) {
+            draggedDimValueKey = key;
+            draggedDimValue = value;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', dimensionValueDragPayload(key, value));
+            const row = e.target.closest('.value-order-row');
+            if (row) row.classList.add('dragging');
+        }
+
+        function handleDimValueDragEnd(e) {
+            const row = e.target.closest('.value-order-row');
+            if (row) row.classList.remove('dragging');
+            document.querySelectorAll('.value-order-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+            document.querySelectorAll('.axis-value-header.drag-over').forEach(el => el.classList.remove('drag-over'));
+            draggedDimValueKey = null;
+            draggedDimValue = null;
+        }
+
+        function handleDimValueRowDragOver(e) {
+            if (draggedDimValueKey == null && draggedRowIndex == null) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDimValueRowDragEnter(e) {
+            if (draggedDimValueKey == null) return;
+            e.target.closest('.value-order-row')?.classList.add('drag-over');
+        }
+
+        function handleDimValueRowDragLeave(e) {
+            const row = e.target.closest('.value-order-row');
+            if (row && !row.contains(e.relatedTarget)) row.classList.remove('drag-over');
+        }
+
+        function handleDimValueRowDrop(e, key, targetVal) {
+            e.preventDefault();
+            e.stopPropagation();
+            const row = e.target.closest('.value-order-row');
+            if (row) row.classList.remove('drag-over');
+            let fromKey = draggedDimValueKey;
+            let fromVal = draggedDimValue;
+            if (fromKey == null) {
+                try {
+                    const raw = e.dataTransfer.getData('text/plain');
+                    const p = JSON.parse(raw);
+                    if (p && p.t === 'dimval') {
+                        fromKey = p.key;
+                        fromVal = p.value;
+                    }
+                } catch (_) { /* ignore */ }
+            }
+            if (!fromKey || fromVal === undefined || fromVal === null) return;
+            if (fromKey !== key || String(fromVal) === String(targetVal)) return;
+            reorderValueRelative(key, fromVal, targetVal);
+        }
+
+        function handleAxisValueHeaderDragOver(e) {
+            if (draggedDimValueKey == null && draggedRowIndex == null) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleAxisValueHeaderDragEnter(e) {
+            if (draggedDimValueKey == null) return;
+            e.target.closest('.axis-value-header')?.classList.add('drag-over');
+        }
+
+        function handleAxisValueHeaderDragLeave(e) {
+            const h = e.target.closest('.axis-value-header');
+            if (h && !h.contains(e.relatedTarget)) h.classList.remove('drag-over');
+        }
+
+        function handleAxisValueHeaderDrop(e, key, targetVal) {
+            e.preventDefault();
+            e.stopPropagation();
+            const h = e.target.closest('.axis-value-header');
+            if (h) h.classList.remove('drag-over');
+            let fromKey = draggedDimValueKey;
+            let fromVal = draggedDimValue;
+            if (fromKey == null) {
+                try {
+                    const raw = e.dataTransfer.getData('text/plain');
+                    const p = JSON.parse(raw);
+                    if (p && p.t === 'dimval') {
+                        fromKey = p.key;
+                        fromVal = p.value;
+                    }
+                } catch (_) { /* ignore */ }
+            }
+            if (!fromKey || fromVal === undefined || fromVal === null) return;
+            if (fromKey !== key || String(fromVal) === String(targetVal)) return;
+            reorderValueRelative(key, fromVal, targetVal);
+        }
+        // --- FEATURE: value-order-drag (end) ---
         
         // ============================================================
         // DATA POINT DRAG AND DROP
@@ -4885,7 +5199,7 @@
                 colorGrid.style.display = '';
                 colorLabel.style.display = '';
                 
-                encodings.color.uniqueValues.forEach((value, idx) => {
+                getOrderedDimensionValues(encodings.color).forEach((value, idx) => {
                     const option = document.createElement('div');
                     option.className = `color-option ${value === currentColorValue ? 'selected' : ''}`;
                     option.style.backgroundColor = getColorForValue(encodings, value);
@@ -4909,7 +5223,7 @@
                 shapeSection.style.display = '';
                 shapeGrid.innerHTML = '';
                 
-                encodings.shape.uniqueValues.forEach((value, idx) => {
+                getOrderedDimensionValues(encodings.shape).forEach((value, idx) => {
                     const shape = getShapeForValue(encodings, value);
                     const option = document.createElement('div');
                     option.className = `shape-option ${value === currentShapeValue ? 'selected' : ''}`;
@@ -5131,16 +5445,30 @@
                 const cbContainer = document.createElement('div');
                 cbContainer.className = 'value-filter-checkboxes';
                 div.append(header, cbContainer);
-                dim.uniqueValues.forEach(val => {
+                getOrderedDimensionValues(dim).forEach(val => {
                     const checked = !isFiltered || dimensionValueFilters[k].has(val);
-                    const label = document.createElement('label');
+                    const row = document.createElement('div');
+                    row.className = 'value-order-row';
+                    row.draggable = true;
+                    row.addEventListener('dragstart', (ev) => handleDimValueDragStart(ev, k, val));
+                    row.addEventListener('dragend', handleDimValueDragEnd);
+                    row.addEventListener('dragover', handleDimValueRowDragOver);
+                    row.addEventListener('dragenter', handleDimValueRowDragEnter);
+                    row.addEventListener('dragleave', handleDimValueRowDragLeave);
+                    row.addEventListener('drop', (ev) => handleDimValueRowDrop(ev, k, val));
+                    const handle = document.createElement('span');
+                    handle.className = 'value-order-handle';
+                    handle.textContent = '⋮⋮';
+                    handle.title = 'Drag to reorder levels';
                     const cb = document.createElement('input');
                     cb.type = 'checkbox';
                     cb.checked = checked;
                     cb.addEventListener('change', () => setValueFilter(k, val, cb.checked));
-                    label.appendChild(cb);
-                    label.appendChild(document.createTextNode(' ' + val));
-                    cbContainer.appendChild(label);
+                    const text = document.createElement('span');
+                    text.className = 'value-order-label-text';
+                    text.textContent = val;
+                    row.append(handle, cb, text);
+                    cbContainer.appendChild(row);
                 });
                 list.appendChild(div);
             });
@@ -5200,7 +5528,7 @@
             section.querySelector('.section-title').textContent = `Color: ${encodings.color.name}`;
             container.innerHTML = '';
             
-            encodings.color.uniqueValues.forEach((value, idx) => {
+            getOrderedDimensionValues(encodings.color).forEach((value, idx) => {
                 const color = getColorForValue(encodings, value);
                 const row = document.createElement('div');
                 row.className = 'legend-row interactive';
@@ -5253,7 +5581,7 @@
             section.querySelector('.section-title').textContent = `Shape: ${encodings.shape.name}`;
             container.innerHTML = '';
             
-            encodings.shape.uniqueValues.forEach((value, idx) => {
+            getOrderedDimensionValues(encodings.shape).forEach((value, idx) => {
                 const shape = getShapeForValue(encodings, value);
                 const row = document.createElement('div');
                 row.className = 'legend-row interactive';
@@ -5358,7 +5686,7 @@
                 title.textContent = `${encodings.color.name}:`;
                 colorEl.appendChild(title);
 
-                encodings.color.uniqueValues.forEach(value => {
+                getOrderedDimensionValues(encodings.color).forEach(value => {
                     const color = getColorForValue(encodings, value);
                     const visible = !dimensionValueFilters[colorKey] || dimensionValueFilters[colorKey].has(value);
                     const chip = document.createElement('button');
@@ -5380,7 +5708,7 @@
                 title.textContent = `${encodings.shape.name}:`;
                 shapeEl.appendChild(title);
 
-                encodings.shape.uniqueValues.forEach(value => {
+                getOrderedDimensionValues(encodings.shape).forEach(value => {
                     const shape = getShapeForValue(encodings, value);
                     const visible = !dimensionValueFilters[shapeKey] || dimensionValueFilters[shapeKey].has(value);
                     const chip = document.createElement('button');
@@ -5412,7 +5740,7 @@
             
             if (encodings && encodings.color) {
                 html += `<div style="margin-bottom: 8px;"><strong style="font-size: 0.65rem; color: #888;">${encodings.color.name}</strong></div>`;
-                encodings.color.uniqueValues.forEach((value, idx) => {
+                getOrderedDimensionValues(encodings.color).forEach((value, idx) => {
                     const color = getColorForValue(encodings, value);
                     html += `
                         <div class="legend-row">
@@ -5425,7 +5753,7 @@
             
             if (encodings && encodings.shape) {
                 html += `<div style="margin: 10px 0 8px 0;"><strong style="font-size: 0.65rem; color: #888;">${encodings.shape.name}</strong></div>`;
-                encodings.shape.uniqueValues.forEach((value, idx) => {
+                getOrderedDimensionValues(encodings.shape).forEach((value, idx) => {
                     const shape = getShapeForValue(encodings, value);
                     html += `
                         <div class="legend-row">
@@ -5478,20 +5806,56 @@
             outerGrid.appendChild(createCell(''));
             
             // Column headers
+            const gridXKey = encodings.gridX ? dimKey(encodings.gridX) : null;
             gridXValues.forEach(val => {
                 const cell = document.createElement('div');
-                cell.className = 'grid-col-label';
-                cell.textContent = val;
+                cell.className = 'grid-col-label axis-value-header';
+                cell.draggable = !!gridXKey;
+                cell.dataset.dimValueKey = gridXKey || '';
+                cell.dataset.dimValue = String(val);
+                const h = document.createElement('span');
+                h.className = 'axis-order-handle';
+                h.textContent = '⋮';
+                h.title = 'Drag to reorder columns';
+                const t = document.createElement('span');
+                t.className = 'axis-value-text';
+                t.textContent = val;
+                cell.append(h, t);
                 cell.title = `${encodings.gridX?.name}: ${val}`;
+                if (gridXKey) {
+                    cell.addEventListener('dragstart', (ev) => handleDimValueDragStart(ev, gridXKey, val));
+                    cell.addEventListener('dragend', handleDimValueDragEnd);
+                    cell.addEventListener('dragover', handleAxisValueHeaderDragOver);
+                    cell.addEventListener('dragenter', handleAxisValueHeaderDragEnter);
+                    cell.addEventListener('dragleave', handleAxisValueHeaderDragLeave);
+                    cell.addEventListener('drop', (ev) => handleAxisValueHeaderDrop(ev, gridXKey, val));
+                }
                 outerGrid.appendChild(cell);
             });
             
             // Rows
+            const gridYKey = encodings.gridY ? dimKey(encodings.gridY) : null;
             gridYValues.forEach(yVal => {
                 const rowLabel = document.createElement('div');
-                rowLabel.className = 'grid-row-label';
-                setVerticalAxisLabel(rowLabel, yVal);
+                rowLabel.className = 'grid-row-label axis-value-header';
+                rowLabel.draggable = !!gridYKey;
+                const h = document.createElement('span');
+                h.className = 'axis-order-handle';
+                h.textContent = '⋮';
+                h.title = 'Drag to reorder rows';
+                const t = document.createElement('span');
+                t.className = 'axis-value-text';
+                setVerticalAxisLabel(t, yVal);
+                rowLabel.append(h, t);
                 rowLabel.title = `${encodings.gridY?.name}: ${yVal}`;
+                if (gridYKey) {
+                    rowLabel.addEventListener('dragstart', (ev) => handleDimValueDragStart(ev, gridYKey, yVal));
+                    rowLabel.addEventListener('dragend', handleDimValueDragEnd);
+                    rowLabel.addEventListener('dragover', handleAxisValueHeaderDragOver);
+                    rowLabel.addEventListener('dragenter', handleAxisValueHeaderDragEnter);
+                    rowLabel.addEventListener('dragleave', handleAxisValueHeaderDragLeave);
+                    rowLabel.addEventListener('drop', (ev) => handleAxisValueHeaderDrop(ev, gridYKey, yVal));
+                }
                 outerGrid.appendChild(rowLabel);
                 
                 gridXValues.forEach(xVal => {
@@ -5669,20 +6033,54 @@
             panelGrid.appendChild(corner);
             
             // X-axis headers
+            const panelXK = encodings.panelX ? dimKey(encodings.panelX) : null;
             panelXValues.forEach(xVal => {
                 const header = document.createElement('div');
-                header.className = 'panel-axis-label x-header';
-                header.textContent = xVal;
+                header.className = 'panel-axis-label x-header axis-value-header';
+                header.draggable = !!panelXK;
+                const xh = document.createElement('span');
+                xh.className = 'axis-order-handle';
+                xh.textContent = '⋮';
+                xh.title = 'Drag to reorder inner columns';
+                const xt = document.createElement('span');
+                xt.className = 'axis-value-text';
+                xt.textContent = xVal;
+                header.append(xh, xt);
                 header.title = `${encodings.panelX?.name}: ${xVal}`;
+                if (panelXK) {
+                    header.addEventListener('dragstart', (ev) => handleDimValueDragStart(ev, panelXK, xVal));
+                    header.addEventListener('dragend', handleDimValueDragEnd);
+                    header.addEventListener('dragover', handleAxisValueHeaderDragOver);
+                    header.addEventListener('dragenter', handleAxisValueHeaderDragEnter);
+                    header.addEventListener('dragleave', handleAxisValueHeaderDragLeave);
+                    header.addEventListener('drop', (ev) => handleAxisValueHeaderDrop(ev, panelXK, xVal));
+                }
                 panelGrid.appendChild(header);
             });
             
             // Rows with Y headers and cells
+            const panelYK = encodings.panelY ? dimKey(encodings.panelY) : null;
             panelYValues.slice().reverse().forEach(yVal => {
                 const yHeader = document.createElement('div');
-                yHeader.className = 'panel-axis-label y-header';
-                setVerticalAxisLabel(yHeader, yVal);
+                yHeader.className = 'panel-axis-label y-header axis-value-header';
+                yHeader.draggable = !!panelYK;
+                const yh = document.createElement('span');
+                yh.className = 'axis-order-handle';
+                yh.textContent = '⋮';
+                yh.title = 'Drag to reorder inner rows';
+                const yt = document.createElement('span');
+                yt.className = 'axis-value-text';
+                setVerticalAxisLabel(yt, yVal);
+                yHeader.append(yh, yt);
                 yHeader.title = `${encodings.panelY?.name}: ${yVal}`;
+                if (panelYK) {
+                    yHeader.addEventListener('dragstart', (ev) => handleDimValueDragStart(ev, panelYK, yVal));
+                    yHeader.addEventListener('dragend', handleDimValueDragEnd);
+                    yHeader.addEventListener('dragover', handleAxisValueHeaderDragOver);
+                    yHeader.addEventListener('dragenter', handleAxisValueHeaderDragEnter);
+                    yHeader.addEventListener('dragleave', handleAxisValueHeaderDragLeave);
+                    yHeader.addEventListener('drop', (ev) => handleAxisValueHeaderDrop(ev, panelYK, yVal));
+                }
                 panelGrid.appendChild(yHeader);
                 
                 panelXValues.forEach(xVal => {
@@ -5733,8 +6131,10 @@
             
             let orderedData = cellData;
             if (clusterPoints && (encodings.color || encodings.shape)) {
-                const colorIdx = v => encodings.color ? encodings.color.uniqueValues.indexOf(v) : 0;
-                const shapeIdx = v => encodings.shape ? encodings.shape.uniqueValues.indexOf(v) : 0;
+                const colorVals = encodings.color ? getOrderedDimensionValues(encodings.color) : [];
+                const shapeVals = encodings.shape ? getOrderedDimensionValues(encodings.shape) : [];
+                const colorIdx = v => encodings.color ? colorVals.indexOf(v) : 0;
+                const shapeIdx = v => encodings.shape ? shapeVals.indexOf(v) : 0;
                 orderedData = [...cellData].sort((a, b) => {
                     if (!!a._isDummy !== !!b._isDummy) return a._isDummy ? 1 : -1;
                     const colorDiff = encodings.color
@@ -6914,6 +7314,8 @@
             
             // Use merged dimensions as the full dimension set
             allDimensions = mergedDimensions;
+
+            syncAllDimensionValueOrders();
             
             // Store preserved dimension values
             preservedDimValues = {};
@@ -6949,6 +7351,7 @@
             customColorMap = {};
             customShapeMap = {};
             dimensionValueFilters = {};
+            dimensionValueOrder = {};
             columnVisibility = {};
             columnRecordOrder = [];
             toggleEncodingLegend(false);
