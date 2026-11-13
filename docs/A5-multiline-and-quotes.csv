@@ -1,0 +1,6 @@
+ID,Group,Tone,note
+1,A,high,plain note
+2,A,low,"first line
+second line"
+3,B,high,"she said ""hello"" twice"
+4,B,low,last note

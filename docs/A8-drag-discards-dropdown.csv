@@ -1,0 +1,7 @@
+ID,Region,Tone,Mood,Size
+1,north,high,calm,small
+2,north,low,tense,large
+3,south,high,tense,small
+4,south,low,calm,large
+5,west,high,calm,large
+6,west,low,tense,small
