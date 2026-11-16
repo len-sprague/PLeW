@@ -493,6 +493,8 @@ Everything else — about 7,500 lines — is duplicated and must be changed in b
 | `layouts/_default/_markup/render-link.html` | Rewrites links inside `docs/` files when shown as site pages: to the matching help page, or to the file on GitHub | Yes |
 | `docs/` | The documents themselves, the test CSVs, and the verification stamp | Yes |
 | `tools/code-userguide-review.md` | Procedure for checking the documents against the code, and the tool's stability after a change | Yes |
+| `tools/checks/` | Scripts used by that procedure: `behaviour.js` and `anchors.js` (before/after records to diff), `links.js` (link check), `remap-line-numbers.py` and `check-line-refs.py` (line references in these documents) | Yes |
+| `docs/HANDOFF.md` | State of the streamlining work and the process each fix follows | Yes |
 | `content/examples/*.md` | One page per example: `title`, `description`, `dataset_url`, optional `config_url` | Yes (16 published) |
 | `static/data/*.csv`, `static/<name>/` | Example data and media | Yes |
 | `tools/prefix_media_paths.py` | Adds folder prefixes to media paths in a CSV | Yes, documented in README |

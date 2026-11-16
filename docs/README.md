@@ -9,6 +9,7 @@ Documents produced from a full read of the visualizer (`layouts/index.html` and 
 | [03 — Design guide](03-design-guide.md) | Contributors, and anyone building in the same spirit | The manifesto, the rules that follow from it, and a checklist for changes |
 | [04 — User guide](04-user-guide.md) | Users, data preparers, new contributors | How to use PLeW, prepare and share data, and work on the tool |
 | [05 — Test files for findings A1–A9](05-finding-test-files.md) | Anyone checking a finding or a fix | One small CSV per group-A finding (`A1-….csv` to `A9-….csv` in this folder), with steps, the expected result and what actually happens |
+| [Handoff](HANDOFF.md) | Whoever continues the streamlining work | What has been done, the process each fix follows, where the files and checking scripts are, and what comes next |
 
 **Suggested reading order:** the manifesto (Part 1 of the design guide) for the *why*; the user guide for the *what*; the code map for the *how*; the report for *what next*.
 
