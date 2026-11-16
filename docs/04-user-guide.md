@@ -2,7 +2,7 @@
 
 How to use PLeW, for people who do not code and for people who do.
 
-**Status: rough first draft**, written from the tool as it stands. It is laid out so it can later become a help page loaded alongside the tool. Known rough edges are noted where they affect what you see; the full list is in the [streamlining report](02-streamlining-report.md).
+**Status: rough first draft**, written from the tool as it stands. It is also published as a help page beside the tool; the **Help** links under the tool's title open it. Known rough edges are noted where they affect what you see; the full list is in the [streamlining report](02-streamlining-report.md).
 
 - [Part 1 — Using PLeW](#part-1--using-plew) (no coding)
 - [Part 2 — Preparing and sharing data](#part-2--preparing-and-sharing-data) (a little file handling)
@@ -266,9 +266,11 @@ Then open `http://localhost:1313/`. Hugo Extended 0.128 is what the deploy workf
 | `layouts/index.html` | The editor (upload your own data) |
 | `layouts/_default/example-viz.html` | The example page (data loaded from front matter) |
 | `layouts/examples/list.html` | The gallery |
+| `layouts/_default/doc.html`, `content/guide.md`, `content/design.md`, `content/code-map.md` | The help pages. Their text comes from `docs/`; edit it there |
+| `tools/code-userguide-review.md` | The procedure for checking the documents against the code |
 | `content/examples/*.md` | One per example |
 | `static/data/`, `static/<name>/` | Example data and media |
-| `docs/` | These documents |
+| `docs/` | These documents, and the test CSVs for known problems |
 
 > **The two layout files are near-identical copies.** Until they are merged, **every change must be made in both.** `diff layouts/index.html layouts/_default/example-viz.html` should only ever show the differences listed in the [code map §12](01-code-map.md#12-the-two-files).
 
@@ -292,10 +294,11 @@ Read the [code map](01-code-map.md) first. The short version:
 5. Reset it in `processParsedRows()` if it should not survive loading a new file.
 6. Make the same change in the other layout file.
 7. Use the interface vocabulary in labels (design guide, principle 7).
+8. When the change is finished and reviewed, run the review procedure in [`tools/code-userguide-review.md`](../tools/code-userguide-review.md). It checks that the tool still works, finds every place in these documents that the change has made untrue, and updates the verification stamp. Put its report in the pull request.
 
 ### Checking your change by hand
 
-There are no automated tests yet. At minimum:
+There are no automated tests yet. The review procedure above includes a fuller smoke test; at minimum:
 
 - Load `static/data/zoo.csv` in the editor; open the matching example page.
 - Place a dimension in each of the six placements; filter one value from each.

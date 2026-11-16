@@ -7,6 +7,16 @@ Interactive multi-dimensional data visualizer. Load CSV data, map dimensions to 
 
 **Row comments:** When editing data, PLeW adds a `desc::comment` column if your CSV does not include it. Define tags in the **Comments** sidebar (one per line, **Update tag buttons**), then use **Show only rows with comments** and **Tags to show** in the bar above the grid (next to cluster / legend options), and the **record** view to edit notes (comments save as you type); a row “matches” a tag if the comment text contains `Tag:` for that line (e.g. from the quick-insert button). **Other** covers comments that have no such prefix. Comments are saved in **Download CSV** and comment options are stored in **Export setup** (`version` 5, field `comments.visibleTags`).
 
+## Documentation
+
+- **[User guide](docs/04-user-guide.md)** — using PLeW, preparing and sharing data, working on the tool.
+- **[Design guide](docs/03-design-guide.md)** — what PLeW is for, and the rules future versions should keep to.
+- **[Code map](docs/01-code-map.md)** — how the parts of the code relate to each other.
+
+These three are also pages on the site (`/guide/`, `/design/`, `/code-map/`), linked from **Help** under the tool's title. Everything else, including the list of known problems and the files that reproduce them, is in [`docs/`](docs/README.md).
+
+After any change to the tool, run the review procedure in [`tools/code-userguide-review.md`](tools/code-userguide-review.md) so the documents stay true to the code.
+
 ## Quick start
 
 1. **Install Hugo Extended** — Windows: `winget install Hugo.Hugo.Extended` (or [download](https://github.com/gohugoio/hugo/releases))

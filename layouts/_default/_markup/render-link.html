@@ -1,0 +1,29 @@
+{{- /*
+  Links inside docs/*.md are written relative to that folder so they work on
+  GitHub. When the same text is shown as a site page:
+    - links to a document that has its own page go to that page;
+    - links to any other repository file go to the file on GitHub;
+    - everything else (web addresses, #anchors) is left alone.
+*/ -}}
+{{- $dest := .Destination -}}
+{{- $pages := dict "04-user-guide.md" "guide/" "03-design-guide.md" "design/" "01-code-map.md" "code-map/" -}}
+{{- $external := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") (hasPrefix $dest "mailto:") -}}
+{{- if not (or $external (hasPrefix $dest "#") (hasPrefix $dest "/")) -}}
+  {{- $parts := split $dest "#" -}}
+  {{- $file := index $parts 0 -}}
+  {{- $anchor := "" -}}
+  {{- if gt (len $parts) 1 -}}{{- $anchor = printf "#%s" (index $parts 1) -}}{{- end -}}
+  {{- with index $pages $file -}}
+    {{- $dest = printf "%s%s" (relURL .) $anchor -}}
+  {{- else -}}
+    {{- $repo := site.Params.repoURL -}}
+    {{- if hasPrefix $file "../" -}}
+      {{- $dest = printf "%s/blob/main/%s%s" $repo (strings.TrimPrefix "../" $file) $anchor -}}
+    {{- else -}}
+      {{- $dest = printf "%s/blob/main/docs/%s%s" $repo $file $anchor -}}
+    {{- end -}}
+    {{- $external = true -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $dest | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if $external }} target="_blank" rel="noopener"{{ end }}>{{ .Text | safeHTML }}</a>
+{{- /* no trailing newline */ -}}
