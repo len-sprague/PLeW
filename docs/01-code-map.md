@@ -262,12 +262,15 @@ A row is drawn when all of these hold:
 
 The same test applies however many values are visible, including one. (Until the fix for finding A1, a panel dimension with exactly one visible value skipped its test, and the one remaining cell showed rows of every value.)
 
-The header line "N records • M modified" always reports the total, not the number currently drawn.
+**Saying how many are hidden** (finding A3, fixed). Both counts are taken from the dots actually drawn, after drawing, and neither ever includes anchors:
+
+- The header line reads "8 records • 0 modified" when every record is drawn, and "4 of 8 records shown (filtered by Tone) • 0 modified" when not. `renderVisualization` writes it as its last step. `getHidingFilterNames` supplies the names in brackets: each placed dimension whose filter hides at least one record, in the order grid X, grid Y, panel X, panel Y, colour, shape, then "comments" if the comment filter hides at least one. A filter that hides nothing is not named.
+- A panel's count (**Show item counts**) reads "3 items" when every record belonging to the panel is drawn and "2 of 3 items" when not, whichever filter hid them. `creategrid` writes it after the panel's cells are filled. Anchors drawn in the panel follow as "(+1⚓)". Records hidden together with their whole panel (a grid X or grid Y filter) appear only in the header's number.
 
 ### 6.6 Drawing
 
-- `renderVisualization` (6404) builds the outer CSS grid, the draggable axis headers, the axis titles, and calls `creategrid` for each outer cell.
-- `creategrid` (6615) builds the item count, the inner grid and its headers. Panel Y is drawn **bottom-to-top** (`.reverse()` at 6689) so it reads like a graph axis; grid Y is drawn top-to-bottom.
+- `renderVisualization` (6404) builds the outer CSS grid, the draggable axis headers, the axis titles, calls `creategrid` for each outer cell and, last, writes the header line from the number of dots drawn (§6.5).
+- `creategrid` (6615) builds the inner grid and its headers, then the item count from the dots drawn in it (§6.5). Panel Y is drawn **bottom-to-top** (`.reverse()` at 6689) so it reads like a graph axis; grid Y is drawn top-to-bottom.
 - `createpanelCell` (6738) filters rows, optionally sorts them by colour then shape (**Cluster by color**), and registers the cell as a drop target carrying its four coordinate values.
 - `createDataPoint` (6955) builds one dot and attaches: drag, hover tooltip, click (record window), right-click (context menu). It adds classes `modified`, `has-comment`, `selected`, `compare-b`.
 - `applyAdaptiveDotSizing` (6889) picks **one** dot size for the whole chart (12px down to 6px), enough for the most crowded cell. Size is deliberately never per-cell, because size is not an encoding. Under **Unify inner panel**, cells that still overflow switch to an overlapping stacked layout and, past 65% overlap, show a `+N` badge.

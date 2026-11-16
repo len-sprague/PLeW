@@ -75,9 +75,9 @@ Each principle is followed by rules a contributor can check a change against, an
 - If the tool cannot apply part of a setup, it says which part.
 - Exported images carry their own legend.
 
-**Already true.** Dimension rows read "3 of 5 values" when filtered. Snapshots have the legend added automatically. The Column roles badge counts how many columns are still on "Auto". Anchor rows are recognised only by an explicit, readable ID (`__anchor__a` …), never by guessing from what a row looks like. Importing a setup made for a different dataset asks first.
+**Already true.** Dimension rows read "3 of 5 values" when filtered. The line above the picture reads "4 of 8 records shown (filtered by Tone)" whenever fewer records are drawn than loaded, and a panel's item count reads "2 of 3 items". Snapshots have the legend added automatically. The Column roles badge counts how many columns are still on "Auto". Anchor rows are recognised only by an explicit, readable ID (`__anchor__a` …), never by guessing from what a row looks like. Importing a setup made for a different dataset asks first.
 
-**Not yet.** There is no "M of N records shown" (A3). The reasons behind Auto column decisions are not shown.
+**Not yet.** The reasons behind Auto column decisions are not shown.
 
 ### 3. Every control has one effect you can see
 
