@@ -201,7 +201,7 @@ Open `docs/01-code-map.md` and go through it from the top. For each kind of clai
 
 Then check in the other direction — **what does the code have that the map does not mention?** Using the inventory: any new function group, state variable, feature marker, control, exported file, outside address or setup field with no mention in the map is a finding ("undocumented").
 
-**Line numbers.** After any edit that adds or removes lines, every line reference below the edit is off. Either correct them all or none: a half-corrected map is worse than a consistently stale one. When many have moved by the same amount, correct them with one mechanical pass and then spot-check at least ten against the file, spread across the whole document.
+**Line numbers.** After any edit that adds or removes lines, every line reference below the edit is off. Either correct them all or none: a half-corrected map is worse than a consistently stale one. When many have moved by the same amount, correct them with one mechanical pass, and then **check every one, not a sample**: write a short script that takes each "name + line number" pair in the documents and tests that the name is on that line of the file, and list every pair that fails. Say in the report how many were checked, how many passed, and explain each one that did not.
 
 ---
 
@@ -299,7 +299,7 @@ Run on PRIMARY and, where it applies, on an EXAMPLE page. Each line is pass or f
 11. Collapse and reopen the sidebar (key **B**): floating buttons and legend appear and disappear.
 12. Open the report and generate it with one count and one crosstab.
 13. Snapshot: if the snapshot library can be reached, a PNG is produced; if not, the tool says so rather than failing silently.
-14. The three guide pages open, their links work, and the help links in the tool reach them.
+14. The three guide pages open, and the help links in the tool reach them. Then run the link check (7.6).
 
 ### 7.4 Finding reproductions
 
@@ -307,12 +307,40 @@ For each `docs/A*.csv`, follow its section in `docs/05-finding-test-files.md` st
 
 ### 7.5 For a fix: prove it, then try to break it
 
+**Record, then diff.** Put the checks of 7.3 and 7.4 in a script that prints one line per check, with the numbers observed. Run it on the code before the change and save the output; run it after and save that; then compare the two with `diff`. The lines that differ must be exactly the ones the fix was meant to change. Any other differing line is a regression until explained. Put the diff in the report.
+
 When the review follows a fix for a specific finding:
 
 1. **Before / after.** Run the finding's test file on the code before the change (`git stash`, or a build of the parent commit) and after. The failure must be present before and absent after. A fix that was never seen failing has not been shown to work.
 2. **Neighbours.** List the functions the change touched and, from the code map's dependency section, everything that depends on them. Exercise each of those.
 3. **Edges.** Try the cases the fix's author may not have: an unassigned placement; a dimension with one value; every value filtered out; an empty cell; anchors visible; a setup file imported after the action; the same action on the EXAMPLE page.
 4. **Names.** For every identifier the change added or renamed, confirm it is defined once, spelled the same at every use, and — if it is state — reset on load and included in the setup file where it should be.
+
+### 7.6 Link check
+
+The site is published in a sub-folder (`/PLeW/`), and a link written as `/` leaves that folder and lands on the host's home page. This cannot be seen when the site is served from the root, so:
+
+1. Build and serve the site **under a sub-folder**, as in 7.1.
+2. Open each kind of page: the editor, the gallery, one example, and each guide page.
+3. For **every** `<a href>` on each page, as the browser resolves it:
+   - a link to the same host must stay inside the sub-folder, must return status 200, and, if it has a `#anchor`, an element with that id must exist on the target page;
+   - a link to a file in the repository on GitHub (`…/blob/main/<path>`) must name a path that exists in the working tree;
+   - any other outside link is listed in the report, and fetched if the network allows.
+4. Report the number of links checked and every failure with its page, link text and address.
+
+Also list every Hugo expression that builds an address (`grep -rn 'relURL\|absURL\|BaseURL\|RelPermalink' layouts`) and confirm each gives an address inside the sub-folder. In particular `{{ "/" | relURL }}` does **not**: a path that starts with `/` is returned unchanged. Use `{{ site.Home.RelPermalink }}` for the site's home, and paths without a leading slash (`{{ "guide/" | relURL }}`) for everything else.
+
+### 7.7 Prove what an edit changed
+
+A sample is not proof. After any edit — to code or to documents, by hand or by script — show the complete change with the system's own tools and read all of it:
+
+```bash
+git diff --stat                 # which files, how many lines
+git diff -U0 -- <files>         # every changed line and nothing else
+diff <(git show HEAD:layouts/index.html) layouts/index.html
+```
+
+For the two tool files, also confirm the edit was the same in both: the lines by which PRIMARY and EXAMPLE differ from each other must be the same before and after (save `diff PRIMARY EXAMPLE | grep '^[<>]'` at each point and compare the two results with `cmp`), unless the change was meant to alter that difference. In the report, state which of these commands were run and what they showed; do not describe a check that was not executed.
 
 ---
 
@@ -395,6 +423,8 @@ For the reviewer to tick off, in order.
 - [ ] Streamlining report: a status for every finding (6.2)
 - [ ] Test files: every one run (6.3, 7.4)
 - [ ] Site built; smoke test run on both files; no uncaught errors (7)
+- [ ] Link check run under a sub-folder; every link accounted for (7.6)
+- [ ] Every edit shown in full with `git diff`; same change in both tool files (7.7)
 - [ ] For a fix: failure seen before, absent after; neighbours and edges tried (7.5)
 - [ ] Report written, including what was not done (8)
 - [ ] Documents and stamp updated, site rebuilt (9) — if asked

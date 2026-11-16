@@ -6573,7 +6573,7 @@
                 panelGrid.appendChild(yHeader);
                 
                 panelXValues.forEach(xVal => {
-                    const cell = createpanelCell(gridData, encodings, gridXVal, gridYVal, xVal, yVal, panelXValues, panelYValues);
+                    const cell = createpanelCell(gridData, encodings, gridXVal, gridYVal, xVal, yVal);
                     panelGrid.appendChild(cell);
                 });
             });
@@ -6598,16 +6598,16 @@
             return grid;
         }
         
-        function createpanelCell(gridData, encodings, gridXVal, gridYVal, panelXVal, panelYVal, allpanelXVals, allpanelYVals) {
+        function createpanelCell(gridData, encodings, gridXVal, gridYVal, panelXVal, panelYVal) {
             const cell = document.createElement('div');
             cell.className = 'panel-cell';
             
             let cellData = gridData;
             
-            if (encodings.panelX && allpanelXVals.length > 1) {
+            if (encodings.panelX) {
                 cellData = cellData.filter(row => row[dimKey(encodings.panelX)] === panelXVal);
             }
-            if (encodings.panelY && allpanelYVals.length > 1) {
+            if (encodings.panelY) {
                 cellData = cellData.filter(row => row[dimKey(encodings.panelY)] === panelYVal);
             }
             cellData = cellData.filter(row => rowPassesColorShapeFilters(row, encodings));

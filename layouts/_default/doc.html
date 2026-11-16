@@ -178,13 +178,13 @@
 </head>
 <body>
     <header class="doc-nav">
-        <a class="brand" href="{{ "/" | relURL }}">📊 PLeW</a>
+        <a class="brand" href="{{ site.Home.RelPermalink }}">📊 PLeW</a>
         {{ $current := . }}
         {{ range where site.RegularPages "Layout" "doc" }}
         <a href="{{ .RelPermalink }}"{{ if eq . $current }} class="current" aria-current="page"{{ end }}>{{ .Title }}</a>
         {{ end }}
         <span class="spacer"></span>
-        <a href="{{ "/" | relURL }}">Open the editor</a>
+        <a href="{{ site.Home.RelPermalink }}">Open the editor</a>
         <a href="{{ "examples/" | relURL }}">Examples</a>
     </header>
 

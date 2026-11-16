@@ -26,7 +26,7 @@ The documents were last checked against these exact versions of the tool files. 
 
 | File | Lines | Blob hash |
 |---|---|---|
-| `layouts/index.html` | 7953 | `e61483a75ca3071a1960f50591cf2df9d940cec4` |
-| `layouts/_default/example-viz.html` | 7744 | `16f9625d68add8d21dcd74838e6124a6f8c751ab` |
+| `layouts/index.html` | 7953 | `fdb78c5a51d55224da595580a4cf1226756004cb` |
+| `layouts/_default/example-viz.html` | 7744 | `64fb41b5b457799496802bb815b611da5ae3019c` |
 
-**Checked on:** 2026-11-16 · **Reason:** help links added to both files; line numbers in the documents shifted to match.
+**Checked on:** 2026-11-16 · **Reason:** fix for finding A1 (panel filter with one value left). No lines were added or removed, so line numbers in the documents are unchanged.

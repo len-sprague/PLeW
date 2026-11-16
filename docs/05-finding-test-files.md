@@ -9,7 +9,7 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 
 | Finding | File | Failure in one line |
 |---|---|---|
-| A1 | `A1-panel-filter-single-value.csv` | Hiding two of three panel values shows all 6 records, not 2 |
+| A1 ✅ fixed | `A1-panel-filter-single-value.csv` | Was: hiding two of three panel values showed all 6 records, not 2. Now shows 2 |
 | A2 | `A2a-lowercase-first-column.csv` | 4 rows load as 0 records |
 | A2 | `A2b-lowercase-trailing-ids.csv` | 6 rows load as 4 records |
 | A3 | `A3-hidden-record-count.csv` | 4 dots drawn, header says "8 records" |
@@ -24,6 +24,8 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 
 ## A1 — Panel filter with one value left shows everything
 
+> **Fixed** in the pull request *A1 resolution attempt #1*. The steps below now give the expected result. The description of the failure is kept so the fix can be checked against it, and so the failure can be recognised if it ever returns.
+
 **File:** `A1-panel-filter-single-value.csv` — 6 records: two speakers (Ana, Ben) × three vowels (a, i, u), one record each.
 
 **Steps**
@@ -36,7 +38,17 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 
 **Expected:** 6 dots → 4 dots → 2 dots (only the *a* records).
 
-**What happens**
+**What happens now (after the fix)**
+
+| After step | Dots | Column headings |
+|---|---|---|
+| 2 | 6 | a, i, u |
+| 4 | 4 | a, i |
+| 5 | **2** | a |
+
+Both remaining dots have *Vowel: a*.
+
+**What happened before the fix**
 
 | After step | Dots | Column headings |
 |---|---|---|
@@ -44,11 +56,11 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 | 4 | 4 | a, i |
 | 5 | **6** | a |
 
-After step 5 every record is back, all under the heading **a**. Hover over the dots: you will find *Vowel: i* and *Vowel: u* sitting in the *a* column.
+After step 5 every record was back, all under the heading **a**. Hovering over the dots showed *Vowel: i* and *Vowel: u* sitting in the *a* column.
 
-**Also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"**. Item counts ignore panel X / panel Y filters (related to A3).
+**Still open, also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"** (and after step 5, 1 dot and "3 items"). Item counts ignore panel X / panel Y filters (related to A3).
 
-**Cause:** the `length > 1` tests in `createpanelCell` (lines 6642, 6645).
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6642 and 6645), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
