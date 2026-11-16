@@ -1,0 +1,7 @@
+{{- /*
+  Pulls a Markdown file from the repository into a page, so the documents in
+  docs/ stay the single source and are also readable on GitHub.
+  Use with the % form so the text is rendered as Markdown:
+      {{% doc "docs/04-user-guide.md" %}}
+*/ -}}
+{{ readFile (.Get 0) | safeHTML }}

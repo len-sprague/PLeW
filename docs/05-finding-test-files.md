@@ -3,7 +3,7 @@
 One small CSV per finding in group A of the [streamlining report](02-streamlining-report.md), so that anyone can see the failure for themselves **before** a fix is made, and confirm it is gone afterwards.
 
 - The finding numbers here match the report's exactly.
-- Every result below was reproduced on `layouts/index.html` at commit `01f1fd4`, driving the real interface (file picker, dropdowns, tick boxes, drag) in a headless browser.
+- Every result below was reproduced on `layouts/index.html` (see the verification stamp in [docs/README.md](README.md)), driving the real interface (file picker, dropdowns, tick boxes, drag) in a headless browser.
 - Load each file in the **editor** (the main page), by dropping it on the *Data Input* box. Reload the page between files so that no settings carry over.
 - "Dots" means records drawn in the picture. Anchors are hidden by default and are not dots.
 
@@ -48,7 +48,7 @@ After step 5 every record is back, all under the heading **a**. Hover over the d
 
 **Also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"**. Item counts ignore panel X / panel Y filters (related to A3).
 
-**Cause:** the `length > 1` tests in `createpanelCell` (lines 6641, 6644).
+**Cause:** the `length > 1` tests in `createpanelCell` (lines 6642, 6645).
 
 ---
 
@@ -78,7 +78,7 @@ Two files, showing the two forms this takes.
 
 **What happens:** the header reads **"4 records • 0 modified • 2 anchors"** and 4 dots are drawn. Rows `x` and `y` are gone from the data, with no message.
 
-**Cause:** `detectExistingDummies` (line 4659) treats trailing rows whose first cell is only the letters a–z as anchors.
+**Cause:** `detectExistingDummies` (line 4660) treats trailing rows whose first cell is only the letters a–z as anchors.
 
 ---
 
@@ -95,7 +95,7 @@ Two files, showing the two forms this takes.
 
 **What happens:** 4 dots are drawn; the header still reads **"8 records • 0 modified • 2 anchors"**. The only trace of the filter is "1 of 2 values" beside *Group* in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot.
 
-**Cause:** `renderVisualization` (line 6311) reports `data.length`, the number loaded.
+**Cause:** `renderVisualization` (line 6312) reports `data.length`, the number loaded.
 
 ---
 
@@ -139,7 +139,7 @@ ID,Group,note,desc::comment,desc::Tone
 
 The column has moved to the far right.
 
-**Cause:** `generateCSV` (line 4190) takes column order from the first row object, and `renameColumnKey` (line 5088) deletes and re-adds the key.
+**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5089) deletes and re-adds the key.
 
 ---
 
@@ -160,7 +160,7 @@ The column has moved to the far right.
 
 **Why it matters for PLeW's own files:** a comment typed with a line break is exported in exactly this form, so a file saved by PLeW can fail to load in PLeW. To see that route instead, load any file, open a record, type a two-line comment, download the CSV and load it again.
 
-**Cause:** `parseCSV` (line 4078) splits the text into lines before looking at quotes; `parseDelimitedLine` (line 4114) drops every quotation mark.
+**Cause:** `parseCSV` (line 4079) splits the text into lines before looking at quotes; `parseDelimitedLine` (line 4115) drops every quotation mark.
 
 ---
 
@@ -179,7 +179,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 4999, 6071). Custom shapes behave the same way (line 5007).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5000, 6072). Custom shapes behave the same way (line 5008).
 
 ---
 
@@ -212,7 +212,7 @@ Nothing in the legend or the picture says so.
 
 **What happens:** Korean stays teal, but Arabic turns from teal to red, Basque from red to yellow, and so on down the list. A picture made before the reorder and one made after use different colours for the same languages.
 
-**Cause:** `getColorForValue` / `getShapeForValue` (lines 4998–5012) pick by position in the value order, wrapping round.
+**Cause:** `getColorForValue` / `getShapeForValue` (lines 4999–5013) pick by position in the value order, wrapping round.
 
 ---
 
@@ -238,7 +238,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5490).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5491).
 
 ---
 
@@ -265,7 +265,7 @@ The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a 
 
 Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7279), which calls `getSnapshotFetchUrl` (line 7245).
+**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7280), which calls `getSnapshotFetchUrl` (line 7246).
 
 ---
 

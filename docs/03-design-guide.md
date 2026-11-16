@@ -243,6 +243,9 @@ Before opening a pull request, a contributor should be able to answer yes to eac
 - [ ] State declared in the STATE section; redraw through `updateVisualization()`?
 - [ ] No unused code left behind; data inserted as text?
 
+**The documents**
+- [ ] Has the review procedure in [`tools/code-userguide-review.md`](../tools/code-userguide-review.md) been run, its report added to the pull request, and the code map, user guide and verification stamp brought up to date?
+
 ---
 
 ## Part 4 — For tools built on these ideas

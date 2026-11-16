@@ -1,6 +1,6 @@
 # PLeW documentation
 
-First-draft documents produced from a full read of the visualizer (`layouts/index.html` and `layouts/_default/example-viz.html`). No tool code was changed in producing them.
+Documents produced from a full read of the visualizer (`layouts/index.html` and `layouts/_default/example-viz.html`).
 
 | Document | For | What it answers |
 |---|---|---|
@@ -12,4 +12,21 @@ First-draft documents produced from a full read of the visualizer (`layouts/inde
 
 **Suggested reading order:** the manifesto (Part 1 of the design guide) for the *why*; the user guide for the *what*; the code map for the *how*; the report for *what next*.
 
-**Planned next:** turn the user guide and the design guide into pages that load alongside the tool, once the wording is settled against the writing style guide.
+## On the site
+
+The user guide, design guide and code map are also published as pages beside the tool, at `/guide/`, `/design/` and `/code-map/`, and linked from **Help** under the tool's title. Those pages are built from the files in this folder, so there is one copy of the text: **edit it here.** The wording is still a first draft, pending the writing style guide.
+
+## Keeping these documents true
+
+The procedure in [`tools/code-userguide-review.md`](../tools/code-userguide-review.md) checks every document here against the current code, and checks that the tool still works. It is written for a language model or a person to follow. Run it after any change to the tool, before opening the pull request.
+
+### Verification stamp
+
+The documents were last checked against these exact versions of the tool files. Each hash is the output of `git hash-object <file>`; if the command prints something different today, the code has changed since the documents were checked.
+
+| File | Lines | Blob hash |
+|---|---|---|
+| `layouts/index.html` | 7953 | `e61483a75ca3071a1960f50591cf2df9d940cec4` |
+| `layouts/_default/example-viz.html` | 7744 | `16f9625d68add8d21dcd74838e6124a6f8c751ab` |
+
+**Checked on:** 2026-11-16 · **Reason:** help links added to both files; line numbers in the documents shifted to match.

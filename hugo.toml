@@ -4,6 +4,7 @@ title = 'PLeW'
 
 [params]
   description = 'Interactive multi-dimensional data visualizer'
+  repoURL = 'https://github.com/len-sprague/PLeW'
 
 [markup.goldmark.renderer]
   unsafe = true
