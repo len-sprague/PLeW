@@ -127,6 +127,17 @@ const out = (...a)=>console.log(a.map(x=>typeof x==='string'?x:JSON.stringify(x)
   await load(D+'A8-drag-discards-dropdown.csv'); await enc('Size','shape'); await p.dragAndDrop('.dimension-item[data-name="Tone"] .drag-handle', '.dimension-item[data-name="Region"]'); out('A8 after dropdown then drag:', await encs());
   const reqs=[]; p.on('request', r=>{ if(r.url().includes('wsrv.nl')) reqs.push('wsrv.nl'); });
   await load(D+'A9-image-proxy.csv'); await p.locator('.data-point[data-row-index]').first().click(); await p.waitForTimeout(800); out('A9 proxy requests on opening a record:', reqs.length);
+  // A9 detail: the image itself is still requested; the proxy is contacted only once a snapshot is asked for (html2canvas is replaced by a stand-in, because its CDN may be unreachable)
+  // Both outside hosts are answered here with a 1-pixel image, so the check does not depend on the network: without a loaded image the tool shows a placeholder and has nothing to send to the proxy.
+  const PX=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==','base64');
+  for (const h of ['upload.wikimedia.org','wsrv.nl']) await p.route('**://'+h+'/**', r=>r.fulfill({status:200, contentType:'image/png', headers:{'access-control-allow-origin':'*'}, body:PX}));
+  const imgReqs=[]; p.on('request', r=>{ if(new URL(r.url()).hostname==='upload.wikimedia.org') imgReqs.push(1); });
+  await load(D+'A9-image-proxy.csv'); reqs.length=0; await p.locator('.data-point[data-row-index]').first().click(); await p.waitForTimeout(800);
+  const open1=[imgReqs.length, reqs.length]; await p.keyboard.press('Escape'); await p.waitForTimeout(200); await p.locator('.data-point[data-row-index]').nth(2).click({modifiers:['Shift']}); await p.waitForTimeout(800); const cmp1=reqs.length;
+  await p.evaluate(()=>{ window.html2canvas = async()=>{ const c=document.createElement('canvas'); c.width=c.height=2; return c; }; });
+  const dl=p.waitForEvent('download',{timeout:8000}).then(d=>d.suggestedFilename()).catch(()=>'none'); await p.locator('.modal-snap-btn').first().click(); const snapFile=await dl; const afterSnap=reqs.length; const srcBack=await p.evaluate(()=>[...document.querySelectorAll('#modalOverlay .modal img')].every(i=>i.getAttribute('src').startsWith('https://upload.wikimedia.org')));
+  await p.locator('.modal-snap-btn').first().click(); await p.waitForTimeout(1500);
+  out('A9b open a record: image requests', open1[0], 'proxy requests', open1[1], '| open compare: proxy requests', cmp1, '| after pressing a snapshot button: proxy requests', afterSnap, 'file', snapFile, 'images restored', srcBack, '| after a second press: proxy requests', reqs.length, '| compare window open:', await p.locator('.modal.compare-modal').count(), '| button tooltip names the proxy:', await p.locator('.modal-snap-btn').first().evaluate(b=>b.title.includes('wsrv.nl')));
   out('ERRORS:', errs.filter(e=>!/favicon|ERR_|Failed to load resource/.test(e)));
   await b.close();
 })();
