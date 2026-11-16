@@ -2,7 +2,7 @@
 
 For the next session picking this work up. Read this first, then the files it points to.
 
-**Written:** 2026-11-16 · **Next task:** finding **A3** (specification in section 5).
+**Written:** 2026-11-16 · **Next task:** finding **A9**, once the A3 pull request is merged (the owner may choose another; see section 7).
 
 ---
 
@@ -28,7 +28,7 @@ PLeW is a single-file HTML data visualizer for discrete data: one dot per record
 | Guide pages on the site (`/guide/`, `/design/`, `/code-map/`), Help links, review procedure | Merged | len-sprague/PLeW#29 |
 | **A1** panel filter with one value left | **Merged** | len-sprague/PLeW#30 |
 | **A2** anchors marked with a reserved ID | **Merged** | len-sprague/PLeW#31 |
-| **A3** hidden-record counts | **Next** | — |
+| **A3** hidden-record counts | **Pull request open** (*A3 resolution attempt #1*) — check whether it has been merged | — |
 | A4–A9 | Not started | — |
 
 This file and `tools/checks/` come in their own pull request, opened after A2 was merged. No tool code is in it.
@@ -66,7 +66,7 @@ The site is published in a sub-folder, `https://lensprague.com/PLeW/`. A link wr
 | File | What it does |
 |---|---|
 | `tools/code-userguide-review.md` | The review procedure, step by step |
-| `tools/checks/behaviour.js` | Drives the built site in a headless browser and prints 61 one-line checks (placements, filters, drag, undo, comments, compare, round trips, setup, report, an example page, every A-file) |
+| `tools/checks/behaviour.js` | Drives the built site in a headless browser and prints 77 one-line checks (placements, filters, drag, undo, comments, compare, round trips, setup, report, an example page, every A-file) |
 | `tools/checks/anchors.js` | 65 lines on anchors: every shipped dataset, every example page, save-and-reload cycles, edge-case files in `tools/checks/anchor-edge-cases/` |
 | `tools/checks/links.js` | Tests every link on the editor, gallery, an example and the guide pages |
 | `tools/checks/remap-line-numbers.py` | After an edit, moves every documented line number using the diff of the old and new file |
@@ -165,6 +165,8 @@ The pull request description should contain: what was wrong; what was changed an
 
 ## 5. A3 — what the owner has decided
 
+> **Done** in the pull request *A3 resolution attempt #1*; this section is kept as the record of the specification. As built: both counts are taken from the dots drawn, after drawing. The header names only the filters that hide at least one record, "(filtered by Group, Tone, comments)". The anchor figure "(+N⚓)" counts the anchors drawn in that panel. With no dimension placed, the header reads "0 of N records shown". The wording "1 items" for a panel of one was left unchanged.
+
 **Finding:** nothing on screen says how many records are hidden. See the report, A3, and `docs/A3-hidden-record-count.csv`.
 
 **Decision:** use the wording the tool already uses for filtered values ("3 of 5 values").
@@ -209,7 +211,7 @@ Found while working on A1 and A2. None has been changed.
 
 From the report, adjusted for what is done:
 
-1. **A3** — hidden-record counts (specified above).
+1. **A3** — hidden-record counts (done; pull request open).
 2. **A9** — do not contact the image proxy until a snapshot is requested. Small and self-contained.
 3. **A5** — CSV parser: line breaks and quotation marks inside cells. Must come before A4.
 4. **A4** — the exported CSV's shape: column order, optional comment column, optional anchors. Needs the owner's decisions.

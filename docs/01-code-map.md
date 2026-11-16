@@ -2,7 +2,7 @@
 
 How the pieces of PLeW relate to each other in the code.
 
-- **Subject:** `layouts/index.html` (the full editor, 8,055 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,846 lines).
+- **Subject:** `layouts/index.html` (the full editor, 8,098 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,889 lines).
 - **Line numbers** refer to `layouts/index.html` as recorded in the verification stamp in [docs/README.md](README.md). They will drift; the section banners and `FEATURE:` markers named below are the stable way to find things.
 - **Status:** first draft. Everything here was read from the code; the behaviours marked *(verified)* were also confirmed by running the page in a headless browser.
 
@@ -23,7 +23,7 @@ Everything else in the file exists to serve one of four jobs around that model: 
 | 1–7 | `<head>` | One external script: html2canvas 1.4.1 from cdnjs (used only for PNG snapshots). |
 | 8–2589 | `<style>` | All CSS, about a third of the file. Dark theme, colours hard-coded. Six CSS variables carry user-adjustable styling (§9). |
 | 2591–3016 | `<body>` markup | Static skeleton: sidebar, main area, tooltip, context menu, two modals. Most content is filled in by JavaScript. |
-| 3018–8053 | `<script>` | One classic script, about 247 top-level functions, all global. No modules, no classes, no build step. |
+| 3018–8096 | `<script>` | One classic script, about 248 top-level functions, all global. No modules, no classes, no build step. |
 
 Hugo is used only as a thin wrapper. `index.html` contains five template expressions (the examples link at 2598, three help-page links at 2600, and `SITE_BASE` at 3022); `example-viz.html` adds `.Title`, `.Description`, `dataset_url` and `config_url`. Remove those and the file runs from disk.
 
@@ -50,19 +50,19 @@ The script is laid out in banner-commented sections, with newer work wrapped in 
 | 5093–5114 | colour and shape lookup | |
 | 5116–5154 | dimension analysis | Which columns become dimensions |
 | 5156–5469 | column-roles | Role editor, column rename, rebuild |
-| 5478–5549 | `updateVisualization()` | The single redraw entry point |
-| 5551–5796 | drag and drop: dimensions, values, data points | |
-| 5798–5965 | right-click context menu | |
-| 5967–6399 | sidebar and legend rendering | |
-| 6401–6782 | grid rendering | `renderVisualization` → `creategrid` → `createpanelCell` |
-| 6784–6953 | adaptive dot sizing | |
-| 6955–7104 | data point, tooltip | |
-| 7106–7343 | record modal, compare, media HTML | |
-| 7345–7448 | image inlining for modal snapshots | |
-| 7450–7633 | report | |
-| 7635–7744 | modal snapshot, modal close | |
-| 7746–7916 | FILE HANDLING | Drop zone, file inputs, local media map |
-| 7918–8042 | `processParsedRows()` | The single load entry point |
+| 5478–5556 | `updateVisualization()` | The single redraw entry point |
+| 5558–5803 | drag and drop: dimensions, values, data points | |
+| 5805–5972 | right-click context menu | |
+| 5974–6406 | sidebar and legend rendering | |
+| 6408–6825 | grid rendering | `renderVisualization` → `creategrid` → `createpanelCell` |
+| 6827–6996 | adaptive dot sizing | |
+| 6998–7147 | data point, tooltip | |
+| 7149–7386 | record modal, compare, media HTML | |
+| 7388–7491 | image inlining for modal snapshots | |
+| 7493–7676 | report | |
+| 7678–7787 | modal snapshot, modal close | |
+| 7789–7959 | FILE HANDLING | Drop zone, file inputs, local media map |
+| 7961–8085 | `processParsedRows()` | The single load entry point |
 
 ### Feature markers
 
@@ -158,7 +158,7 @@ Several display settings have **no state variable** and live only in their form 
 
 Almost every path through the code passes through one of two functions.
 
-### 5.1 Load: `processParsedRows()` (7937)
+### 5.1 Load: `processParsedRows()` (7980)
 
 ```
 drop / file picker ──► loadFile ──► processDataFile ──┬─► parseCSV ──┐
@@ -264,16 +264,16 @@ The same test applies however many values are visible, including one. (Until the
 
 **Saying how many are hidden** (finding A3, fixed). Both counts are taken from the dots actually drawn, after drawing, and neither ever includes anchors:
 
-- The header line reads "8 records • 0 modified" when every record is drawn, and "4 of 8 records shown (filtered by Tone) • 0 modified" when not. `renderVisualization` writes it as its last step. `getHidingFilterNames` supplies the names in brackets: each placed dimension whose filter hides at least one record, in the order grid X, grid Y, panel X, panel Y, colour, shape, then "comments" if the comment filter hides at least one. A filter that hides nothing is not named.
+- The header line reads "8 records • 0 modified" when every record is drawn, and "4 of 8 records shown (filtered by Tone) • 0 modified" when not. `renderVisualization` writes it as its last step. `getHidingFilterNames` (6561) supplies the names in brackets: each placed dimension whose filter hides at least one record, in the order grid X, grid Y, panel X, panel Y, colour, shape, then "comments" if the comment filter hides at least one. A filter that hides nothing is not named. When no dimension is placed at all, nothing is drawn and `updateVisualization` (5515) writes "0 of 8 records shown" beside the "No dimensions assigned" message.
 - A panel's count (**Show item counts**) reads "3 items" when every record belonging to the panel is drawn and "2 of 3 items" when not, whichever filter hid them. `creategrid` writes it after the panel's cells are filled. Anchors drawn in the panel follow as "(+1⚓)". Records hidden together with their whole panel (a grid X or grid Y filter) appear only in the header's number.
 
 ### 6.6 Drawing
 
-- `renderVisualization` (6404) builds the outer CSS grid, the draggable axis headers, the axis titles, calls `creategrid` for each outer cell and, last, writes the header line from the number of dots drawn (§6.5).
-- `creategrid` (6615) builds the inner grid and its headers, then the item count from the dots drawn in it (§6.5). Panel Y is drawn **bottom-to-top** (`.reverse()` at 6689) so it reads like a graph axis; grid Y is drawn top-to-bottom.
-- `createpanelCell` (6738) filters rows, optionally sorts them by colour then shape (**Cluster by color**), and registers the cell as a drop target carrying its four coordinate values.
-- `createDataPoint` (6955) builds one dot and attaches: drag, hover tooltip, click (record window), right-click (context menu). It adds classes `modified`, `has-comment`, `selected`, `compare-b`.
-- `applyAdaptiveDotSizing` (6889) picks **one** dot size for the whole chart (12px down to 6px), enough for the most crowded cell. Size is deliberately never per-cell, because size is not an encoding. Under **Unify inner panel**, cells that still overflow switch to an overlapping stacked layout and, past 65% overlap, show a `+N` badge.
+- `renderVisualization` (6411) builds the outer CSS grid, the draggable axis headers, the axis titles, calls `creategrid` for each outer cell and, last, writes the header line from the number of dots drawn (§6.5).
+- `creategrid` (6652) builds the inner grid and its headers, then the item count from the dots drawn in it (§6.5). Panel Y is drawn **bottom-to-top** (`.reverse()` at 6722) so it reads like a graph axis; grid Y is drawn top-to-bottom.
+- `createpanelCell` (6781) filters rows, optionally sorts them by colour then shape (**Cluster by color**), and registers the cell as a drop target carrying its four coordinate values.
+- `createDataPoint` (6998) builds one dot and attaches: drag, hover tooltip, click (record window), right-click (context menu). It adds classes `modified`, `has-comment`, `selected`, `compare-b`.
+- `applyAdaptiveDotSizing` (6932) picks **one** dot size for the whole chart (12px down to 6px), enough for the most crowded cell. Size is deliberately never per-cell, because size is not an encoding. Under **Unify inner panel**, cells that still overflow switch to an overlapping stacked layout and, past 65% overlap, show a `+N` badge.
 
 ## 7. Changing the data
 
@@ -281,9 +281,9 @@ The same test applies however many values are visible, including one. (Until the
 
 | Action | Function | Fields changed |
 |---|---|---|
-| Drag a dot to another cell | `handleCellDrop` (5747) | Up to four at once: grid X, grid Y, panel X, panel Y |
-| Right-click → pick a colour value | `changeColor` (5895) | The colour dimension's field |
-| Right-click → pick a shape value | `changeShape` (5919) | The shape dimension's field |
+| Drag a dot to another cell | `handleCellDrop` (5754) | Up to four at once: grid X, grid Y, panel X, panel Y |
+| Right-click → pick a colour value | `changeColor` (5902) | The colour dimension's field |
+| Right-click → pick a shape value | `changeShape` (5926) | The shape dimension's field |
 | Type in the record window's comment box | `saveRecordCommentFromValues` (3285) | `desc::comment`, autosaved 350 ms after typing stops |
 
 Each one follows the same sequence: write to `currentData`, add to `modifiedRows`, `pushUndoAction`, append to `changeLog`, `updateChangesIndicator`, `updateVisualization`.
@@ -319,11 +319,11 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 | Surface | Function | Shows |
 |---|---|---|
-| Tooltip | `showTooltip` (7053) | First five fields that pass `shouldExcludeFromTooltip`, the comment, a modified flag, a hint line |
-| Record window | `renderCompareModal` (7208) | Field table, media, comment editor (single record only) |
+| Tooltip | `showTooltip` (7096) | First five fields that pass `shouldExcludeFromTooltip`, the comment, a modified flag, a hint line |
+| Record window | `renderCompareModal` (7251) | Field table, media, comment editor (single record only) |
 | Compare | same function, when slots A and B are both set | Three-column table with differing rows highlighted, media side by side |
 
-- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7243).
+- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7286).
 - Fields shown and their order come from `columnRecordOrder` and `columnVisibility`, edited in the **Column roles** list.
 - Tooltip and record window use **different exclusion rules** (`shouldExcludeFromTooltip` 3819 matches reserved names by substring; `shouldExcludeFromModalTable` 3828 by exact match).
 
@@ -331,7 +331,7 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 - `detectMediaColumns` (4441) finds columns by `med::` prefix or by name pattern; type comes from the name (`audio`, `image`, `video`…) or, failing that, from the file extension.
 - `resolveMediaUrl` (4486), in priority order: absolute / blob / data URL as is → file picked locally (`localMediaMap`, by path then by bare file name) → root-relative as is → relative to where the CSV came from.
-- `generateMediaHTML` (7328): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
+- `generateMediaHTML` (7371): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
 - A legacy pair of columns `media_type` + `media_url` is also honoured (4527).
 
 ## 9. Getting things out
@@ -342,8 +342,8 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 | Change log | `downloadChangeLog` (4601) | `change_log.csv` / `.json` | Every edit, undo and redo with timestamp |
 | Setup | `buildVisualizationConfig` (3569) | `plew-setup-<dataset>.json` | See below |
 | Grid image | `downloadSnapshot` (4360) | `grid_snapshot.png` | The grid, with a legend added on top; dark or light; comment rings removed |
-| Record image | `snapshotModal` (7635) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
-| Report | `generateReport` (7556) | `report.html` | Counts, percentages, crosstabs |
+| Record image | `snapshotModal` (7678) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
+| Report | `generateReport` (7599) | `report.html` | Counts, percentages, crosstabs |
 
 ### The setup file (version 5)
 
@@ -374,7 +374,7 @@ Works on `currentData` in full: it ignores filters and the current layout, and e
 
 Grid snapshots use html2canvas on a temporary wrapper (`prepareSnapshotCaptureRoot`), with `fixSnapshotLabels` un-rotating vertical labels and expanding overflowing cells in the clone.
 
-Record snapshots need images as data URLs. `preloadModalImages` (7382) starts fetching them **whenever a record window opens**, and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7348).
+Record snapshots need images as data URLs. `preloadModalImages` (7425) starts fetching them **whenever a record window opens**, and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7391).
 
 ## 10. The interface, control by control
 

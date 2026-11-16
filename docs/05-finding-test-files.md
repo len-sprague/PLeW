@@ -62,7 +62,7 @@ After step 5 every record was back, all under the heading **a**. Hovering over t
 
 **Also visible here, fixed with A3:** after step 4 each panel draws 2 dots and its count reads **"2 of 3 items"**; after step 5, 1 dot and **"1 of 3 items"**. Before the fix for A3 the count read "3 items" throughout, because item counts ignored panel X / panel Y filters.
 
-**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6744 and 6747), which skipped the row test when only one value was visible. The fix removes them.
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6787 and 6790), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
@@ -164,7 +164,7 @@ After step 2 the two remaining panels each draw all of their own records, so the
 
 The only trace of a filter was "1 of 2 values" beside the dimension in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot. With *Tone* on colour or shape instead of panel X, the panel counts did drop (to "2 items") but did not say out of how many. In step 5 the second panel reported an anchor that was not drawn.
 
-**Cause:** `renderVisualization` reported `data.length`, the number loaded, and `creategrid` counted a panel's records before its cells were filled, applying only the colour, shape and comment filters. The fix writes both counts after drawing, from the dots drawn.
+**Cause:** `renderVisualization` reported `data.length`, the number loaded, and `creategrid` counted a panel's records before its cells were filled, applying only the colour, shape and comment filters. The fix writes both counts after drawing, from the dots drawn: the header at the end of `renderVisualization` (line 6553), the panel count in `creategrid` (6652) after its cells are filled.
 
 ---
 
@@ -248,7 +248,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6174). Custom shapes behave the same way (line 5105).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6181). Custom shapes behave the same way (line 5105).
 
 ---
 
@@ -307,7 +307,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5593).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5600).
 
 ---
 
@@ -334,7 +334,7 @@ The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a 
 
 Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7382), which calls `getSnapshotFetchUrl` (line 7348).
+**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7425), which calls `getSnapshotFetchUrl` (line 7391).
 
 ---
 

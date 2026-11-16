@@ -5543,6 +5543,13 @@
                         </div>
                     </div>
                 `;
+                // Nothing is drawn, so the header line must not keep the
+                // counts of the previous picture.
+                if (currentData) {
+                    document.getElementById('vizStats').textContent =
+                        `0 of ${currentData.length} records shown • ${modifiedRows.size} modified` +
+                        (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
+                }
             }
             
             updateFloatingLegend(encodings);

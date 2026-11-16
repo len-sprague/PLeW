@@ -116,6 +116,8 @@ const out = (...a)=>console.log(a.map(x=>typeof x==='string'?x:JSON.stringify(x)
   await a3load(); await p.evaluate(()=>{ document.getElementById('dummyVisible').checked=true; updateDummySettings(); }); await enc('Tone','panel-x'); await cb('Tone','low').click(); await a3('A3i anchors shown, Tone on panel X, low hidden');
   await a3load(); await enc('Tone','panel-x'); await cb('Tone','low').click(); await enc('Tone',''); await a3('A3j Tone filtered, then taken off the picture (its filter hides nothing)');
   await a3load(); await cb('Group','A').click(); await cb('Group','B').click(); await a3('A3k every grid value hidden');
+  await a3load(); await cb('Group','B').click(); await enc('Group',''); await enc('Tone',''); out('A3l filter on, then every dimension taken off the picture | header:', await stats(), '| dots', await dots(), '| message:', await p.locator('.empty-state-text').textContent());
+  await enc('Tone','grid-x'); await a3('A3m then Tone put back');
   await load(D+'A4-export-differs.csv'); out('A4 export header:', (await p.evaluate(()=>generateCSV())).split('\n')[0], '| lines', (await p.evaluate(()=>generateCSV())).trim().split('\n').length);
   await p.evaluate(()=>setColumnRole('Tone','desc')); out('A4 after role change:', (await p.evaluate(()=>generateCSV())).split('\n')[0]);
   await load(D+'A5-multiline-and-quotes.csv'); out('A5:', await stats(), '| note 3:', await p.evaluate(()=>currentData.find(r=>r.ID==='3').note));
