@@ -27,13 +27,15 @@ PLeW is a single-file HTML data visualizer for discrete data: one dot per record
 | Test CSVs for A1–A9 | Merged | len-sprague/PLeW#28 |
 | Guide pages on the site (`/guide/`, `/design/`, `/code-map/`), Help links, review procedure | Merged | len-sprague/PLeW#29 |
 | **A1** panel filter with one value left | **Merged** | len-sprague/PLeW#30 |
-| **A2** anchors marked with a reserved ID | **Open, awaiting the owner's review** | len-sprague/PLeW#31 |
+| **A2** anchors marked with a reserved ID | **Merged** | len-sprague/PLeW#31 |
 | **A3** hidden-record counts | **Next** | — |
 | A4–A9 | Not started | — |
 
-This file and `tools/checks/` were added to the A2 branch, so they arrive on `main` when len-sprague/PLeW#31 is merged.
+This file and `tools/checks/` come in their own pull request, opened after A2 was merged. No tool code is in it.
 
-**Before starting A3, check whether #31 has been merged** (`git fetch origin main && git log --oneline origin/main | head`). If it has not, ask the owner whether to wait or to build A3 on top of it.
+**Before starting A3, check that this file is on `main`** (`git fetch origin main && git ls-tree -r origin/main --name-only | grep HANDOFF`). If it is not, the handoff pull request is still open: ask the owner to merge it first, or start A3's branch from it.
+
+**Before adding to a pull request, check that it is still open.** A commit pushed to a branch whose pull request has already been merged does not reach `main`; it needs a new pull request. (This happened with this very file.)
 
 ## 3. The files that matter
 
@@ -219,7 +221,7 @@ The owner may choose a different order; ask at each check-in.
 
 ## 8. Starting the next session
 
-1. `git fetch origin main` and see whether len-sprague/PLeW#31 (A2) has been merged.
+1. `git fetch origin main` and confirm this file and `tools/checks/` are on `main`. A1 and A2 are already merged.
 2. Read this file, then the report's A3 row, `docs/05-finding-test-files.md` section A3, and code map §6.5 and §6.6.
 3. Run step 2 of section 4 to get both builds serving and a "before" record.
 4. Plan A3 against section 5, raise anything unclear with the owner, then proceed through section 4.
