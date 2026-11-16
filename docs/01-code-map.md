@@ -169,7 +169,7 @@ In order, it:
 
 1. Adds the `desc::comment` column if missing.
 2. `detectMediaColumns(headers)` → `mediaColumns`.
-3. `detectExistingDummies` — splits trailing anchor rows off the real data (§7.4).
+3. `detectExistingDummies` — separates anchor rows from the real data (§7.4).
 4. `analyzeDimensions(headers, realData)` → which columns are dimensions (§6.2).
 5. `mergeValueSpaces` — adds values that exist only in anchor rows.
 6. `validateAnchors`, then keeps or regenerates `dummyRows`.
@@ -305,7 +305,9 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 - `generateDummyRows` (4685) creates as many rows as the largest dimension has values, cycling each dimension's values, with IDs `a`, `b`, `c`… in the first column.
 - They are appended to the end of every exported CSV.
-- On load, `detectExistingDummies` (4660) treats **trailing rows whose first-column value is only lowercase letters** as anchors. A file whose first column is lowercase words is therefore read as all anchors and no data *(verified)*.
+- **How an anchor is marked.** Each anchor carries a reserved ID: `__anchor__a`, `__anchor__b` … `__anchor__z`, `__anchor__aa` … (`getAnchorId`; the letters come from `getAlphaLabel`, which moves to two and then three letters by itself, so there is no upper limit). `getAnchorMarkerColumn` chooses where the ID is written: the first column, unless the first column is itself a dimension, in which case the first column that is not a dimension is used (the comment column only as a last resort).
+- **How anchors are recognised on load.** `detectExistingDummies` treats a row as an anchor if **any** of its cells holds a reserved ID (`isAnchorRow`), wherever the row sits in the file. Nothing else about a row makes it an anchor.
+- **Files from before the reserved IDs.** Earlier versions wrote bare letters (`a`, `b`, `c` …). `countLegacyAnchorRows` still accepts those, but only when all of these hold: the last rows' first-column values are exactly `a`, `b`, `c` … in order starting at `a`; at least one other row comes before them; and every column that is not a dimension (other than the first) is empty in each of them. Rows accepted this way are given reserved IDs, so the next download is in the current format. (Until the fix for finding A2, *any* trailing rows whose first cell was only lowercase letters were taken for anchors.)
 - `validateAnchors` (4714) checks count and coverage; if they do not match the current dimensions they are regenerated.
 - They are hidden by default and never counted in "N records"; the **Anchor Points** sidebar section controls their appearance.
 
@@ -457,7 +459,7 @@ comment tags ──► quick-insert buttons, "Tags to show"
 - **Comments are both data and filter.** The comment filter is applied inside the colour/shape filter function, so it applies even when no colour or shape is assigned.
 - **Column roles reach everywhere.** One role change touches rows, original data, anchors, headers, change log, undo stacks, filters, value order, visibility and record order.
 - **Value order is also the palette.** See §6.4.
-- **Anchors depend on the first column.** Both row IDs in the change log (`getRowDisplayId`) and anchor detection assume the first column is an identifier.
+- **Row IDs assume the first column is an identifier.** The change log labels each row by its first-column value (`getRowDisplayId`). Anchors no longer depend on the first column: they are recognised by their reserved ID in any column (§7.4). Only the reading of old-format files still looks at the first column.
 - **Legends are four renderings of one thing.** Sidebar colour legend, sidebar shape legend, legend bar, floating legend — plus a fifth built for snapshots — all derive from `encodings.color` / `encodings.shape` through the same two lookup functions.
 
 ## 12. The two files

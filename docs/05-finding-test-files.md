@@ -10,8 +10,10 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 | Finding | File | Failure in one line |
 |---|---|---|
 | A1 ✅ fixed | `A1-panel-filter-single-value.csv` | Was: hiding two of three panel values showed all 6 records, not 2. Now shows 2 |
-| A2 | `A2a-lowercase-first-column.csv` | 4 rows load as 0 records |
-| A2 | `A2b-lowercase-trailing-ids.csv` | 6 rows load as 4 records |
+| A2 ✅ fixed | `A2a-lowercase-first-column.csv` | Was: 4 rows loaded as 0 records. Now 4 |
+| A2 ✅ fixed | `A2b-lowercase-trailing-ids.csv` | Was: 6 rows loaded as 4 records. Now 6 |
+| A2 (check) | `A2c-old-style-anchors.csv` | A file in the old anchor format still loads as 4 records + 2 anchors |
+| A2 (check) | `A2d-more-than-26-anchors.csv` | 30 anchors: IDs run past `__anchor__z` to `__anchor__aa` |
 | A3 | `A3-hidden-record-count.csv` | 4 dots drawn, header says "8 records" |
 | A4 | `A4-export-differs.csv` | Downloaded file has an extra column, extra rows and, after a role change, a moved column |
 | A5 | `A5-multiline-and-quotes.csv` | 4 rows load as 5; quotation marks vanish |
@@ -66,7 +68,11 @@ After step 5 every record was back, all under the heading **a**. Hovering over t
 
 ## A2 — Lowercase first column is mistaken for anchors
 
-Two files, showing the two forms this takes.
+> **Fixed** in the pull request *A2 resolution attempt #1*. Anchors are now marked with a reserved ID (`__anchor__a`, `__anchor__b` …) and recognised only by it. The steps below now give the expected result; the old failures are kept for comparison.
+
+Two files show the two forms the failure took. Two more check the parts of the fix that are easy to get wrong: reading old files, and needing more than 26 anchors.
+
+To see the anchors themselves in any of these, press **Download CSV** and look at the last rows of the file, or tick **Show on chart** under **Anchor Points** in the sidebar.
 
 ### A2a — the whole file disappears
 
@@ -76,9 +82,9 @@ Two files, showing the two forms this takes.
 
 **Expected:** 4 records, with *Class* and *Tone* as dimensions.
 
-**What happens:** the picture reads **"No dimensions assigned"** and the Dimensions list is empty. All four rows have been taken for anchor rows, leaving 0 records. The **Anchor Points** section in the sidebar reads "4 anchors".
+**What happens now (after the fix):** the header reads **"4 records • 0 modified • 2 anchors"** and 4 dots are drawn. Downloading the CSV gives the four rows followed by two rows with the IDs `__anchor__a` and `__anchor__b`.
 
-(If another file was loaded first without reloading the page, the header above the picture keeps showing that earlier file's record count.)
+**What happened before the fix:** the picture read **"No dimensions assigned"** and the Dimensions list is empty. All four rows had been taken for anchor rows, leaving 0 records. The **Anchor Points** section in the sidebar read "4 anchors".
 
 ### A2b — the last rows disappear
 
@@ -88,9 +94,33 @@ Two files, showing the two forms this takes.
 
 **Expected:** 6 records.
 
-**What happens:** the header reads **"4 records • 0 modified • 2 anchors"** and 4 dots are drawn. Rows `x` and `y` are gone from the data, with no message.
+**What happens now (after the fix):** the header reads **"6 records • 0 modified • 2 anchors"** and 6 dots are drawn, including `x` and `y`.
 
-**Cause:** `detectExistingDummies` (line 4660) treats trailing rows whose first cell is only the letters a–z as anchors.
+**What happened before the fix:** the header read **"4 records • 0 modified • 2 anchors"** and 4 dots were drawn. Rows `x` and `y` were gone from the data, with no message.
+
+**Cause:** `detectExistingDummies` treated any trailing rows whose first cell was only the letters a–z as anchors. It now looks for the reserved ID instead.
+
+### A2c — a file in the old format still loads
+
+**File:** `A2c-old-style-anchors.csv` — 4 records with IDs 1–4, followed by two anchor rows written the old way: IDs `a` and `b`, a value in each dimension, and the `note` column empty.
+
+**Steps:** load the file, then press **Download CSV** and open the result in a text editor.
+
+**Expected, and what happens (before and after the fix):** the header reads **"4 records • 0 modified • 2 anchors"**. Rows `a` and `b` are read as anchors, not as records.
+
+**What is new after the fix:** in the downloaded file those two rows now have the IDs `__anchor__a` and `__anchor__b`.
+
+**Why these two rows are accepted when `x`, `y` in A2b are not:** old-style anchors are recognised only when the last rows' IDs are exactly `a`, `b`, `c` … in order, at least one other row comes before them, and every column that is not a dimension is empty in them. To see the last condition at work, type anything into the `note` cell of row `a` in a copy of this file: it then loads as 6 records.
+
+### A2d — more than 26 anchors
+
+**File:** `A2d-more-than-26-anchors.csv` — 60 records; the *Item* column has 30 different values, so 30 anchors are needed.
+
+**Steps:** load the file, press **Download CSV**, and look at the last 30 rows.
+
+**Expected, and what happens after the fix:** the header reads **"60 records • 0 modified • 30 anchors"**. The anchor IDs run `__anchor__a` … `__anchor__z`, then `__anchor__aa`, `__anchor__ab`, `__anchor__ac`, `__anchor__ad`. Loading the downloaded file gives 60 records and 30 anchors again.
+
+(Before the fix the IDs were `a` … `z`, `aa` … `ad`.)
 
 ---
 
@@ -285,5 +315,5 @@ Images served from the same site as PLeW (as on the example pages) are not sent 
 
 Each file doubles as the check that its fix worked: repeat the steps and the "Expected" line should now be what happens. Two of them will need their expectations revisited once the fix is designed, because the fix changes the format rather than just the behaviour:
 
-- **A2** — depends on how anchors come to be marked. Both files should then load in full (4 and 6 records).
+- **A2** — done: both files load in full (4 and 6 records).
 - **A4** — depends on whether the comment column and anchor rows become optional at download.
