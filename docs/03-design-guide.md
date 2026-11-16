@@ -77,7 +77,7 @@ Each principle is followed by rules a contributor can check a change against, an
 
 **Already true.** Dimension rows read "3 of 5 values" when filtered. Snapshots have the legend added automatically. The Column roles badge counts how many columns are still on "Auto". Importing a setup made for a different dataset asks first.
 
-**Not yet.** There is no "M of N records shown" (A3). A panel filter with one value left shows everything (A1). The reasons behind Auto column decisions are not shown. Anchor rows are inferred from the shape of the first column (A2).
+**Not yet.** There is no "M of N records shown" (A3). The reasons behind Auto column decisions are not shown. Anchor rows are inferred from the shape of the first column (A2).
 
 ### 3. Every control has one effect you can see
 

@@ -24,7 +24,7 @@ Where PLeW repeats itself, carries things it no longer uses, or behaves in a way
 | E. One thing, several names | 6 | Labels that explain themselves |
 | F. Robustness | 5 | Fewer surprises with real-world files |
 
-If only three things are done, the suggestion is **A1**, **A2** and **C1**.
+If only three things are done, the suggestion is **A1** (now fixed), **A2** and **C1**.
 
 ---
 
@@ -34,7 +34,7 @@ These are the items where the picture, the counts or the exported file can diffe
 
 | # | Finding | Where | Suggested fix | Risk |
 |---|---|---|---|---|
-| A1 | **Filtering a panel dimension down to one value shows every row again.** With three values on panel X, hiding one shows 4 of 6 rows; hiding two shows all 6, under the one remaining header *(verified)*. Dropping a dot into that cell then rewrites its value to the visible one. | `createpanelCell`, the `length > 1` tests at 6642, 6645. Map §6.5 | Remove the `length > 1` conditions. They are unnecessary: an unassigned slot is already handled by the `encodings.panelX &&` test. | Medium |
+| A1 | ✅ **Fixed** in the pull request *A1 resolution attempt #1*: the two `length > 1` conditions were removed, as suggested, in both tool files. The finding as it was: **Filtering a panel dimension down to one value shows every row again.** With three values on panel X, hiding one shows 4 of 6 rows; hiding two shows all 6, under the one remaining header *(verified)*. Dropping a dot into that cell then rewrites its value to the visible one. | `createpanelCell`, the `length > 1` tests at 6642, 6645. Map §6.5 | Remove the `length > 1` conditions. They are unnecessary: an unassigned slot is already handled by the `encodings.panelX &&` test. | Medium |
 | A2 | **A file whose first column is lowercase words loads as zero records.** Trailing rows whose first cell is only `a–z` are taken to be anchor rows. A word list (`cat, dog, run…`) becomes 0 records and 4 anchors; a file ending in IDs `x`, `y` silently loses those rows *(verified)*. | `detectExistingDummies` 4660, `isAlphaLabel` 4656. Map §7.4 | Mark anchors explicitly instead of inferring them: a dedicated column (e.g. `res::plew_anchor`) or a reserved ID pattern such as `__anchor_a`. Keep reading the old form only when the trailing IDs are exactly `a, b, c…` in sequence. | High |
 | A3 | **Nothing says how many records are hidden.** The header always reads "N records", whatever the filters. A viewer of a shared example cannot tell that a setup file has filtered rows out *(verified)*. Per-panel item counts also ignore panel X / panel Y filters *(verified)*. | `renderVisualization` 6312. Map §6.5 | Show "M of N records shown" whenever M ≠ N, and name the active filters next to it. | Low |
 | A4 | **The exported CSV differs from the input even with no edits.** It gains a `desc::comment` column and the anchor rows *(verified)*. After a role change the column also moves to the far right, because the export takes column order from the first row object rather than from `csvHeaders` *(verified)*. | `generateCSV` 4191; `renameColumnKey` 5089 | Take column order from `csvHeaders`. Add the comment column only if any comment exists. Make "include anchor rows" a visible choice at download. | Medium |
@@ -142,7 +142,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 
 | Finding | Map section | Touches | Self-contained? |
 |---|---|---|---|
-| A1 single-value panel filter | §6.5, §6.6 | `createpanelCell` only | Yes |
+| A1 single-value panel filter — **fixed** | §6.5, §6.6 | `createpanelCell` and its one call in `creategrid` | Yes |
 | A2 anchor detection | §5.1, §7.4 | Load path, export, `getRowDisplayId` | No — needs a format decision and backward reading |
 | A3 hidden-record count | §6.5 | `renderVisualization`; needs a count of drawn dots, available after render | Yes |
 | A4 export shape | §9 | `generateCSV`; interacts with A2 | Mostly |
@@ -161,7 +161,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 
 1. **D1–D7** — delete unused code in both files. No behaviour change; shrinks the diff for everything after.
 2. **C2, C4, C5** — remove the known drift and the stray files.
-3. **A1, A3, A9** — the three small trust fixes.
+3. **A1** (done), **A3, A9** — the three small trust fixes.
 4. **C1** — merge the two files into one with two modes.
 5. **A5, A4, A2** — parser, export shape, anchor marking (in that order: the parser must be right before the format changes).
 6. **B1, E1–E6** — one way to assign a slot; one vocabulary.

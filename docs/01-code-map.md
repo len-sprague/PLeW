@@ -260,7 +260,7 @@ A row is drawn when all of these hold:
 | Its colour and shape values are visible | `rowPassesColorShapeFilters` (3522) | The dot |
 | It passes the comment filter | `rowPassesCommentFilter` (3333), called from the same function | The dot |
 
-One exception: when a panel dimension has exactly **one** visible value, `createpanelCell` skips the test for that dimension (the `length > 1` conditions at 6642 and 6645), so the single remaining cell shows rows of **every** value *(verified: filtering a 3-value panel dimension down to 2 shows 4 of 6 rows; down to 1 shows all 6 again)*.
+The same test applies however many values are visible, including one. (Until the fix for finding A1, a panel dimension with exactly one visible value skipped its test, and the one remaining cell showed rows of every value.)
 
 The header line "N records • M modified" always reports the total, not the number currently drawn.
 
