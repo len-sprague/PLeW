@@ -5207,6 +5207,11 @@
         }
 
         function rebuildDimensionsAfterColumnRoleChange() {
+            // The comment column may just have been given another role. Put an
+            // empty one back, so there is always at least one column that is
+            // not a dimension for anchors to carry their ID in.
+            ensureCommentColumn();
+
             const prevEncodings = { ...dimensionEncodings };
             const prevOrder = [...userDimensionOrder];
             const prevEnabled = new Set(enabledDimensions);
