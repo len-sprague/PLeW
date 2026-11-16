@@ -2,7 +2,7 @@
 
 How the pieces of PLeW relate to each other in the code.
 
-- **Subject:** `layouts/index.html` (the full editor, 7,953 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,744 lines).
+- **Subject:** `layouts/index.html` (the full editor, 8,055 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,846 lines).
 - **Line numbers** refer to `layouts/index.html` as recorded in the verification stamp in [docs/README.md](README.md). They will drift; the section banners and `FEATURE:` markers named below are the stable way to find things.
 - **Status:** first draft. Everything here was read from the code; the behaviours marked *(verified)* were also confirmed by running the page in a headless browser.
 
@@ -23,7 +23,7 @@ Everything else in the file exists to serve one of four jobs around that model: 
 | 1–7 | `<head>` | One external script: html2canvas 1.4.1 from cdnjs (used only for PNG snapshots). |
 | 8–2589 | `<style>` | All CSS, about a third of the file. Dark theme, colours hard-coded. Six CSS variables carry user-adjustable styling (§9). |
 | 2591–3016 | `<body>` markup | Static skeleton: sidebar, main area, tooltip, context menu, two modals. Most content is filled in by JavaScript. |
-| 3018–7951 | `<script>` | One classic script, about 244 top-level functions, all global. No modules, no classes, no build step. |
+| 3018–8053 | `<script>` | One classic script, about 247 top-level functions, all global. No modules, no classes, no build step. |
 
 Hugo is used only as a thin wrapper. `index.html` contains five template expressions (the examples link at 2598, three help-page links at 2600, and `SITE_BASE` at 3022); `example-viz.html` adds `.Title`, `.Description`, `dataset_url` and `config_url`. Remove those and the file runs from disk.
 
@@ -45,24 +45,24 @@ The script is laid out in banner-commented sections, with newer work wrapped in 
 | 4184–4419 | CSV export, grid snapshot | |
 | 4421–4540 | media column detection and URL resolution | |
 | 4542–4641 | change log | |
-| 4643–4830 | anchor ("dummy") rows | |
-| 4832–4994 | change tracking, undo / redo | |
-| 4996–5017 | colour and shape lookup | |
-| 5019–5057 | dimension analysis | Which columns become dimensions |
-| 5059–5367 | column-roles | Role editor, column rename, rebuild |
-| 5376–5447 | `updateVisualization()` | The single redraw entry point |
-| 5449–5694 | drag and drop: dimensions, values, data points | |
-| 5696–5863 | right-click context menu | |
-| 5865–6297 | sidebar and legend rendering | |
-| 6299–6680 | grid rendering | `renderVisualization` → `creategrid` → `createpanelCell` |
-| 6682–6851 | adaptive dot sizing | |
-| 6853–7002 | data point, tooltip | |
-| 7004–7241 | record modal, compare, media HTML | |
-| 7243–7346 | image inlining for modal snapshots | |
-| 7348–7531 | report | |
-| 7533–7642 | modal snapshot, modal close | |
-| 7644–7814 | FILE HANDLING | Drop zone, file inputs, local media map |
-| 7816–7940 | `processParsedRows()` | The single load entry point |
+| 4643–4927 | anchor ("dummy") rows | |
+| 4929–5091 | change tracking, undo / redo | |
+| 5093–5114 | colour and shape lookup | |
+| 5116–5154 | dimension analysis | Which columns become dimensions |
+| 5156–5469 | column-roles | Role editor, column rename, rebuild |
+| 5478–5549 | `updateVisualization()` | The single redraw entry point |
+| 5551–5796 | drag and drop: dimensions, values, data points | |
+| 5798–5965 | right-click context menu | |
+| 5967–6399 | sidebar and legend rendering | |
+| 6401–6782 | grid rendering | `renderVisualization` → `creategrid` → `createpanelCell` |
+| 6784–6953 | adaptive dot sizing | |
+| 6955–7104 | data point, tooltip | |
+| 7106–7343 | record modal, compare, media HTML | |
+| 7345–7448 | image inlining for modal snapshots | |
+| 7450–7633 | report | |
+| 7635–7744 | modal snapshot, modal close | |
+| 7746–7916 | FILE HANDLING | Drop zone, file inputs, local media map |
+| 7918–8042 | `processParsedRows()` | The single load entry point |
 
 ### Feature markers
 
@@ -158,7 +158,7 @@ Several display settings have **no state variable** and live only in their form 
 
 Almost every path through the code passes through one of two functions.
 
-### 5.1 Load: `processParsedRows()` (7835)
+### 5.1 Load: `processParsedRows()` (7937)
 
 ```
 drop / file picker ──► loadFile ──► processDataFile ──┬─► parseCSV ──┐
@@ -169,7 +169,7 @@ In order, it:
 
 1. Adds the `desc::comment` column if missing.
 2. `detectMediaColumns(headers)` → `mediaColumns`.
-3. `detectExistingDummies` — splits trailing anchor rows off the real data (§7.4).
+3. `detectExistingDummies` — separates anchor rows from the real data (§7.4).
 4. `analyzeDimensions(headers, realData)` → which columns are dimensions (§6.2).
 5. `mergeValueSpaces` — adds values that exist only in anchor rows.
 6. `validateAnchors`, then keeps or regenerates `dummyRows`.
@@ -178,7 +178,7 @@ In order, it:
 9. Dimension order = analysis order, all enabled, then `autoAssignEncodingsFromOrder()`.
 10. Renders the sidebar lists and calls `updateVisualization()`.
 
-### 5.2 Redraw: `updateVisualization()` (5413)
+### 5.2 Redraw: `updateVisualization()` (5515)
 
 Called from about 40 places. It rebuilds everything from state each time; there is no partial update.
 
@@ -215,9 +215,9 @@ A column's role is stored **in its header**, as a prefix (3099):
 | `res::` | Reserved metadata | Never a dimension; hidden from the tooltip |
 | *(none)* | Auto | Guessed, see §6.2 |
 
-Changing a role in the interface (`setColumnRole`, 5172) **renames the column** in every row of `currentData`, `originalData` and `dummyRows`, and in every piece of state keyed by header (`renameColumnKey`, 5083), then re-runs the analysis (`rebuildDimensionsAfterColumnRoleChange`, 5128). The new header is what gets exported. This is the only place where a view decision changes the data file's shape.
+Changing a role in the interface (`setColumnRole`, 5274) **renames the column** in every row of `currentData`, `originalData` and `dummyRows`, and in every piece of state keyed by header (`renameColumnKey`, 5180), then re-runs the analysis (`rebuildDimensionsAfterColumnRoleChange`, 5225). The new header is what gets exported. This is the only place where a view decision changes the data file's shape.
 
-### 6.2 Which columns become dimensions: `analyzeDimensions()` (5022)
+### 6.2 Which columns become dimensions: `analyzeDimensions()` (5119)
 
 A column with no prefix is a dimension unless any of these is true:
 
@@ -247,7 +247,7 @@ Unticking a dimension and choosing "—" in its dropdown have the same visible e
 - `getOrderedDimensionValues(dim)` (3204): the user's order if one exists, otherwise alphabetical, case-insensitive. New values are appended.
 - `getVisibleValues(dim)` (3214): the above, minus anything unticked in the filter. With no dimension it returns `['']`, which is how an unassigned slot becomes a single row or column.
 
-Value order feeds axes, filter lists, legends, clustering, **and default colours and shapes**: a value's colour is its position in the order, modulo 10 colours; its shape is its position modulo 4 shapes (`getColorForValue`, `getShapeForValue`, 4999–5013). Reordering values therefore recolours them unless a custom colour is set.
+Value order feeds axes, filter lists, legends, clustering, **and default colours and shapes**: a value's colour is its position in the order, modulo 10 colours; its shape is its position modulo 4 shapes (`getColorForValue`, `getShapeForValue`, 5096–5110). Reordering values therefore recolours them unless a custom colour is set.
 
 ### 6.5 Which rows are drawn
 
@@ -266,11 +266,11 @@ The header line "N records • M modified" always reports the total, not the num
 
 ### 6.6 Drawing
 
-- `renderVisualization` (6302) builds the outer CSS grid, the draggable axis headers, the axis titles, and calls `creategrid` for each outer cell.
-- `creategrid` (6513) builds the item count, the inner grid and its headers. Panel Y is drawn **bottom-to-top** (`.reverse()` at 6587) so it reads like a graph axis; grid Y is drawn top-to-bottom.
-- `createpanelCell` (6636) filters rows, optionally sorts them by colour then shape (**Cluster by color**), and registers the cell as a drop target carrying its four coordinate values.
-- `createDataPoint` (6853) builds one dot and attaches: drag, hover tooltip, click (record window), right-click (context menu). It adds classes `modified`, `has-comment`, `selected`, `compare-b`.
-- `applyAdaptiveDotSizing` (6787) picks **one** dot size for the whole chart (12px down to 6px), enough for the most crowded cell. Size is deliberately never per-cell, because size is not an encoding. Under **Unify inner panel**, cells that still overflow switch to an overlapping stacked layout and, past 65% overlap, show a `+N` badge.
+- `renderVisualization` (6404) builds the outer CSS grid, the draggable axis headers, the axis titles, and calls `creategrid` for each outer cell.
+- `creategrid` (6615) builds the item count, the inner grid and its headers. Panel Y is drawn **bottom-to-top** (`.reverse()` at 6689) so it reads like a graph axis; grid Y is drawn top-to-bottom.
+- `createpanelCell` (6738) filters rows, optionally sorts them by colour then shape (**Cluster by color**), and registers the cell as a drop target carrying its four coordinate values.
+- `createDataPoint` (6955) builds one dot and attaches: drag, hover tooltip, click (record window), right-click (context menu). It adds classes `modified`, `has-comment`, `selected`, `compare-b`.
+- `applyAdaptiveDotSizing` (6889) picks **one** dot size for the whole chart (12px down to 6px), enough for the most crowded cell. Size is deliberately never per-cell, because size is not an encoding. Under **Unify inner panel**, cells that still overflow switch to an overlapping stacked layout and, past 65% overlap, show a `+N` badge.
 
 ## 7. Changing the data
 
@@ -278,9 +278,9 @@ The header line "N records • M modified" always reports the total, not the num
 
 | Action | Function | Fields changed |
 |---|---|---|
-| Drag a dot to another cell | `handleCellDrop` (5645) | Up to four at once: grid X, grid Y, panel X, panel Y |
-| Right-click → pick a colour value | `changeColor` (5793) | The colour dimension's field |
-| Right-click → pick a shape value | `changeShape` (5817) | The shape dimension's field |
+| Drag a dot to another cell | `handleCellDrop` (5747) | Up to four at once: grid X, grid Y, panel X, panel Y |
+| Right-click → pick a colour value | `changeColor` (5895) | The colour dimension's field |
+| Right-click → pick a shape value | `changeShape` (5919) | The shape dimension's field |
 | Type in the record window's comment box | `saveRecordCommentFromValues` (3285) | `desc::comment`, autosaved 350 ms after typing stops |
 
 Each one follows the same sequence: write to `currentData`, add to `modifiedRows`, `pushUndoAction`, append to `changeLog`, `updateChangesIndicator`, `updateVisualization`.
@@ -289,10 +289,10 @@ The right-click menu changes the **row's value**. Clicking a swatch in the sideb
 
 ### 7.2 Undo, redo, reset
 
-- `undo` / `redo` (4890, 4945) replay the `changes` list of an action and move it between stacks. A drag that changed three fields is one undo step.
+- `undo` / `redo` (4987, 5042) replay the `changes` list of an action and move it between stacks. A drag that changed three fields is one undo step.
 - `undo` re-checks the row against `originalData` to decide whether it still counts as modified.
 - Both append to `changeLog`, so the log is a full audit trail, including reversals.
-- `resetAllChanges` (4859) restores `originalData` and clears the stacks **and the log**.
+- `resetAllChanges` (4956) restores `originalData` and clears the stacks **and the log**.
 - Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z are bound at document level (4064), including while typing in a text box.
 
 ### 7.3 What is not undoable
@@ -303,21 +303,24 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 **Purpose:** if you drag every row out of a category, that value would vanish from the axis and from the exported file. Anchor rows keep every value of every dimension alive.
 
-- `generateDummyRows` (4685) creates as many rows as the largest dimension has values, cycling each dimension's values, with IDs `a`, `b`, `c`… in the first column.
+- `generateDummyRows` (4782) creates as many rows as the largest dimension has values, cycling each dimension's values, with IDs `a`, `b`, `c`… in the first column.
 - They are appended to the end of every exported CSV.
-- On load, `detectExistingDummies` (4660) treats **trailing rows whose first-column value is only lowercase letters** as anchors. A file whose first column is lowercase words is therefore read as all anchors and no data *(verified)*.
-- `validateAnchors` (4714) checks count and coverage; if they do not match the current dimensions they are regenerated.
+- **How an anchor is marked.** Each anchor carries a reserved ID: `__anchor__a`, `__anchor__b` … `__anchor__z`, `__anchor__aa` … (`getAnchorId`; the letters come from `getAlphaLabel`, which moves to two and then three letters by itself, so there is no upper limit). `getAnchorMarkerColumn` chooses where the ID is written: the first column, unless the first column is itself a dimension, in which case the first column that is not a dimension is used (the comment column only as a last resort).
+- **How anchors are recognised on load.** `detectExistingDummies` treats a row as an anchor if **any** of its cells holds a reserved ID (`isAnchorRow`), wherever the row sits in the file. Nothing else about a row makes it an anchor. A real row must therefore never contain a cell that is exactly a reserved ID.
+- After a column role change, `rebuildDimensionsAfterColumnRoleChange` first calls `ensureCommentColumn`, so that there is always at least one non-dimension column for the ID.
+- **Files from before the reserved IDs.** Earlier versions wrote bare letters (`a`, `b`, `c` …). `countLegacyAnchorRows` still accepts those, but only when all of these hold: the last rows' first-column values are exactly `a`, `b`, `c` … in order starting at `a`; at least one other row comes before them; the first column is not itself a dimension; and those rows hold nothing an anchor could not hold. That last test means: outside the first column, a cell must be empty unless its column is a dimension, or would be one but for every earlier row having a different value in it and the cell repeats one of those earlier values. One ambiguity remains by design: real rows at the very end of a file whose IDs are exactly `a`, `b`, `c` … and which have values only in dimension columns cannot be told from old anchors, and are read as anchors (as they were before the fix). Rows accepted this way are given reserved IDs, so the next download is in the current format. (Until the fix for finding A2, *any* trailing rows whose first cell was only lowercase letters were taken for anchors.)
+- `validateAnchors` (4811) checks count and coverage; if they do not match the current dimensions they are regenerated.
 - They are hidden by default and never counted in "N records"; the **Anchor Points** sidebar section controls their appearance.
 
 ## 8. Looking at one row
 
 | Surface | Function | Shows |
 |---|---|---|
-| Tooltip | `showTooltip` (6951) | First five fields that pass `shouldExcludeFromTooltip`, the comment, a modified flag, a hint line |
-| Record window | `renderCompareModal` (7106) | Field table, media, comment editor (single record only) |
+| Tooltip | `showTooltip` (7053) | First five fields that pass `shouldExcludeFromTooltip`, the comment, a modified flag, a hint line |
+| Record window | `renderCompareModal` (7208) | Field table, media, comment editor (single record only) |
 | Compare | same function, when slots A and B are both set | Three-column table with differing rows highlighted, media side by side |
 
-- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7141).
+- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7243).
 - Fields shown and their order come from `columnRecordOrder` and `columnVisibility`, edited in the **Column roles** list.
 - Tooltip and record window use **different exclusion rules** (`shouldExcludeFromTooltip` 3819 matches reserved names by substring; `shouldExcludeFromModalTable` 3828 by exact match).
 
@@ -325,7 +328,7 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 - `detectMediaColumns` (4441) finds columns by `med::` prefix or by name pattern; type comes from the name (`audio`, `image`, `video`…) or, failing that, from the file extension.
 - `resolveMediaUrl` (4486), in priority order: absolute / blob / data URL as is → file picked locally (`localMediaMap`, by path then by bare file name) → root-relative as is → relative to where the CSV came from.
-- `generateMediaHTML` (7226): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
+- `generateMediaHTML` (7328): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
 - A legacy pair of columns `media_type` + `media_url` is also honoured (4527).
 
 ## 9. Getting things out
@@ -336,8 +339,8 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 | Change log | `downloadChangeLog` (4601) | `change_log.csv` / `.json` | Every edit, undo and redo with timestamp |
 | Setup | `buildVisualizationConfig` (3569) | `plew-setup-<dataset>.json` | See below |
 | Grid image | `downloadSnapshot` (4360) | `grid_snapshot.png` | The grid, with a legend added on top; dark or light; comment rings removed |
-| Record image | `snapshotModal` (7533) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
-| Report | `generateReport` (7454) | `report.html` | Counts, percentages, crosstabs |
+| Record image | `snapshotModal` (7635) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
+| Report | `generateReport` (7556) | `report.html` | Counts, percentages, crosstabs |
 
 ### The setup file (version 5)
 
@@ -368,7 +371,7 @@ Works on `currentData` in full: it ignores filters and the current layout, and e
 
 Grid snapshots use html2canvas on a temporary wrapper (`prepareSnapshotCaptureRoot`), with `fixSnapshotLabels` un-rotating vertical labels and expanding overflowing cells in the clone.
 
-Record snapshots need images as data URLs. `preloadModalImages` (7280) starts fetching them **whenever a record window opens**, and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7246).
+Record snapshots need images as data URLs. `preloadModalImages` (7382) starts fetching them **whenever a record window opens**, and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7348).
 
 ## 10. The interface, control by control
 
@@ -457,7 +460,7 @@ comment tags ──► quick-insert buttons, "Tags to show"
 - **Comments are both data and filter.** The comment filter is applied inside the colour/shape filter function, so it applies even when no colour or shape is assigned.
 - **Column roles reach everywhere.** One role change touches rows, original data, anchors, headers, change log, undo stacks, filters, value order, visibility and record order.
 - **Value order is also the palette.** See §6.4.
-- **Anchors depend on the first column.** Both row IDs in the change log (`getRowDisplayId`) and anchor detection assume the first column is an identifier.
+- **Row IDs assume the first column is an identifier.** The change log labels each row by its first-column value (`getRowDisplayId`). Anchors no longer depend on the first column: they are recognised by their reserved ID in any column (§7.4). Only the reading of old-format files still looks at the first column.
 - **Legends are four renderings of one thing.** Sidebar colour legend, sidebar shape legend, legend bar, floating legend — plus a fifth built for snapshots — all derive from `encodings.color` / `encodings.shape` through the same two lookup functions.
 
 ## 12. The two files

@@ -10,8 +10,10 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 | Finding | File | Failure in one line |
 |---|---|---|
 | A1 ✅ fixed | `A1-panel-filter-single-value.csv` | Was: hiding two of three panel values showed all 6 records, not 2. Now shows 2 |
-| A2 | `A2a-lowercase-first-column.csv` | 4 rows load as 0 records |
-| A2 | `A2b-lowercase-trailing-ids.csv` | 6 rows load as 4 records |
+| A2 ✅ fixed | `A2a-lowercase-first-column.csv` | Was: 4 rows loaded as 0 records. Now 4 |
+| A2 ✅ fixed | `A2b-lowercase-trailing-ids.csv` | Was: 6 rows loaded as 4 records. Now 6 |
+| A2 (check) | `A2c-old-style-anchors.csv` | A file in the old anchor format still loads as 4 records + 2 anchors |
+| A2 (check) | `A2d-more-than-26-anchors.csv` | 30 anchors: IDs run past `__anchor__z` to `__anchor__aa` |
 | A3 | `A3-hidden-record-count.csv` | 4 dots drawn, header says "8 records" |
 | A4 | `A4-export-differs.csv` | Downloaded file has an extra column, extra rows and, after a role change, a moved column |
 | A5 | `A5-multiline-and-quotes.csv` | 4 rows load as 5; quotation marks vanish |
@@ -60,13 +62,17 @@ After step 5 every record was back, all under the heading **a**. Hovering over t
 
 **Still open, also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"** (and after step 5, 1 dot and "3 items"). Item counts ignore panel X / panel Y filters (related to A3).
 
-**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6642 and 6645), which skipped the row test when only one value was visible. The fix removes them.
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6744 and 6747), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
 ## A2 — Lowercase first column is mistaken for anchors
 
-Two files, showing the two forms this takes.
+> **Fixed** in the pull request *A2 resolution attempt #1*. Anchors are now marked with a reserved ID (`__anchor__a`, `__anchor__b` …) and recognised only by it. The steps below now give the expected result; the old failures are kept for comparison.
+
+Two files show the two forms the failure took. Two more check the parts of the fix that are easy to get wrong: reading old files, and needing more than 26 anchors.
+
+To see the anchors themselves in any of these, press **Download CSV** and look at the last rows of the file, or tick **Show on chart** under **Anchor Points** in the sidebar.
 
 ### A2a — the whole file disappears
 
@@ -76,9 +82,9 @@ Two files, showing the two forms this takes.
 
 **Expected:** 4 records, with *Class* and *Tone* as dimensions.
 
-**What happens:** the picture reads **"No dimensions assigned"** and the Dimensions list is empty. All four rows have been taken for anchor rows, leaving 0 records. The **Anchor Points** section in the sidebar reads "4 anchors".
+**What happens now (after the fix):** the header reads **"4 records • 0 modified • 2 anchors"** and 4 dots are drawn. Downloading the CSV gives the four rows followed by two rows with the IDs `__anchor__a` and `__anchor__b`.
 
-(If another file was loaded first without reloading the page, the header above the picture keeps showing that earlier file's record count.)
+**What happened before the fix:** the picture read **"No dimensions assigned"** and the Dimensions list is empty. All four rows had been taken for anchor rows, leaving 0 records. The **Anchor Points** section in the sidebar read "4 anchors".
 
 ### A2b — the last rows disappear
 
@@ -88,9 +94,35 @@ Two files, showing the two forms this takes.
 
 **Expected:** 6 records.
 
-**What happens:** the header reads **"4 records • 0 modified • 2 anchors"** and 4 dots are drawn. Rows `x` and `y` are gone from the data, with no message.
+**What happens now (after the fix):** the header reads **"6 records • 0 modified • 2 anchors"** and 6 dots are drawn, including `x` and `y`.
 
-**Cause:** `detectExistingDummies` (line 4660) treats trailing rows whose first cell is only the letters a–z as anchors.
+**What happened before the fix:** the header read **"4 records • 0 modified • 2 anchors"** and 4 dots were drawn. Rows `x` and `y` were gone from the data, with no message.
+
+**Cause:** `detectExistingDummies` treated any trailing rows whose first cell was only the letters a–z as anchors. It now looks for the reserved ID instead.
+
+### A2c — a file in the old format still loads
+
+**File:** `A2c-old-style-anchors.csv` — 4 records with IDs 1–4, followed by two anchor rows written the old way: IDs `a` and `b`, a value in each dimension, and the `note` column empty.
+
+**Steps:** load the file, then press **Download CSV** and open the result in a text editor.
+
+**Expected, and what happens (before and after the fix):** the header reads **"4 records • 0 modified • 2 anchors"**. Rows `a` and `b` are read as anchors, not as records.
+
+**What is new after the fix:** in the downloaded file those two rows now have the IDs `__anchor__a` and `__anchor__b`.
+
+**A limit to know about:** rows at the very end of a file whose IDs are exactly `a`, `b`, `c` … and which have values only in dimension columns cannot be told apart from old-style anchors, and are still read as anchors. This is the one case the fix cannot settle from the file alone.
+
+**Why these two rows are accepted when `x`, `y` in A2b are not:** old-style anchors are recognised only when the last rows' IDs are exactly `a`, `b`, `c` … in order, at least one other row comes before them, the first column is not itself a dimension, and those rows have values only where an anchor would (in dimension columns; everything else empty). To see the last condition at work, type anything into the `note` cell of row `a` in a copy of this file: it then loads as 6 records.
+
+### A2d — more than 26 anchors
+
+**File:** `A2d-more-than-26-anchors.csv` — 60 records; the *Item* column has 30 different values, so 30 anchors are needed.
+
+**Steps:** load the file, press **Download CSV**, and look at the last 30 rows.
+
+**Expected, and what happens after the fix:** the header reads **"60 records • 0 modified • 30 anchors"**. The anchor IDs run `__anchor__a` … `__anchor__z`, then `__anchor__aa`, `__anchor__ab`, `__anchor__ac`, `__anchor__ad`. Loading the downloaded file gives 60 records and 30 anchors again.
+
+(Before the fix the IDs were `a` … `z`, `aa` … `ad`.)
 
 ---
 
@@ -107,7 +139,7 @@ Two files, showing the two forms this takes.
 
 **What happens:** 4 dots are drawn; the header still reads **"8 records • 0 modified • 2 anchors"**. The only trace of the filter is "1 of 2 values" beside *Group* in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot.
 
-**Cause:** `renderVisualization` (line 6312) reports `data.length`, the number loaded.
+**Cause:** `renderVisualization` (line 6414) reports `data.length`, the number loaded.
 
 ---
 
@@ -151,7 +183,7 @@ ID,Group,note,desc::comment,desc::Tone
 
 The column has moved to the far right.
 
-**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5089) deletes and re-adds the key.
+**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5186) deletes and re-adds the key.
 
 ---
 
@@ -191,7 +223,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 5000, 6072). Custom shapes behave the same way (line 5008).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6174). Custom shapes behave the same way (line 5105).
 
 ---
 
@@ -224,7 +256,7 @@ Nothing in the legend or the picture says so.
 
 **What happens:** Korean stays teal, but Arabic turns from teal to red, Basque from red to yellow, and so on down the list. A picture made before the reorder and one made after use different colours for the same languages.
 
-**Cause:** `getColorForValue` / `getShapeForValue` (lines 4999–5013) pick by position in the value order, wrapping round.
+**Cause:** `getColorForValue` / `getShapeForValue` (lines 5096–5110) pick by position in the value order, wrapping round.
 
 ---
 
@@ -250,7 +282,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5491).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5593).
 
 ---
 
@@ -277,7 +309,7 @@ The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a 
 
 Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7280), which calls `getSnapshotFetchUrl` (line 7246).
+**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7382), which calls `getSnapshotFetchUrl` (line 7348).
 
 ---
 
@@ -285,5 +317,5 @@ Images served from the same site as PLeW (as on the example pages) are not sent 
 
 Each file doubles as the check that its fix worked: repeat the steps and the "Expected" line should now be what happens. Two of them will need their expectations revisited once the fix is designed, because the fix changes the format rather than just the behaviour:
 
-- **A2** — depends on how anchors come to be marked. Both files should then load in full (4 and 6 records).
+- **A2** — done: both files load in full (4 and 6 records).
 - **A4** — depends on whether the comment column and anchor rows become optional at download.

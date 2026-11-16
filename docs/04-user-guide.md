@@ -125,7 +125,9 @@ Above the picture, **Show only rows with comments** hides everything else, and *
 
 ### Anchors
 
-If you drag every record out of a category, that category would disappear from the picture and from your saved file. To prevent this PLeW keeps a few invisible placeholder rows, called **anchors**, one set covering every value. They are added to the end of the CSV you download and recognised when you load it again. You can make them visible in the **Anchor Points** section. They are never counted as records.
+If you drag every record out of a category, that category would disappear from the picture and from your saved file. To prevent this PLeW keeps a few invisible placeholder rows, called **anchors**, one set covering every value. They are added to the end of the CSV you download, where you can tell them by their ID: `__anchor__a`, `__anchor__b`, and so on (after `__anchor__z` comes `__anchor__aa`). The ID is normally in the first column. PLeW recognises anchors by that ID when you load the file again, so leave those rows and their IDs as they are if you edit the file elsewhere. You can make anchors visible in the **Anchor Points** section. They are never counted as records.
+
+Files saved by earlier versions of PLeW, where anchors were marked with a bare `a`, `b`, `c`, still load; the next download rewrites them with the new IDs.
 
 ### Adjusting the look
 
@@ -177,7 +179,8 @@ The data and the setup are separate files. To pick up where you left off, load t
 | "No dimensions assigned" | Nothing is placed | Give at least one dimension a placement |
 | A column is missing from Dimensions | PLeW took it for an ID, a text field or media. This happens when every row is different, or the name contains "name", "title" or "description" | **Column roles ▾** → set it to **Dimension** |
 | A text column was made a dimension | It has repeated values | **Column roles ▾** → **Description** |
-| 0 records, or the last rows missing | The first column holds lowercase words, which PLeW mistakes for anchors | Add a numeric ID column as the first column |
+| Extra records called `a`, `b`, `c` … at the end | An old PLeW file whose anchors could not be recognised with certainty, so they were kept as data to be safe | Delete those rows from the CSV, or rename their IDs to `__anchor__a`, `__anchor__b` … |
+| The last few rows are missing | Their IDs are exactly `a`, `b`, `c` … in order and their other columns are empty, so they were read as old-style anchors | Give those rows different IDs |
 | Sound or images do not load | The file cannot be found from where the CSV is | Use **Load media files…**, or full `https://` links |
 | Rows are broken after re-loading | A comment contained a line break | Keep comments on one line for now |
 | Snapshot does nothing | The snapshot helper needs an internet connection | Check the connection and try again |
@@ -190,7 +193,7 @@ The data and the setup are separate files. To pick up where you left off, load t
 
 - **CSV**, with a header row. Tab, semicolon or `|` separated files are detected too. JSON (a list of objects) and JSONL also load.
 - **One row per observation.**
-- **First column: a unique ID**, preferably a number.
+- **First column: a unique ID.** Numbers, codes or words are all fine. Do not use IDs that begin with `__anchor__`; PLeW reserves those for its own placeholder rows.
 - **Category columns** with a modest number of repeated values. These become dimensions.
 - Save as **UTF-8**.
 

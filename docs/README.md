@@ -26,7 +26,7 @@ The documents were last checked against these exact versions of the tool files. 
 
 | File | Lines | Blob hash |
 |---|---|---|
-| `layouts/index.html` | 7953 | `fdb78c5a51d55224da595580a4cf1226756004cb` |
-| `layouts/_default/example-viz.html` | 7744 | `64fb41b5b457799496802bb815b611da5ae3019c` |
+| `layouts/index.html` | 8055 | `e1d358ac082bcbf731217a26f2eb785ba15e1913` |
+| `layouts/_default/example-viz.html` | 7846 | `790aec87aae479f413db4de02e4540fe8c9e6c2b` |
 
-**Checked on:** 2026-11-16 · **Reason:** fix for finding A1 (panel filter with one value left). No lines were added or removed, so line numbers in the documents are unchanged.
+**Checked on:** 2026-11-16 · **Reason:** fix for finding A2 (anchors marked with a reserved ID). 102 lines were added to each file; the documents' line numbers were remapped from the diff between the old and new file.

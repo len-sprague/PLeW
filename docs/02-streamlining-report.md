@@ -24,7 +24,7 @@ Where PLeW repeats itself, carries things it no longer uses, or behaves in a way
 | E. One thing, several names | 6 | Labels that explain themselves |
 | F. Robustness | 5 | Fewer surprises with real-world files |
 
-If only three things are done, the suggestion is **A1** (now fixed), **A2** and **C1**.
+If only three things are done, the suggestion is **A1** (now fixed), **A2** (now fixed) and **C1**.
 
 ---
 
@@ -34,22 +34,22 @@ These are the items where the picture, the counts or the exported file can diffe
 
 | # | Finding | Where | Suggested fix | Risk |
 |---|---|---|---|---|
-| A1 | ✅ **Fixed** in the pull request *A1 resolution attempt #1*: the two `length > 1` conditions were removed, as suggested, in both tool files. The finding as it was: **Filtering a panel dimension down to one value shows every row again.** With three values on panel X, hiding one shows 4 of 6 rows; hiding two shows all 6, under the one remaining header *(verified)*. Dropping a dot into that cell then rewrites its value to the visible one. | `createpanelCell`, the `length > 1` tests at 6642, 6645. Map §6.5 | Remove the `length > 1` conditions. They are unnecessary: an unassigned slot is already handled by the `encodings.panelX &&` test. | Medium |
-| A2 | **A file whose first column is lowercase words loads as zero records.** Trailing rows whose first cell is only `a–z` are taken to be anchor rows. A word list (`cat, dog, run…`) becomes 0 records and 4 anchors; a file ending in IDs `x`, `y` silently loses those rows *(verified)*. | `detectExistingDummies` 4660, `isAlphaLabel` 4656. Map §7.4 | Mark anchors explicitly instead of inferring them: a dedicated column (e.g. `res::plew_anchor`) or a reserved ID pattern such as `__anchor_a`. Keep reading the old form only when the trailing IDs are exactly `a, b, c…` in sequence. | High |
-| A3 | **Nothing says how many records are hidden.** The header always reads "N records", whatever the filters. A viewer of a shared example cannot tell that a setup file has filtered rows out *(verified)*. Per-panel item counts also ignore panel X / panel Y filters *(verified)*. | `renderVisualization` 6312. Map §6.5 | Show "M of N records shown" whenever M ≠ N, and name the active filters next to it. | Low |
-| A4 | **The exported CSV differs from the input even with no edits.** It gains a `desc::comment` column and the anchor rows *(verified)*. After a role change the column also moves to the far right, because the export takes column order from the first row object rather than from `csvHeaders` *(verified)*. | `generateCSV` 4191; `renameColumnKey` 5089 | Take column order from `csvHeaders`. Add the comment column only if any comment exists. Make "include anchor rows" a visible choice at download. | Medium |
+| A1 | ✅ **Fixed** in the pull request *A1 resolution attempt #1*: the two `length > 1` conditions were removed, as suggested, in both tool files. The finding as it was: **Filtering a panel dimension down to one value shows every row again.** With three values on panel X, hiding one shows 4 of 6 rows; hiding two shows all 6, under the one remaining header *(verified)*. Dropping a dot into that cell then rewrites its value to the visible one. | `createpanelCell`, the `length > 1` tests at 6744, 6747. Map §6.5 | Remove the `length > 1` conditions. They are unnecessary: an unassigned slot is already handled by the `encodings.panelX &&` test. | Medium |
+| A2 | ✅ **Fixed** in the pull request *A2 resolution attempt #1*: anchors are now marked with a reserved ID (`__anchor__a`, `__anchor__b` …) and recognised only by it; old files are still read under strict conditions (code map §7.4). The reserved-ID form was chosen over a separate marker column. The finding as it was: **A file whose first column is lowercase words loads as zero records.** Trailing rows whose first cell is only `a–z` are taken to be anchor rows. A word list (`cat, dog, run…`) becomes 0 records and 4 anchors; a file ending in IDs `x`, `y` silently loses those rows *(verified)*. | `detectExistingDummies`, and `isAlphaLabel` (since removed). Map §7.4 | Mark anchors explicitly instead of inferring them: a dedicated column (e.g. `res::plew_anchor`) or a reserved ID pattern such as `__anchor_a`. Keep reading the old form only when the trailing IDs are exactly `a, b, c…` in sequence. | High |
+| A3 | **Nothing says how many records are hidden.** The header always reads "N records", whatever the filters. A viewer of a shared example cannot tell that a setup file has filtered rows out *(verified)*. Per-panel item counts also ignore panel X / panel Y filters *(verified)*. | `renderVisualization` 6414. Map §6.5 | Show "M of N records shown" whenever M ≠ N, and name the active filters next to it. | Low |
+| A4 | **The exported CSV differs from the input even with no edits.** It gains a `desc::comment` column and the anchor rows *(verified)*. After a role change the column also moves to the far right, because the export takes column order from the first row object rather than from `csvHeaders` *(verified)*. | `generateCSV` 4191; `renameColumnKey` 5186 | Take column order from `csvHeaders`. Add the comment column only if any comment exists. Make "include anchor rows" a visible choice at download. | Medium |
 | A5 | **Comments with a line break corrupt the file on re-import.** Export quotes them correctly, but the parser splits on line breaks before looking at quotes, so one row becomes two *(verified: 6 rows came back as 7)*. Doubled quotes (`""`) are also lost on import. | `parseCSV` 4079, `parseDelimitedLine` 4115 | Replace with a character-by-character parser that tracks quotes across lines and un-doubles `""`. About 30 lines. | Medium |
-| A6 | **Custom colours and shapes follow the value, not the dimension.** A colour chosen for `0` under *Focus* is also used for `0` under any other dimension *(verified)*. | `customColorMap[value]` 5000, 5008, 6072, 6168 | Key by dimension and value (`key + '\u0000' + value`). Bump the setup version and read old files as before. | Medium |
-| A7 | **Colours and shapes repeat without warning.** 10 colours and 4 shapes are cycled; an eleventh value shares a colour with the first, a fifth shares a shape. Reordering values also changes their default colours. | `getColorForValue`, `getShapeForValue` 4999–5013. Map §6.4 | Flag it in the legend when values outnumber the palette ("12 values, 10 colours: some repeat"). Consider fixing a value's default colour at load rather than by position. | Low / Medium |
-| A8 | **Dragging the dimension list throws away dropdown choices.** The hint says to "use the dropdown to override", but the next drag reassigns every slot from list order *(verified)*. | `handleDimDrop` 5491 | Decide which control is in charge (see B1). | Medium |
-| A9 | **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `preloadModalImages` 7280, `getSnapshotFetchUrl` 7246 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
+| A6 | **Custom colours and shapes follow the value, not the dimension.** A colour chosen for `0` under *Focus* is also used for `0` under any other dimension *(verified)*. | `customColorMap[value]` 5097, 5105, 6174, 6270 | Key by dimension and value (`key + '\u0000' + value`). Bump the setup version and read old files as before. | Medium |
+| A7 | **Colours and shapes repeat without warning.** 10 colours and 4 shapes are cycled; an eleventh value shares a colour with the first, a fifth shares a shape. Reordering values also changes their default colours. | `getColorForValue`, `getShapeForValue` 5096–5110. Map §6.4 | Flag it in the legend when values outnumber the palette ("12 values, 10 colours: some repeat"). Consider fixing a value's default colour at load rather than by position. | Low / Medium |
+| A8 | **Dragging the dimension list throws away dropdown choices.** The hint says to "use the dropdown to override", but the next drag reassigns every slot from list order *(verified)*. | `handleDimDrop` 5593 | Decide which control is in charge (see B1). | Medium |
+| A9 | **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `preloadModalImages` 7382, `getSnapshotFetchUrl` 7348 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
 
 Smaller points in the same family:
 
 - Columns whose name merely **contains** `name`, `title` or `description` (`filename`, `surname`, `subtitle_lang`) are never offered as dimensions *(verified)*. The tooltip uses the same substring test; the record window uses an exact match (3823 vs 3832). Suggest exact match everywhere. *Risk: Medium, changes which dimensions appear for existing data.*
-- A column in which every row differs is silently dropped as an identifier (5039). Reasonable, but nothing in the interface says so. The Column roles list could show *why* each Auto column was treated as it was.
+- A column in which every row differs is silently dropped as an identifier (5136). Reasonable, but nothing in the interface says so. The Column roles list could show *why* each Auto column was treated as it was.
 - A seventh enabled dimension is assigned to nothing, with no message (3060).
-- The report ignores filters and layout (7455). That may be the right choice, but it should say "all N records" at the top.
+- The report ignores filters and layout (7557). That may be the right choice, but it should say "all N records" at the top.
 - Ctrl+Z is captured even while typing in the comment box (4064), so it undoes the last data edit instead of the last keystroke.
 - The anchor controls in the markup say "shown, opacity 0.05"; the state says "hidden, opacity 0", and the state wins at load *(verified)*. The slider cannot represent 0.
 
@@ -62,9 +62,9 @@ Smaller points in the same family:
 | B1 | **Three ways to put a dimension in a slot**: list order, the dropdown, and the tick box (unticking equals choosing "—"). They overwrite each other (A8). | Dimensions section. Map §6.3 | Keep the **dropdown** as the one control that assigns. Let dragging only reorder the list, with auto-assignment reserved for load and **Reset**. Consider removing the tick box. | Medium |
 | B2 | **Download CSV appears three times**, snapshot buttons twice, Report twice. | Changes box 2624, header 2882–2885, floating bar 2809–2824 | One "Export" group in the header: CSV, change log, setup, image, report. The floating bar can stay as the collapsed-sidebar mirror of that one group. | Low |
 | B3 | **Column roles list appears twice**, sidebar and header dropdown, both fully editable. | 2651, 2841; `renderColumnRoleList` called for both | Keep one. The header dropdown is the less cluttered home. | Low |
-| B4 | **Four live legends**: sidebar colour, sidebar shape, the "Show color & shape" bar, and the floating legend; a fifth is built for snapshots. Each has slightly different powers (edit colour / toggle filter / read-only). | 6042, 6095, 6186, 6255, 4290. Map §11 | One legend component with one behaviour, placed above the grid, reused for snapshots. Click the swatch to restyle, click the label to filter. | Medium |
-| B5 | **Value filters can be toggled in two places** (sidebar ticks and legend-bar chips) for colour and shape, but only one for the other slots. | 5990, 6221, 6248 | Follows from B4. | — |
-| B6 | **"Change color" means two things**: right-click changes the row's data; a legend swatch changes the palette. | 2943, 6066. Map §7.1 | Rename the context menu to say what it does: "Move to another *Confidence* value". | Low |
+| B4 | **Four live legends**: sidebar colour, sidebar shape, the "Show color & shape" bar, and the floating legend; a fifth is built for snapshots. Each has slightly different powers (edit colour / toggle filter / read-only). | 6144, 6197, 6288, 6357, 4290. Map §11 | One legend component with one behaviour, placed above the grid, reused for snapshots. Click the swatch to restyle, click the label to filter. | Medium |
+| B5 | **Value filters can be toggled in two places** (sidebar ticks and legend-bar chips) for colour and shape, but only one for the other slots. | 6092, 6323, 6350 | Follows from B4. | — |
+| B6 | **"Change color" means two things**: right-click changes the row's data; a legend swatch changes the palette. | 2943, 6168. Map §7.1 | Rename the context menu to say what it does: "Move to another *Confidence* value". | Low |
 | B7 | **Display options are spread over three surfaces**: header bar (sizes, counts, names), toolbar (legend bar, clustering, comment filter), sidebar (anchors). | 2849–2881, 2890–2913, 2754 | Two groups with visible headings: **Show** (what is drawn) and **Layout** (how big). Filters belong with filters. | Low |
 
 ---
@@ -87,23 +87,23 @@ Smaller points in the same family:
 
 | # | What | Where | Risk |
 |---|---|---|---|
-| D1 | `loadSampleData()` — commented "no longer called" | 7945 | Low |
+| D1 | `loadSampleData()` — commented "no longer called" | 8047 | Low |
 | D2 | `moveValueInOrder()` — superseded by dragging | 3161 | Low |
-| D3 | `openModal()`, `saveRecordComment()` — no callers | 7183, 3514 | Low |
-| D4 | `clearSelection()` — a one-line alias of `clearCompareSlots()` | 7171 | Low |
-| D5 | State never read: `preservedDimValues`, `selectedRowIndex`, `draggedDataPoint`; local `activeDims` (6308), which makes `getActiveDimensions()` unused too | 3979, 4008, 4019 | Low |
-| D6 | `data-dim-value-key` / `data-dim-value` attributes set on headers but never read | 6338 | Low |
-| D7 | `console.log` calls left in the load path | 7846, 7875, 7878 | Low |
+| D3 | `openModal()`, `saveRecordComment()` — no callers | 7285, 3514 | Low |
+| D4 | `clearSelection()` — a one-line alias of `clearCompareSlots()` | 7273 | Low |
+| D5 | State never read: `preservedDimValues`, `selectedRowIndex`, `draggedDataPoint`; local `activeDims` (6410), which makes `getActiveDimensions()` unused too | 3979, 4008, 4019 | Low |
+| D6 | `data-dim-value-key` / `data-dim-value` attributes set on headers but never read | 6440 | Low |
+| D7 | `console.log` calls left in the load path | 7948, 7977, 7980 | Low |
 
 ### Duplicated
 
 | # | What | Where | Suggestion | Risk |
 |---|---|---|---|---|
-| D8 | **Axis header construction, four times** (grid X, grid Y, panel X, panel Y): about 20 lines each | 6334–6383, 6561–6608 | One `createAxisHeader(key, value, {vertical, title})` | Medium |
-| D9 | **Drop handlers for value reordering, twice**, differing only in a class name | 5538, 5576 (and the enter/leave/over trios) | One handler taking the selector | Low |
-| D10 | **The four blocks in `handleCellDrop`**, one per slot, each also writing the change log by hand instead of calling `logChange` | 5662–5685 | Loop over `[['gridX', gridXVal], …]` | Medium |
-| D11 | **"Download this text as a file", six times**; **CSV cell quoting, three times** | 4410, 4632, 3778, 7525, 4388, 7548; 4199, 4211, 4620 | `downloadBlob(blob, name)`, `csvCell(value)` | Low |
-| D12 | `detectMediaColumns` has two branches with the same body; `processCSV` / `processJSON` are one-line wrappers; `changeColor` / `changeShape` differ by one word; three drag-list implementations (dimensions, columns, values) share a shape | 4449–4466, 7816–7823, 5793–5839 | Merge where it shortens the code without hiding intent | Low–Medium |
+| D8 | **Axis header construction, four times** (grid X, grid Y, panel X, panel Y): about 20 lines each | 6436–6485, 6663–6710 | One `createAxisHeader(key, value, {vertical, title})` | Medium |
+| D9 | **Drop handlers for value reordering, twice**, differing only in a class name | 5640, 5678 (and the enter/leave/over trios) | One handler taking the selector | Low |
+| D10 | **The four blocks in `handleCellDrop`**, one per slot, each also writing the change log by hand instead of calling `logChange` | 5764–5787 | Loop over `[['gridX', gridXVal], …]` | Medium |
+| D11 | **"Download this text as a file", six times**; **CSV cell quoting, three times** | 4410, 4632, 3778, 7627, 4388, 7650; 4199, 4211, 4620 | `downloadBlob(blob, name)`, `csvCell(value)` | Low |
+| D12 | `detectMediaColumns` has two branches with the same body; `processCSV` / `processJSON` are one-line wrappers; `changeColor` / `changeShape` differ by one word; three drag-list implementations (dimensions, columns, values) share a shape | 4449–4466, 7918–7925, 5895–5941 | Merge where it shortens the code without hiding intent | Low–Medium |
 
 The stylesheet (2,580 lines) was not audited rule by rule. A pass for selectors that no longer match any element would be worthwhile once C1 is done, so it is done once.
 
@@ -113,12 +113,12 @@ The stylesheet (2,580 lines) was not audited rule by rule. A pass for selectors 
 
 | # | Finding | Suggestion |
 |---|---|---|
-| E1 | The outer layout is "grid", "outer panel" (`outerPanelRowHeight`) and "grid Grid" (the sidebar summary reads **"grid Grid: 3 × 2"**, 6032). The inner layout is "panel", "inner panel", "Inner Grid". Function names carry a search-and-replace scar: `creategrid`, `createpanelCell`, `toggleLabelStylegrid`, `uniformgridSizes`, class `grid-grid`. | Pick two words and use them everywhere, in labels first. Suggestion: **grid** (outer) and **panel** (inner), cells inside a panel are **cells**. |
+| E1 | The outer layout is "grid", "outer panel" (`outerPanelRowHeight`) and "grid Grid" (the sidebar summary reads **"grid Grid: 3 × 2"**, 6134). The inner layout is "panel", "inner panel", "Inner Grid". Function names carry a search-and-replace scar: `creategrid`, `createpanelCell`, `toggleLabelStylegrid`, `uniformgridSizes`, class `grid-grid`. | Pick two words and use them everywhere, in labels first. Suggestion: **grid** (outer) and **panel** (inner), cells inside a panel are **cells**. |
 | E2 | "Role" is used for both the column type and the encoding slot. Map §3 | Keep **role** for the column type; call the other **placement** or **shown as**. |
 | E3 | Anchors are "Anchor Points", "Value Preservers", "anchors" and, in code, "dummy". | **Anchors** everywhere a user can see. |
 | E4 | The setup is "setup", "Visualization setup", "config", "pre-calibrated setup". | **Setup** in the interface; `config` may stay in code. |
 | E5 | The same slider is "Count size" in one file and "Inner panel size" in the other; it controls both the item count and, in the example file only, the inner axis labels. | Settle with C1/C2. |
-| E6 | Buttons: "Load media files…" in the markup, "Load media folder…" once JavaScript has run (2609, 7811). Title: "📊 Data Editor" in the sidebar and header, "Multi-Dimensional Data Visualizer - Full Editor" in the tab; the name **PLeW** appears nowhere in the editor. | One name, one label. |
+| E6 | Buttons: "Load media files…" in the markup, "Load media folder…" once JavaScript has run (2609, 7913). Title: "📊 Data Editor" in the sidebar and header, "Multi-Dimensional Data Visualizer - Full Editor" in the tab; the name **PLeW** appears nowhere in the editor. | One name, one label. |
 
 Renaming labels is low risk. Renaming identifiers is medium risk and is best left until after C1.
 
@@ -128,8 +128,8 @@ Renaming labels is low risk. Renaming identifiers is medium risk and is best lef
 
 | # | Finding | Where | Suggestion | Risk |
 |---|---|---|---|---|
-| F1 | Data values are inserted as HTML in many places (tooltip, legends, dimension names, change log, snapshot legend). A value containing `<` breaks the display; `escapeHtml` exists but is used only in the record window and report. | e.g. 6959, 6220, 5898, 4592 | Use `textContent` or `escapeHtml` consistently. | Low |
-| F2 | The whole grid is rebuilt for every change, including each tick of a colour picker (`input` event, 6071). Fine for hundreds of rows; sluggish for thousands. | `updateVisualization` | Not urgent. Use `change` instead of `input` for the picker; consider skipping sidebar re-renders when only data changed. | Medium |
+| F1 | Data values are inserted as HTML in many places (tooltip, legends, dimension names, change log, snapshot legend). A value containing `<` breaks the display; `escapeHtml` exists but is used only in the record window and report. | e.g. 7061, 6322, 6000, 4592 | Use `textContent` or `escapeHtml` consistently. | Low |
+| F2 | The whole grid is rebuilt for every change, including each tick of a colour picker (`input` event, 6173). Fine for hundreds of rows; sluggish for thousands. | `updateVisualization` | Not urgent. Use `change` instead of `input` for the picker; consider skipping sidebar re-renders when only data changed. | Medium |
 | F3 | Dimension order, enabled set and slot assignment are keyed by display name; everything else by header. Two columns `X` and `dim::X` would collide. | Map §3 | Key everything by header. Needs a setup-version bump. | High |
 | F4 | A setup saved after a role change only fully applies to the CSV exported with it, because headers changed. Mismatches are dropped silently. | Map §9 | On import, report what could not be applied ("2 filters skipped: column not found"). | Low |
 | F5 | Export file names are fixed (`edited_data.csv`, `grid_snapshot.png`) while the setup file is named after the dataset. | 4414, 4392 | Name all exports after the dataset. | Low |
@@ -143,7 +143,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 | Finding | Map section | Touches | Self-contained? |
 |---|---|---|---|
 | A1 single-value panel filter — **fixed** | §6.5, §6.6 | `createpanelCell` and its one call in `creategrid` | Yes |
-| A2 anchor detection | §5.1, §7.4 | Load path, export, `getRowDisplayId` | No — needs a format decision and backward reading |
+| A2 anchor detection — **fixed** | §5.1, §7.4 | `detectExistingDummies`, `generateDummyRows`, four new helper functions, one sidebar sentence | Yes, once the format was decided |
 | A3 hidden-record count | §6.5 | `renderVisualization`; needs a count of drawn dots, available after render | Yes |
 | A4 export shape | §9 | `generateCSV`; interacts with A2 | Mostly |
 | A5 CSV parser | §5.1 | `parseCSV`, `parseDelimitedLine`, `detectDelimiter` | Yes |
@@ -163,7 +163,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 2. **C2, C4, C5** — remove the known drift and the stray files.
 3. **A1** (done), **A3, A9** — the three small trust fixes.
 4. **C1** — merge the two files into one with two modes.
-5. **A5, A4, A2** — parser, export shape, anchor marking (in that order: the parser must be right before the format changes).
+5. **A5, A4** — parser, then export shape. (**A2**, anchor marking, was done ahead of these and does not depend on them.)
 6. **B1, E1–E6** — one way to assign a slot; one vocabulary.
 7. **B2–B7** — regroup the controls and unify the legends.
 8. **A6, F3** — re-key colours and dimension state, with a setup version bump.
