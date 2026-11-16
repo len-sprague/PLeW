@@ -5543,6 +5543,13 @@
                         </div>
                     </div>
                 `;
+                // Nothing is drawn, so the header line must not keep the
+                // counts of the previous picture.
+                if (currentData) {
+                    document.getElementById('vizStats').textContent =
+                        `0 of ${currentData.length} records shown • ${modifiedRows.size} modified` +
+                        (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
+                }
             }
             
             updateFloatingLegend(encodings);
@@ -6411,9 +6418,6 @@
             
             document.getElementById('vizHeader').style.display = 'flex';
             document.getElementById('vizTitle').textContent = 'Data Editor';
-            document.getElementById('vizStats').textContent = 
-                `${data.length} records • ${modifiedRows.size} modified` +
-                (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
             
             const gridXValues = getVisibleValues(encodings.gridX);
             const gridYValues = getVisibleValues(encodings.gridY);
@@ -6536,6 +6540,39 @@
             container.appendChild(wrap);
             container.classList.toggle('show-dimension-names', showDimensionNames);
             applyAdaptiveDotSizing();
+
+            // Header line. Written after drawing so that "shown" is the number
+            // of real records actually drawn. Anchors are never counted here.
+            const shownCount = outerGrid.querySelectorAll('.data-point:not(.dummy-point)').length;
+            let recordsText = `${data.length} records`;
+            if (shownCount !== data.length) {
+                const why = getHidingFilterNames(data, encodings);
+                recordsText = `${shownCount} of ${data.length} records shown` +
+                    (why.length > 0 ? ` (filtered by ${why.join(', ')})` : '');
+            }
+            document.getElementById('vizStats').textContent =
+                `${recordsText} • ${modifiedRows.size} modified` +
+                (dummyRows.length > 0 ? ` • ${dummyRows.length} anchors` : '');
+        }
+
+        // Names of the filters that hide at least one real record in the
+        // current picture: placed dimensions with a hidden value that some
+        // record has, and the comment filter. Used by the header line.
+        function getHidingFilterNames(data, encodings) {
+            const names = [];
+            const seen = new Set();
+            for (const dim of [encodings.gridX, encodings.gridY, encodings.panelX, encodings.panelY, encodings.color, encodings.shape]) {
+                if (!dim) continue;
+                const key = dimKey(dim);
+                if (seen.has(key)) continue;
+                seen.add(key);
+                const filter = dimensionValueFilters[key];
+                if (filter && data.some(row => !filter.has(row[key]))) {
+                    names.push(getDisplayName(dim.name));
+                }
+            }
+            if (data.some(row => !rowPassesCommentFilter(row))) names.push('comments');
+            return names;
         }
         
         function getOuterPanelRowHeight() {
@@ -6627,10 +6664,6 @@
             
             const title = document.createElement('div');
             title.className = 'grid-title';
-            const visibleGridData = gridData.filter(row => rowPassesColorShapeFilters(row, encodings));
-            const realCount = visibleGridData.filter(r => !r._isDummy).length;
-            const dummyCount = visibleGridData.filter(r => r._isDummy).length;
-            title.textContent = dummyCount > 0 ? `${realCount} items (+${dummyCount}⚓)` : `${realCount} items`;
             grid.appendChild(title);
             if (!showItemCounts) title.style.display = 'none';
             
@@ -6716,6 +6749,16 @@
             });
             
             grid.appendChild(panelGrid);
+            
+            // Item count. "Total" is every real record belonging to this panel;
+            // "shown" is the number of them actually drawn in its cells. Anchors
+            // are not items: the ones drawn are reported beside the count.
+            const totalCount = gridData.filter(r => !r._isDummy).length;
+            const shownCount = panelGrid.querySelectorAll('.data-point:not(.dummy-point)').length;
+            const dummyCount = panelGrid.querySelectorAll('.data-point.dummy-point').length;
+            title.textContent =
+                (shownCount !== totalCount ? `${shownCount} of ${totalCount} items` : `${totalCount} items`) +
+                (dummyCount > 0 ? ` (+${dummyCount}⚓)` : '');
             
             // Add axis labels below the panel grid
             if (encodings.panelX || encodings.panelY) {

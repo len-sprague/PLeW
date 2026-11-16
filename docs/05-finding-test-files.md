@@ -14,7 +14,7 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 | A2 ✅ fixed | `A2b-lowercase-trailing-ids.csv` | Was: 6 rows loaded as 4 records. Now 6 |
 | A2 (check) | `A2c-old-style-anchors.csv` | A file in the old anchor format still loads as 4 records + 2 anchors |
 | A2 (check) | `A2d-more-than-26-anchors.csv` | 30 anchors: IDs run past `__anchor__z` to `__anchor__aa` |
-| A3 | `A3-hidden-record-count.csv` | 4 dots drawn, header says "8 records" |
+| A3 | `A3-hidden-record-count.csv` | **Fixed.** Before: 4 dots drawn, header says "8 records" |
 | A4 | `A4-export-differs.csv` | Downloaded file has an extra column, extra rows and, after a role change, a moved column |
 | A5 | `A5-multiline-and-quotes.csv` | 4 rows load as 5; quotation marks vanish |
 | A6 | `A6-colour-follows-value.csv` | A colour chosen under one dimension reappears under another |
@@ -60,9 +60,9 @@ Both remaining dots have *Vowel: a*.
 
 After step 5 every record was back, all under the heading **a**. Hovering over the dots showed *Vowel: i* and *Vowel: u* sitting in the *a* column.
 
-**Still open, also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"** (and after step 5, 1 dot and "3 items"). Item counts ignore panel X / panel Y filters (related to A3).
+**Also visible here, fixed with A3:** after step 4 each panel draws 2 dots and its count reads **"2 of 3 items"**; after step 5, 1 dot and **"1 of 3 items"**. Before the fix for A3 the count read "3 items" throughout, because item counts ignored panel X / panel Y filters.
 
-**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6744 and 6747), which skipped the row test when only one value was visible. The fix removes them.
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6787 and 6790), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
@@ -128,18 +128,43 @@ To see the anchors themselves in any of these, press **Download CSV** and look a
 
 ## A3 — Nothing says how many records are hidden
 
+> **Fixed** in the pull request *A3 resolution attempt #1*. The steps below now give the expected result; the old result is kept for comparison.
+
 **File:** `A3-hidden-record-count.csv` — 8 records: two groups (A, B) × two tones (high, low), two records each.
 
 **Steps**
 
 1. Load the file. *Group* is on grid X, *Tone* on grid Y. 8 dots.
 2. In **Filter values → Group**, untick **B**.
+3. Tick **Show item counts** (above the picture).
+4. Tick **B** again. In **Dimensions**, set *Tone*'s dropdown to **panel X**, then in **Filter values → Tone** untick **low**.
+5. Under **Anchor Points**, tick **Show on chart**.
 
 **Expected:** some sign that half the data is hidden, such as "4 of 8 records shown".
 
-**What happens:** 4 dots are drawn; the header still reads **"8 records • 0 modified • 2 anchors"**. The only trace of the filter is "1 of 2 values" beside *Group* in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot.
+**What happens now (after the fix)**
 
-**Cause:** `renderVisualization` (line 6414) reports `data.length`, the number loaded.
+| After step | Dots | Header | Panel counts |
+|---|---|---|---|
+| 1 | 8 | 8 records • 0 modified • 2 anchors | (2 items in each of four panels, once switched on) |
+| 2 | 4 | **4 of 8 records shown (filtered by Group)** • 0 modified • 2 anchors | |
+| 3 | 4 | the same | 2 items ; 2 items |
+| 4 | 4 | **4 of 8 records shown (filtered by Tone)** • 0 modified • 2 anchors | **2 of 4 items** ; **2 of 4 items** |
+| 5 | 4 | the same | 2 of 4 items (+1⚓) ; 2 of 4 items |
+
+After step 2 the two remaining panels each draw all of their own records, so their counts read "2 items"; the four hidden records belong to panels that are not drawn, and only the header can report them. After step 5 one anchor is drawn (the other belongs to the hidden value *low*); it is reported beside the count and is not part of "2 of 4" or of "4 of 8".
+
+**What happened before the fix**
+
+| After step | Dots | Header | Panel counts |
+|---|---|---|---|
+| 2 | 4 | 8 records • 0 modified • 2 anchors | |
+| 4 | 4 | 8 records • 0 modified • 2 anchors | 4 items ; 4 items |
+| 5 | 4 | 8 records • 0 modified • 2 anchors | 4 items (+1⚓) ; 4 items (+1⚓) |
+
+The only trace of a filter was "1 of 2 values" beside the dimension in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot. With *Tone* on colour or shape instead of panel X, the panel counts did drop (to "2 items") but did not say out of how many. In step 5 the second panel reported an anchor that was not drawn.
+
+**Cause:** `renderVisualization` reported `data.length`, the number loaded, and `creategrid` counted a panel's records before its cells were filled, applying only the colour, shape and comment filters. The fix writes both counts after drawing, from the dots drawn: the header at the end of `renderVisualization` (line 6553), the panel count in `creategrid` (6652) after its cells are filled.
 
 ---
 
@@ -223,7 +248,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6174). Custom shapes behave the same way (line 5105).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6181). Custom shapes behave the same way (line 5105).
 
 ---
 
@@ -282,7 +307,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5593).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5600).
 
 ---
 
@@ -309,7 +334,7 @@ The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a 
 
 Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7382), which calls `getSnapshotFetchUrl` (line 7348).
+**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7425), which calls `getSnapshotFetchUrl` (line 7391).
 
 ---
 

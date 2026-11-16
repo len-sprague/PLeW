@@ -97,6 +97,27 @@ const out = (...a)=>console.log(a.map(x=>typeof x==='string'?x:JSON.stringify(x)
   await load(D+'A2a-lowercase-first-column.csv'); out('A2a records/anchors:', await p.evaluate(()=>[currentData.length, dummyRows.length]), '(expected 4 records)');
   await load(D+'A2b-lowercase-trailing-ids.csv'); out('A2b:', await stats(), '(expected 6 records)');
   await load(D+'A3-hidden-record-count.csv'); await cb('Group','B').click(); out('A3 dots', await dots(), '| header:', await stats());
+  // A3 detail: panel counts and the header, against counts made here from the dots and the data
+  const titles = () => p.evaluate(()=>[...document.querySelectorAll('.grid-title')].map(t=>t.textContent).join(' ; '));
+  // for every panel: [real dots drawn, real records whose grid values match the panel's, anchors drawn]
+  const panelTruth = () => p.evaluate(()=>{ const gx=getVisibleValues(encodings.gridX), gy=getVisibleValues(encodings.gridY); const gs=[...document.querySelectorAll('.grid')]; let i=0; const r=[];
+    for (const y of gy) for (const x of gx) { const g=gs[i++]; const tot=currentData.filter(d=>(!encodings.gridX||d[dimKey(encodings.gridX)]===x)&&(!encodings.gridY||d[dimKey(encodings.gridY)]===y)).length;
+      r.push(g.querySelectorAll('.data-point[data-row-index]').length+'/'+tot+'/'+g.querySelectorAll('.dummy-point').length); } return r.join(' ; '); });
+  const a3 = async (tag) => out(tag, '| header:', await stats(), '| dots', await dots(), '| panel counts:', await titles(), '| drawn/total/anchors:', await panelTruth());
+  const a3load = async () => { await load(D+'A3-hidden-record-count.csv'); await p.check('#showItemCounts'); };
+  await a3load(); await a3('A3a nothing hidden');
+  await cb('Group','B').click(); await a3('A3b grid value hidden (whole panels)');
+  await cb('Group','B').click(); await a3('A3c restored');
+  for (const s of ['panel-x','panel-y','color','shape']) { await a3load(); await enc('Tone', s); await cb('Tone','low').click(); await a3('A3d Tone on '+s+', low hidden'); }
+  await a3load(); await enc('Tone','panel-x'); await cb('Tone','low').click(); await cb('Group','B').click(); await a3('A3e two filters');
+  await a3load(); await p.evaluate(()=>saveRecordCommentFromValues(0,'note')); await p.check('#commentsOnlyToggle'); await a3('A3f comment filter, one record has a comment');
+  await a3load(); await p.evaluate(()=>{ document.getElementById('dummyVisible').checked=true; updateDummySettings(); }); await a3('A3g anchors shown, nothing hidden');
+  await enc('Tone','color'); await cb('Tone','low').click(); await a3('A3h anchors shown, Tone on colour, low hidden');
+  await a3load(); await p.evaluate(()=>{ document.getElementById('dummyVisible').checked=true; updateDummySettings(); }); await enc('Tone','panel-x'); await cb('Tone','low').click(); await a3('A3i anchors shown, Tone on panel X, low hidden');
+  await a3load(); await enc('Tone','panel-x'); await cb('Tone','low').click(); await enc('Tone',''); await a3('A3j Tone filtered, then taken off the picture (its filter hides nothing)');
+  await a3load(); await cb('Group','A').click(); await cb('Group','B').click(); await a3('A3k every grid value hidden');
+  await a3load(); await cb('Group','B').click(); await enc('Group',''); await enc('Tone',''); out('A3l filter on, then every dimension taken off the picture | header:', await stats(), '| dots', await dots(), '| message:', await p.locator('.empty-state-text').textContent());
+  await enc('Tone','grid-x'); await a3('A3m then Tone put back');
   await load(D+'A4-export-differs.csv'); out('A4 export header:', (await p.evaluate(()=>generateCSV())).split('\n')[0], '| lines', (await p.evaluate(()=>generateCSV())).trim().split('\n').length);
   await p.evaluate(()=>setColumnRole('Tone','desc')); out('A4 after role change:', (await p.evaluate(()=>generateCSV())).split('\n')[0]);
   await load(D+'A5-multiline-and-quotes.csv'); out('A5:', await stats(), '| note 3:', await p.evaluate(()=>currentData.find(r=>r.ID==='3').note));

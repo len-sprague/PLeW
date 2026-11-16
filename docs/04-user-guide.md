@@ -76,7 +76,7 @@ In **Filter values**, each dimension on the picture lists its values.
 
 A filtered dimension shows "3 of 5 values" in the Dimensions list.
 
-> **Good to know.** The line above the picture ("200 records") counts everything loaded, not what is currently visible. Turn on **Show item counts** to see how many are in each panel.
+When a filter hides records, the line above the picture says so: "150 of 200 records shown (filtered by Tone)". The names in brackets are the filters that are hiding something. Turn on **Show item counts** to see the same for each panel: "12 items" when all of a panel's records are drawn, "9 of 12 items" when some are hidden. Anchors are never part of these numbers.
 
 ### Looking at a single record
 
@@ -138,7 +138,7 @@ Above the picture:
 | **Label styling ▾** | Size and colour of headings and counts |
 | **Unify grid sizes** + height | Every row of panels the same height |
 | **Unify inner panel** + height | Every row inside a panel the same height; crowded cells overlap their dots and show **+N** if some need scrolling |
-| **Show item counts** | Number of records in each panel |
+| **Show item counts** | Number of records in each panel; "9 of 12 items" when a filter hides some of them |
 | **Show dimension names** | Names of the dimensions along the edges |
 
 Press **B** to hide or show the sidebar.
