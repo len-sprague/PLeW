@@ -4669,8 +4669,14 @@
         //   1. their first-column values are exactly a, b, c … in that order,
         //      starting at 'a' and with none missing;
         //   2. at least one other row comes before them;
-        //   3. every column that is not a dimension (and not the first column)
-        //      is empty in each of them, which is how anchors were written.
+        //   3. the first column is not itself a dimension (such files never
+        //      had lettered anchors);
+        //   4. they hold nothing an anchor could not hold. Anchors were
+        //      written with a value in each dimension and every other column
+        //      empty. So, outside the first column, a cell in these rows must
+        //      be empty unless its column is a dimension, or is a column that
+        //      would be one but for every earlier row having a different value
+        //      in it, and the cell repeats one of those earlier values.
         // Returns how many rows at the end qualify (0 if none).
         function countLegacyAnchorRows(data, headers) {
             const idKey = headers[0];
@@ -4684,14 +4690,24 @@
                 if (idOf(data[start + i]) !== getAlphaLabel(i)) return 0;
             }
 
-            const dimKeys = new Set(
-                analyzeDimensions(headers, data.slice(0, start)).map(dim => dimKey(dim))
-            );
-            const mustBeEmpty = headers.filter(h =>
-                h !== idKey && !h.startsWith('_') && !dimKeys.has(h)
-            );
-            for (let i = start; i < data.length; i++) {
-                if (mustBeEmpty.some(h => String(data[i][h] ?? '').trim() !== '')) return 0;
+            const realRows = data.slice(0, start);
+            const keysOf = rows => new Set(analyzeDimensions(headers, rows).map(dim => dimKey(dim)));
+            const dimKeys = keysOf(realRows);
+            if (dimKeys.has(idKey)) return 0;
+
+            // Listing every row twice means no column has all-different values,
+            // which leaves the columns that qualify as dimensions by name alone.
+            const dimKeysByName = keysOf(realRows.concat(realRows));
+
+            for (const h of headers) {
+                if (h === idKey || h.startsWith('_') || dimKeys.has(h)) continue;
+                const seen = dimKeysByName.has(h)
+                    ? new Set(realRows.map(row => String(row[h] ?? '').trim()))
+                    : null;
+                for (let i = start; i < data.length; i++) {
+                    const value = String(data[i][h] ?? '').trim();
+                    if (value !== '' && !(seen && seen.has(value))) return 0;
+                }
             }
 
             return count;

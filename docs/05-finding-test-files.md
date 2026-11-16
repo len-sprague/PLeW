@@ -62,7 +62,7 @@ After step 5 every record was back, all under the heading **a**. Hovering over t
 
 **Still open, also visible here:** after step 4 each panel draws 2 dots but its count still reads **"3 items"** (and after step 5, 1 dot and "3 items"). Item counts ignore panel X / panel Y filters (related to A3).
 
-**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6642 and 6645), which skipped the row test when only one value was visible. The fix removes them.
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6744 and 6747), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
@@ -110,7 +110,9 @@ To see the anchors themselves in any of these, press **Download CSV** and look a
 
 **What is new after the fix:** in the downloaded file those two rows now have the IDs `__anchor__a` and `__anchor__b`.
 
-**Why these two rows are accepted when `x`, `y` in A2b are not:** old-style anchors are recognised only when the last rows' IDs are exactly `a`, `b`, `c` … in order, at least one other row comes before them, and every column that is not a dimension is empty in them. To see the last condition at work, type anything into the `note` cell of row `a` in a copy of this file: it then loads as 6 records.
+**A limit to know about:** rows at the very end of a file whose IDs are exactly `a`, `b`, `c` … and which have values only in dimension columns cannot be told apart from old-style anchors, and are still read as anchors. This is the one case the fix cannot settle from the file alone.
+
+**Why these two rows are accepted when `x`, `y` in A2b are not:** old-style anchors are recognised only when the last rows' IDs are exactly `a`, `b`, `c` … in order, at least one other row comes before them, the first column is not itself a dimension, and those rows have values only where an anchor would (in dimension columns; everything else empty). To see the last condition at work, type anything into the `note` cell of row `a` in a copy of this file: it then loads as 6 records.
 
 ### A2d — more than 26 anchors
 
@@ -137,7 +139,7 @@ To see the anchors themselves in any of these, press **Download CSV** and look a
 
 **What happens:** 4 dots are drawn; the header still reads **"8 records • 0 modified • 2 anchors"**. The only trace of the filter is "1 of 2 values" beside *Group* in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot.
 
-**Cause:** `renderVisualization` (line 6312) reports `data.length`, the number loaded.
+**Cause:** `renderVisualization` (line 6414) reports `data.length`, the number loaded.
 
 ---
 
@@ -181,7 +183,7 @@ ID,Group,note,desc::comment,desc::Tone
 
 The column has moved to the far right.
 
-**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5089) deletes and re-adds the key.
+**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5186) deletes and re-adds the key.
 
 ---
 
@@ -221,7 +223,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 5000, 6072). Custom shapes behave the same way (line 5008).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6174). Custom shapes behave the same way (line 5105).
 
 ---
 
@@ -254,7 +256,7 @@ Nothing in the legend or the picture says so.
 
 **What happens:** Korean stays teal, but Arabic turns from teal to red, Basque from red to yellow, and so on down the list. A picture made before the reorder and one made after use different colours for the same languages.
 
-**Cause:** `getColorForValue` / `getShapeForValue` (lines 4999–5013) pick by position in the value order, wrapping round.
+**Cause:** `getColorForValue` / `getShapeForValue` (lines 5096–5110) pick by position in the value order, wrapping round.
 
 ---
 
@@ -280,7 +282,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5491).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5593).
 
 ---
 
@@ -307,7 +309,7 @@ The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a 
 
 Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7280), which calls `getSnapshotFetchUrl` (line 7246).
+**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7382), which calls `getSnapshotFetchUrl` (line 7348).
 
 ---
 
