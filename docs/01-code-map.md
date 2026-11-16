@@ -374,7 +374,7 @@ Works on `currentData` in full: it ignores filters and the current layout, and e
 
 Grid snapshots use html2canvas on a temporary wrapper (`prepareSnapshotCaptureRoot`), with `fixSnapshotLabels` un-rotating vertical labels and expanding overflowing cells in the clone.
 
-Record snapshots need images as data URLs. `preloadModalImages` (7425) starts fetching them **whenever a record window opens**, and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7391).
+Record snapshots need images as data URLs. They are fetched **only when a snapshot button in the record window is pressed** (`snapshotModal` → `inlineImagesForSnapshot` → `imageSrcToDataUrl`), and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7391). Each address is fetched once: results are kept in `snapshotImageCache`, and fetches in progress in `snapshotImagePending`. The two buttons' tooltips say that the proxy is used. (Until the fix for finding A9, `preloadModalImages` started these fetches whenever a record window opened.)
 
 ## 10. The interface, control by control
 

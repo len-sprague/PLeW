@@ -151,7 +151,7 @@ Press **B** to hide or show the sidebar.
 | **Change Log → CSV / JSON** | `change_log.*` | A record of every change you made |
 | **Export setup** | `plew-setup-….json` | The arrangement: placements, filters, order, colours, display options |
 | **📷 Dark / Light** | `grid_snapshot.png` | The picture, with a legend, for slides or papers |
-| **📷 Stacked / Side-by-side** (in a record) | a PNG of that record | Illustrating one example |
+| **📷 Stacked / Side-by-side** (in a record) | a PNG of that record | Illustrating one example. If the record's image is hosted on another site, pressing the button fetches it through the image service `wsrv.nl`, which is therefore told the image's address. Nothing is sent there unless you press one of these two buttons |
 | **Report** | `report.html` | Counts, percentages and cross-tabulations of whole dimensions |
 
 The data and the setup are separate files. To pick up where you left off, load the CSV, then **Import setup**.

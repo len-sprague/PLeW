@@ -2,7 +2,7 @@
 
 For the next session picking this work up. Read this first, then the files it points to.
 
-**Written:** 2026-11-16 · **Next task:** finding **A9**, once the A3 pull request is merged (the owner may choose another; see section 7).
+**Written:** 2026-11-16 · **Next task:** finding **A5**, once the A9 pull request is merged (the owner may choose another; see section 7).
 
 ---
 
@@ -28,8 +28,9 @@ PLeW is a single-file HTML data visualizer for discrete data: one dot per record
 | Guide pages on the site (`/guide/`, `/design/`, `/code-map/`), Help links, review procedure | Merged | len-sprague/PLeW#29 |
 | **A1** panel filter with one value left | **Merged** | len-sprague/PLeW#30 |
 | **A2** anchors marked with a reserved ID | **Merged** | len-sprague/PLeW#31 |
-| **A3** hidden-record counts | **Pull request open** (*A3 resolution attempt #1*) — check whether it has been merged | — |
-| A4–A9 | Not started | — |
+| **A3** hidden-record counts | **Merged** | len-sprague/PLeW#33 |
+| **A9** image proxy only on snapshot | **Pull request open** (*A9 resolution attempt #1*) — check whether it has been merged | — |
+| A4–A8 | Not started | — |
 
 This file and `tools/checks/` come in their own pull request, opened after A2 was merged. No tool code is in it.
 
@@ -66,7 +67,7 @@ The site is published in a sub-folder, `https://lensprague.com/PLeW/`. A link wr
 | File | What it does |
 |---|---|
 | `tools/code-userguide-review.md` | The review procedure, step by step |
-| `tools/checks/behaviour.js` | Drives the built site in a headless browser and prints 77 one-line checks (placements, filters, drag, undo, comments, compare, round trips, setup, report, an example page, every A-file) |
+| `tools/checks/behaviour.js` | Drives the built site in a headless browser and prints 78 one-line checks (placements, filters, drag, undo, comments, compare, round trips, setup, report, an example page, every A-file) |
 | `tools/checks/anchors.js` | 65 lines on anchors: every shipped dataset, every example page, save-and-reload cycles, edge-case files in `tools/checks/anchor-edge-cases/` |
 | `tools/checks/links.js` | Tests every link on the editor, gallery, an example and the guide pages |
 | `tools/checks/remap-line-numbers.py` | After an edit, moves every documented line number using the diff of the old and new file |
@@ -140,7 +141,7 @@ node tools/checks/links.js 8765
 
 The lines that differ must be exactly the ones the fix was meant to change. Any other differing line is a regression until explained. Add lines to `behaviour.js` for anything the fix introduces, so later fixes are checked against it too.
 
-Playwright and Chromium are preinstalled (`require('playwright')` works from any folder; do not run `playwright install`). The snapshot library's CDN and `wsrv.nl` are not reachable from the cloud environment, so snapshots cannot be exercised there; say so in the pull request.
+Playwright and Chromium are preinstalled (`require('playwright')` works from any folder; do not run `playwright install`). The snapshot library's CDN, `wsrv.nl` and outside image hosts are not reachable from the cloud environment, so a real snapshot cannot be made there; say so in the pull request. The record-window snapshot path can still be exercised by answering those hosts inside the test and standing in for the library, as the `A9 detail` lines of `behaviour.js` do. Note that an image that fails to load is replaced by a placeholder, and then nothing is sent to the proxy.
 
 **6. Two independent reviews by smaller agents**, run in parallel, each starting with no context, so the prompt must explain the tool, the bug, the fix, and how to drive the page:
 
@@ -211,8 +212,8 @@ Found while working on A1 and A2. None has been changed.
 
 From the report, adjusted for what is done:
 
-1. **A3** — hidden-record counts (done; pull request open).
-2. **A9** — do not contact the image proxy until a snapshot is requested. Small and self-contained.
+1. **A3** — hidden-record counts (done, merged).
+2. **A9** — do not contact the image proxy until a snapshot is requested (done; pull request open).
 3. **A5** — CSV parser: line breaks and quotation marks inside cells. Must come before A4.
 4. **A4** — the exported CSV's shape: column order, optional comment column, optional anchors. Needs the owner's decisions.
 5. **A8** (with B1) — one control in charge of placements. Needs the owner's decision.

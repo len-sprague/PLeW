@@ -42,7 +42,7 @@ These are the items where the picture, the counts or the exported file can diffe
 | A6 | **Custom colours and shapes follow the value, not the dimension.** A colour chosen for `0` under *Focus* is also used for `0` under any other dimension *(verified)*. | `customColorMap[value]` 5097, 5105, 6181, 6277 | Key by dimension and value (`key + '\u0000' + value`). Bump the setup version and read old files as before. | Medium |
 | A7 | **Colours and shapes repeat without warning.** 10 colours and 4 shapes are cycled; an eleventh value shares a colour with the first, a fifth shares a shape. Reordering values also changes their default colours. | `getColorForValue`, `getShapeForValue` 5096–5110. Map §6.4 | Flag it in the legend when values outnumber the palette ("12 values, 10 colours: some repeat"). Consider fixing a value's default colour at load rather than by position. | Low / Medium |
 | A8 | **Dragging the dimension list throws away dropdown choices.** The hint says to "use the dropdown to override", but the next drag reassigns every slot from list order *(verified)*. | `handleDimDrop` 5600 | Decide which control is in charge (see B1). | Medium |
-| A9 | **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `preloadModalImages` 7425, `getSnapshotFetchUrl` 7391 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
+| A9 | ✅ **Fixed** in the pull request *A9 resolution attempt #1*: the fetch now happens only when a snapshot button in the record window is pressed, and the buttons' tooltips say that the proxy is used; `preloadModalImages` was removed. The finding as it was: **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `preloadModalImages` 7425, `getSnapshotFetchUrl` 7391 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
 
 Smaller points in the same family:
 
@@ -149,7 +149,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 | A5 CSV parser | §5.1 | `parseCSV`, `parseDelimitedLine`, `detectDelimiter` | Yes |
 | A6 colour keys | §4.2, §9 | Four call sites plus setup read/write | Yes, with version bump |
 | A8 / B1 slot assignment | §6.3 | `handleDimDrop`, hint text, possibly the tick box | Yes |
-| A9 image proxy | §9 | One call in `renderCompareModal` | Yes |
+| A9 image proxy — **fixed** | §9 | One call in `renderCompareModal` removed with its function; `imageSrcToDataUrl`; two tooltips | Yes |
 | B2, B3, B7 control placement | §10 | Markup and a few render calls | Yes |
 | B4 legends | §10, §11 | Five render functions, snapshot path | No — a small redesign |
 | C1 one file, two modes | §12 | File handling, media URL resolution, start-up | No — the largest single change |
@@ -161,7 +161,7 @@ Each finding was checked back against the map to confirm that the suggested fix 
 
 1. **D1–D7** — delete unused code in both files. No behaviour change; shrinks the diff for everything after.
 2. **C2, C4, C5** — remove the known drift and the stray files.
-3. **A1** (done), **A3** (done), **A9** — the three small trust fixes.
+3. **A1** (done), **A3** (done), **A9** (done) — the three small trust fixes.
 4. **C1** — merge the two files into one with two modes.
 5. **A5, A4** — parser, then export shape. (**A2**, anchor marking, was done ahead of these and does not depend on them.)
 6. **B1, E1–E6** — one way to assign a slot; one vocabulary.
