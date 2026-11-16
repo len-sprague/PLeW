@@ -1,0 +1,6 @@
+ID,Class,Tone,audio_url
+1,noun,high,x1.wav
+2,noun,low,x2.wav
+3,verb,high,x3.wav
+a,verb,low,xa.wav
+b,noun,high,xb.wav
