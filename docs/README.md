@@ -27,7 +27,7 @@ The documents were last checked against these exact versions of the tool files. 
 
 | File | Lines | Blob hash |
 |---|---|---|
-| `layouts/index.html` | 8098 | `e16ee61b7a489fc0fe882d0846b8916e83e4f11a` |
-| `layouts/_default/example-viz.html` | 7889 | `7a732ab1c827f83086f4934c2ca2b1e5fb88d923` |
+| `layouts/index.html` | 8102 | `3ee5b1d5045790caaa1999a586b05303de1c9cf7` |
+| `layouts/_default/example-viz.html` | 7893 | `d9b062be28bb2eecda69f3f6a5c5bfa82069185d` |
 
-**Checked on:** 2026-11-16 · **Reason:** fix for finding A3 (the header and the panel counts say how many records are hidden). 43 lines net were added to each file; the documents' line numbers were remapped from the diff between the old and new file.
+**Checked on:** 2026-11-16 · **Reason:** fix for finding A9 (the image proxy is contacted only when a snapshot of a record is requested). 4 lines net were added to each file; the documents' line numbers were remapped from the diff between the old and new file.

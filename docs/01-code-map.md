@@ -2,7 +2,7 @@
 
 How the pieces of PLeW relate to each other in the code.
 
-- **Subject:** `layouts/index.html` (the full editor, 8,098 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,889 lines).
+- **Subject:** `layouts/index.html` (the full editor, 8,102 lines) and its near-twin `layouts/_default/example-viz.html` (the example pages, 7,893 lines).
 - **Line numbers** refer to `layouts/index.html` as recorded in the verification stamp in [docs/README.md](README.md). They will drift; the section banners and `FEATURE:` markers named below are the stable way to find things.
 - **Status:** first draft. Everything here was read from the code; the behaviours marked *(verified)* were also confirmed by running the page in a headless browser.
 
@@ -23,7 +23,7 @@ Everything else in the file exists to serve one of four jobs around that model: 
 | 1–7 | `<head>` | One external script: html2canvas 1.4.1 from cdnjs (used only for PNG snapshots). |
 | 8–2589 | `<style>` | All CSS, about a third of the file. Dark theme, colours hard-coded. Six CSS variables carry user-adjustable styling (§9). |
 | 2591–3016 | `<body>` markup | Static skeleton: sidebar, main area, tooltip, context menu, two modals. Most content is filled in by JavaScript. |
-| 3018–8096 | `<script>` | One classic script, about 248 top-level functions, all global. No modules, no classes, no build step. |
+| 3018–8100 | `<script>` | One classic script, about 247 top-level functions, all global. No modules, no classes, no build step. |
 
 Hugo is used only as a thin wrapper. `index.html` contains five template expressions (the examples link at 2598, three help-page links at 2600, and `SITE_BASE` at 3022); `example-viz.html` adds `.Title`, `.Description`, `dataset_url` and `config_url`. Remove those and the file runs from disk.
 
@@ -57,12 +57,12 @@ The script is laid out in banner-commented sections, with newer work wrapped in 
 | 6408–6825 | grid rendering | `renderVisualization` → `creategrid` → `createpanelCell` |
 | 6827–6996 | adaptive dot sizing | |
 | 6998–7147 | data point, tooltip | |
-| 7149–7386 | record modal, compare, media HTML | |
-| 7388–7491 | image inlining for modal snapshots | |
-| 7493–7676 | report | |
-| 7678–7787 | modal snapshot, modal close | |
-| 7789–7959 | FILE HANDLING | Drop zone, file inputs, local media map |
-| 7961–8085 | `processParsedRows()` | The single load entry point |
+| 7149–7385 | record modal, compare, media HTML | |
+| 7387–7495 | image inlining for modal snapshots | |
+| 7497–7680 | report | |
+| 7682–7791 | modal snapshot, modal close | |
+| 7793–7963 | FILE HANDLING | Drop zone, file inputs, local media map |
+| 7965–8089 | `processParsedRows()` | The single load entry point |
 
 ### Feature markers
 
@@ -158,7 +158,7 @@ Several display settings have **no state variable** and live only in their form 
 
 Almost every path through the code passes through one of two functions.
 
-### 5.1 Load: `processParsedRows()` (7980)
+### 5.1 Load: `processParsedRows()` (7984)
 
 ```
 drop / file picker ──► loadFile ──► processDataFile ──┬─► parseCSV ──┐
@@ -323,7 +323,7 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 | Record window | `renderCompareModal` (7251) | Field table, media, comment editor (single record only) |
 | Compare | same function, when slots A and B are both set | Three-column table with differing rows highlighted, media side by side |
 
-- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7286).
+- Click sets slot A, Shift+click sets slot B (`handleDataPointClick`, 7285).
 - Fields shown and their order come from `columnRecordOrder` and `columnVisibility`, edited in the **Column roles** list.
 - Tooltip and record window use **different exclusion rules** (`shouldExcludeFromTooltip` 3819 matches reserved names by substring; `shouldExcludeFromModalTable` 3828 by exact match).
 
@@ -331,7 +331,7 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 
 - `detectMediaColumns` (4441) finds columns by `med::` prefix or by name pattern; type comes from the name (`audio`, `image`, `video`…) or, failing that, from the file extension.
 - `resolveMediaUrl` (4486), in priority order: absolute / blob / data URL as is → file picked locally (`localMediaMap`, by path then by bare file name) → root-relative as is → relative to where the CSV came from.
-- `generateMediaHTML` (7371): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
+- `generateMediaHTML` (7370): YouTube links become an embedded player; otherwise `<img>`, `<video>` or `<audio>`.
 - A legacy pair of columns `media_type` + `media_url` is also honoured (4527).
 
 ## 9. Getting things out
@@ -342,8 +342,8 @@ Changes to the view (filters, order, colours, roles, toggles) are not on the und
 | Change log | `downloadChangeLog` (4601) | `change_log.csv` / `.json` | Every edit, undo and redo with timestamp |
 | Setup | `buildVisualizationConfig` (3569) | `plew-setup-<dataset>.json` | See below |
 | Grid image | `downloadSnapshot` (4360) | `grid_snapshot.png` | The grid, with a legend added on top; dark or light; comment rings removed |
-| Record image | `snapshotModal` (7678) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
-| Report | `generateReport` (7599) | `report.html` | Counts, percentages, crosstabs |
+| Record image | `snapshotModal` (7682) | `<title>_stacked.png` / `_side-by-side.png` | The record window |
+| Report | `generateReport` (7603) | `report.html` | Counts, percentages, crosstabs |
 
 ### The setup file (version 5)
 
@@ -374,7 +374,7 @@ Works on `currentData` in full: it ignores filters and the current layout, and e
 
 Grid snapshots use html2canvas on a temporary wrapper (`prepareSnapshotCaptureRoot`), with `fixSnapshotLabels` un-rotating vertical labels and expanding overflowing cells in the clone.
 
-Record snapshots need images as data URLs. They are fetched **only when a snapshot button in the record window is pressed** (`snapshotModal` → `inlineImagesForSnapshot` → `imageSrcToDataUrl`), and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7391). Each address is fetched once: results are kept in `snapshotImageCache`, and fetches in progress in `snapshotImagePending`. The two buttons' tooltips say that the proxy is used. (Until the fix for finding A9, `preloadModalImages` started these fetches whenever a record window opened.)
+Record snapshots need images as data URLs. They are fetched **only when a snapshot button in the record window is pressed** (`snapshotModal` → `inlineImagesForSnapshot` → `imageSrcToDataUrl`), and images from another origin are fetched through the third-party proxy `wsrv.nl` (`getSnapshotFetchUrl`, 7393). Each address is fetched once: results are kept in `snapshotImageCache`, and fetches in progress in `snapshotImagePending`. The two buttons' tooltips say that the proxy is used. (Until the fix for finding A9, `preloadModalImages` started these fetches whenever a record window opened.)
 
 ## 10. The interface, control by control
 

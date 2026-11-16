@@ -42,14 +42,14 @@ These are the items where the picture, the counts or the exported file can diffe
 | A6 | **Custom colours and shapes follow the value, not the dimension.** A colour chosen for `0` under *Focus* is also used for `0` under any other dimension *(verified)*. | `customColorMap[value]` 5097, 5105, 6181, 6277 | Key by dimension and value (`key + '\u0000' + value`). Bump the setup version and read old files as before. | Medium |
 | A7 | **Colours and shapes repeat without warning.** 10 colours and 4 shapes are cycled; an eleventh value shares a colour with the first, a fifth shares a shape. Reordering values also changes their default colours. | `getColorForValue`, `getShapeForValue` 5096–5110. Map §6.4 | Flag it in the legend when values outnumber the palette ("12 values, 10 colours: some repeat"). Consider fixing a value's default colour at load rather than by position. | Low / Medium |
 | A8 | **Dragging the dimension list throws away dropdown choices.** The hint says to "use the dropdown to override", but the next drag reassigns every slot from list order *(verified)*. | `handleDimDrop` 5600 | Decide which control is in charge (see B1). | Medium |
-| A9 | ✅ **Fixed** in the pull request *A9 resolution attempt #1*: the fetch now happens only when a snapshot button in the record window is pressed, and the buttons' tooltips say that the proxy is used; `preloadModalImages` was removed. The finding as it was: **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `preloadModalImages` 7425, `getSnapshotFetchUrl` 7391 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
+| A9 | ✅ **Fixed** in the pull request *A9 resolution attempt #1*: the fetch now happens only when a snapshot button in the record window is pressed, and the buttons' tooltips say that the proxy is used; `preloadModalImages` was removed. The finding as it was: **Opening a record sends image addresses to a third party.** Images on another origin are fetched through `wsrv.nl` as soon as the record window opens, to prepare for a snapshot that may never be taken *(verified)*. | `renderCompareModal` 7251 (the call that was removed), `imageSrcToDataUrl` 7401, `getSnapshotFetchUrl` 7393 | Fetch only when a snapshot is requested, and say so in the button's tooltip. | Low |
 
 Smaller points in the same family:
 
 - Columns whose name merely **contains** `name`, `title` or `description` (`filename`, `surname`, `subtitle_lang`) are never offered as dimensions *(verified)*. The tooltip uses the same substring test; the record window uses an exact match (3823 vs 3832). Suggest exact match everywhere. *Risk: Medium, changes which dimensions appear for existing data.*
 - A column in which every row differs is silently dropped as an identifier (5136). Reasonable, but nothing in the interface says so. The Column roles list could show *why* each Auto column was treated as it was.
 - A seventh enabled dimension is assigned to nothing, with no message (3060).
-- The report ignores filters and layout (7600). That may be the right choice, but it should say "all N records" at the top.
+- The report ignores filters and layout (7604). That may be the right choice, but it should say "all N records" at the top.
 - Ctrl+Z is captured even while typing in the comment box (4064), so it undoes the last data edit instead of the last keystroke.
 - The anchor controls in the markup say "shown, opacity 0.05"; the state says "hidden, opacity 0", and the state wins at load *(verified)*. The slider cannot represent 0.
 
@@ -87,13 +87,13 @@ Smaller points in the same family:
 
 | # | What | Where | Risk |
 |---|---|---|---|
-| D1 | `loadSampleData()` — commented "no longer called" | 8090 | Low |
+| D1 | `loadSampleData()` — commented "no longer called" | 8094 | Low |
 | D2 | `moveValueInOrder()` — superseded by dragging | 3161 | Low |
-| D3 | `openModal()`, `saveRecordComment()` — no callers | 7328, 3514 | Low |
-| D4 | `clearSelection()` — a one-line alias of `clearCompareSlots()` | 7316 | Low |
+| D3 | `openModal()`, `saveRecordComment()` — no callers | 7327, 3514 | Low |
+| D4 | `clearSelection()` — a one-line alias of `clearCompareSlots()` | 7315 | Low |
 | D5 | State never read: `preservedDimValues`, `selectedRowIndex`, `draggedDataPoint`; local `activeDims` (6417), which makes `getActiveDimensions()` unused too | 3979, 4008, 4019 | Low |
 | D6 | `data-dim-value-key` / `data-dim-value` attributes set on headers but never read | 6444 | Low |
-| D7 | `console.log` calls left in the load path | 7991, 8020, 8023 | Low |
+| D7 | `console.log` calls left in the load path | 7995, 8024, 8027 | Low |
 
 ### Duplicated
 
@@ -102,8 +102,8 @@ Smaller points in the same family:
 | D8 | **Axis header construction, four times** (grid X, grid Y, panel X, panel Y): about 20 lines each | 6440–6489, 6696–6743 | One `createAxisHeader(key, value, {vertical, title})` | Medium |
 | D9 | **Drop handlers for value reordering, twice**, differing only in a class name | 5647, 5685 (and the enter/leave/over trios) | One handler taking the selector | Low |
 | D10 | **The four blocks in `handleCellDrop`**, one per slot, each also writing the change log by hand instead of calling `logChange` | 5771–5794 | Loop over `[['gridX', gridXVal], …]` | Medium |
-| D11 | **"Download this text as a file", six times**; **CSV cell quoting, three times** | 4410, 4632, 3778, 7670, 4388, 7693; 4199, 4211, 4620 | `downloadBlob(blob, name)`, `csvCell(value)` | Low |
-| D12 | `detectMediaColumns` has two branches with the same body; `processCSV` / `processJSON` are one-line wrappers; `changeColor` / `changeShape` differ by one word; three drag-list implementations (dimensions, columns, values) share a shape | 4449–4466, 7961–7968, 5902–5948 | Merge where it shortens the code without hiding intent | Low–Medium |
+| D11 | **"Download this text as a file", six times**; **CSV cell quoting, three times** | 4410, 4632, 3778, 7674, 4388, 7697; 4199, 4211, 4620 | `downloadBlob(blob, name)`, `csvCell(value)` | Low |
+| D12 | `detectMediaColumns` has two branches with the same body; `processCSV` / `processJSON` are one-line wrappers; `changeColor` / `changeShape` differ by one word; three drag-list implementations (dimensions, columns, values) share a shape | 4449–4466, 7965–7972, 5902–5948 | Merge where it shortens the code without hiding intent | Low–Medium |
 
 The stylesheet (2,580 lines) was not audited rule by rule. A pass for selectors that no longer match any element would be worthwhile once C1 is done, so it is done once.
 
@@ -118,7 +118,7 @@ The stylesheet (2,580 lines) was not audited rule by rule. A pass for selectors 
 | E3 | Anchors are "Anchor Points", "Value Preservers", "anchors" and, in code, "dummy". | **Anchors** everywhere a user can see. |
 | E4 | The setup is "setup", "Visualization setup", "config", "pre-calibrated setup". | **Setup** in the interface; `config` may stay in code. |
 | E5 | The same slider is "Count size" in one file and "Inner panel size" in the other; it controls both the item count and, in the example file only, the inner axis labels. | Settle with C1/C2. |
-| E6 | Buttons: "Load media files…" in the markup, "Load media folder…" once JavaScript has run (2609, 7956). Title: "📊 Data Editor" in the sidebar and header, "Multi-Dimensional Data Visualizer - Full Editor" in the tab; the name **PLeW** appears nowhere in the editor. | One name, one label. |
+| E6 | Buttons: "Load media files…" in the markup, "Load media folder…" once JavaScript has run (2609, 7960). Title: "📊 Data Editor" in the sidebar and header, "Multi-Dimensional Data Visualizer - Full Editor" in the tab; the name **PLeW** appears nowhere in the editor. | One name, one label. |
 
 Renaming labels is low risk. Renaming identifiers is medium risk and is best left until after C1.
 
