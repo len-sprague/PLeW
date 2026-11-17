@@ -105,9 +105,9 @@ Each principle is followed by rules a contributor can check a change against, an
 - No network request is made unless the user's own data asks for it (a media link) or the user presses a button that plainly needs it.
 - Variants of the tool are modes of the same file, not copies of it.
 
-**Already true.** The editor contains two template expressions in nearly 8,000 lines and runs without Hugo once they are removed. Snapshot buttons check for the library and say so if it is missing.
+**Already true.** The editor contains two template expressions in nearly 8,000 lines and runs without Hugo once they are removed. Snapshot buttons check for the library and say so if it is missing. The image proxy used for snapshots of a record is contacted only when a snapshot button is pressed, and the button's tooltip says so.
 
-**Not yet.** The editor and the example page are two hand-synchronised copies (C1). Opening a record contacts an image proxy before any snapshot is requested (A9).
+**Not yet.** The editor and the example page are two hand-synchronised copies (C1).
 
 ### 5. The data stays yours
 

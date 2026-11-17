@@ -20,7 +20,7 @@ One small CSV per finding in group A of the [streamlining report](02-streamlinin
 | A6 | `A6-colour-follows-value.csv` | A colour chosen under one dimension reappears under another |
 | A7 | `A7-palette-repeats.csv` | 12 values, 10 colours, 4 shapes: values share colours and shapes |
 | A8 | `A8-drag-discards-dropdown.csv` | Dragging the dimension list undoes a dropdown choice |
-| A9 | `A9-image-proxy.csv` | Opening a record contacts `wsrv.nl` |
+| A9 | `A9-image-proxy.csv` | **Fixed.** Before: opening a record contacts `wsrv.nl` |
 
 ---
 
@@ -313,6 +313,8 @@ Nothing in the legend or the picture says so.
 
 ## A9 — Opening a record contacts a third party
 
+> **Fixed** in the pull request *A9 resolution attempt #1*. The steps below now give the expected result; the old result is kept for comparison.
+
 **File:** `A9-image-proxy.csv` — 4 records, each with an `image_url` pointing at a public image on Wikimedia Commons.
 
 **Steps**
@@ -320,21 +322,31 @@ Nothing in the legend or the picture says so.
 1. Open the browser's developer tools and go to the **Network** tab (F12 in most browsers).
 2. Load the file.
 3. Clear the network list, then click any dot to open its record. Do **not** press a snapshot button.
+4. Press **📷 Stacked** in the record window.
 
-**Expected:** one request, to `upload.wikimedia.org`, for the image being displayed.
+**Expected:** after step 3, one request, to `upload.wikimedia.org`, for the image being displayed. A request to the proxy only after step 4.
 
-**What happens:** two requests.
+**What happens now (after the fix)**
+
+| After step | Requests |
+|---|---|
+| 3 | One: `https://upload.wikimedia.org/…/PNG_transparency_demonstration_1.png` |
+| 4 | One more: `https://wsrv.nl/?url=https%3A%2F%2Fupload.wikimedia.org%2F…`, and a PNG is downloaded |
+
+Pressing a snapshot button again for the same image makes no further request. Hovering over either snapshot button shows a tooltip ending "Images hosted on another site are fetched through the image proxy wsrv.nl when you press this."
+
+**What happened before the fix:** two requests after step 3, before any snapshot was asked for.
 
 ```
 https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png
 https://wsrv.nl/?url=https%3A%2F%2Fupload.wikimedia.org%2F…
 ```
 
-The second sends the image's address to `wsrv.nl`, an image proxy, to prepare a copy for a snapshot that has not been asked for. With a researcher's own media, those addresses may be private.
+The second sent the image's address to `wsrv.nl`, an image proxy, to prepare a copy for a snapshot that had not been asked for. With a researcher's own media, those addresses may be private.
 
-Images served from the same site as PLeW (as on the example pages) are not sent to the proxy; this affects images on other hosts.
+Images served from the same site as PLeW (as on the example pages) are never sent to the proxy, before or after the fix; this concerns images on other hosts.
 
-**Cause:** `renderCompareModal` calls `preloadModalImages` (line 7425), which calls `getSnapshotFetchUrl` (line 7391).
+**Cause:** `renderCompareModal` called `preloadModalImages`, which called `imageSrcToDataUrl` and so `getSnapshotFetchUrl`. The fix removes that call and the function; `snapshotModal` already fetched the images it needs when pressed.
 
 ---
 
