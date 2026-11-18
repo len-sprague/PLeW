@@ -27,7 +27,7 @@ The documents were last checked against these exact versions of the tool files. 
 
 | File | Lines | Blob hash |
 |---|---|---|
-| `layouts/index.html` | 8102 | `3ee5b1d5045790caaa1999a586b05303de1c9cf7` |
-| `layouts/_default/example-viz.html` | 7893 | `d9b062be28bb2eecda69f3f6a5c5bfa82069185d` |
+| `layouts/index.html` | 8397 | `cb2d634dab435170aae2d005ef1ae83e0766b39e` |
+| `layouts/_default/example-viz.html` | 8188 | `63404c987f41a04987f42615283a50ff1b62a77e` |
 
-**Checked on:** 2026-11-16 · **Reason:** fix for finding A9 (the image proxy is contacted only when a snapshot of a record is requested). 4 lines net were added to each file; the documents' line numbers were remapped from the diff between the old and new file.
+**Checked on:** 2026-11-18 · **Reason:** new feature `touch-drag` (press-and-hold dragging of dots on phones and tablets). 295 lines were added to each file and none changed or removed; the documents' line numbers were remapped from the diff between the old and new file.

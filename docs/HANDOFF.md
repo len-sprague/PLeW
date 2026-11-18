@@ -69,6 +69,7 @@ The site is published in a sub-folder, `https://lensprague.com/PLeW/`. A link wr
 | `tools/code-userguide-review.md` | The review procedure, step by step |
 | `tools/checks/behaviour.js` | Drives the built site in a headless browser and prints 78 one-line checks (placements, filters, drag, undo, comments, compare, round trips, setup, report, an example page, every A-file) |
 | `tools/checks/anchors.js` | 65 lines on anchors: every shipped dataset, every example page, save-and-reload cycles, edge-case files in `tools/checks/anchor-edge-cases/` |
+| `tools/checks/touch.js` | 18 lines on press-and-hold dragging (FEATURE: touch-drag): tap, short touch, hold in place, hold and drag, undo/redo, swipe, cancel, second finger, edge scrolling, anchors, mouse after touch, an example page. Sends touches to a phone-sized page; `HOLD` at its top must match `TOUCH_LONG_PRESS_MS` |
 | `tools/checks/links.js` | Tests every link on the editor, gallery, an example and the guide pages |
 | `tools/checks/remap-line-numbers.py` | After an edit, moves every documented line number using the diff of the old and new file |
 | `tools/checks/check-line-refs.py` | Checks every "`name` (line)" pair in the documents against the file |
@@ -107,6 +108,7 @@ mkdir -p /tmp/srv_main && ln -sfn /tmp/site_main /tmp/srv_main/PLeW
 
 node tools/checks/behaviour.js 8767 > /tmp/before.txt
 node tools/checks/anchors.js   8767 > /tmp/anchors.before.txt
+node tools/checks/touch.js     8767 > /tmp/touch.before.txt
 ```
 
 Confirm the finding's failure is visible in the "before" record. A fix that was never seen failing has not been shown to work.
@@ -134,8 +136,10 @@ mkdir -p /tmp/srv && ln -sfn /tmp/site /tmp/srv/PLeW
 
 node tools/checks/behaviour.js 8765 > /tmp/after.txt
 node tools/checks/anchors.js   8765 > /tmp/anchors.after.txt
+node tools/checks/touch.js     8765 > /tmp/touch.after.txt
 diff /tmp/before.txt /tmp/after.txt
 diff /tmp/anchors.before.txt /tmp/anchors.after.txt
+diff /tmp/touch.before.txt /tmp/touch.after.txt
 node tools/checks/links.js 8765
 ```
 
