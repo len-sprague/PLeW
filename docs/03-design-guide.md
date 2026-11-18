@@ -105,7 +105,7 @@ Each principle is followed by rules a contributor can check a change against, an
 - No network request is made unless the user's own data asks for it (a media link) or the user presses a button that plainly needs it.
 - Variants of the tool are modes of the same file, not copies of it.
 
-**Already true.** The editor contains two template expressions in nearly 8,000 lines and runs without Hugo once they are removed. Snapshot buttons check for the library and say so if it is missing. The image proxy used for snapshots of a record is contacted only when a snapshot button is pressed, and the button's tooltip says so.
+**Already true.** The editor contains two template expressions in about 8,400 lines and runs without Hugo once they are removed. Snapshot buttons check for the library and say so if it is missing. The image proxy used for snapshots of a record is contacted only when a snapshot button is pressed, and the button's tooltip says so.
 
 **Not yet.** The editor and the example page are two hand-synchronised copies (C1).
 
@@ -192,9 +192,9 @@ Each principle is followed by rules a contributor can check a change against, an
 - Sharing must not require coding: a data file, a few lines of description, a link.
 - The tool should be usable with a keyboard and readable without relying on colour alone. Shape exists as a second channel for that reason.
 
-**Already true.** Example pages run the same code as the editor. Adding one needs a CSV and an eight-line text file. Colour and shape can carry the same dimension.
+**Already true.** Example pages run the same code as the editor. Adding one needs a CSV and an eight-line text file. Colour and shape can carry the same dimension. On a phone or tablet, dots can be moved and recoloured by touch (press, hold and slide; press, hold and let go), in the editor and on example pages.
 
-**Not yet.** Most actions are mouse-only (drag, right-click, hover). The interface is dark-theme only apart from snapshots. Neither has been addressed.
+**Not yet.** Most actions still need a mouse or a finger: there is no keyboard way to move or recolour a dot, the hover summary has no touch equivalent, and the layout is not adapted to small screens. The interface is dark-theme only apart from snapshots.
 
 ### 10. Readable all the way down
 

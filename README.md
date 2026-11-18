@@ -7,6 +7,8 @@ Interactive multi-dimensional data visualizer. Load CSV data, map dimensions to 
 
 **Row comments:** When editing data, PLeW adds a `desc::comment` column if your CSV does not include it. Define tags in the **Comments** sidebar (one per line, **Update tag buttons**), then use **Show only rows with comments** and **Tags to show** in the bar above the grid (next to cluster / legend options), and the **record** view to edit notes (comments save as you type); a row “matches” a tag if the comment text contains `Tag:` for that line (e.g. from the quick-insert button). **Other** covers comments that have no such prefix. Comments are saved in **Download CSV** and comment options are stored in **Export setup** (`version` 5, field `comments.visibleTags`).
 
+**Phones and tablets:** tap a dot to open its record; press and hold a dot (about half a second) and slide it to another cell to move it; press, hold and let go in place for the colour / shape menu. Mouse dragging is unchanged. The hold time is one number, `TOUCH_LONG_PRESS_MS`, in both `layouts/index.html` and `layouts/_default/example-viz.html`; see *Changing how long a dot must be held on a touch screen* in the [user guide](docs/04-user-guide.md), Part 3.
+
 ## Documentation
 
 - **[User guide](docs/04-user-guide.md)** — using PLeW, preparing and sharing data, working on the tool.

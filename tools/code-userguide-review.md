@@ -300,6 +300,7 @@ Run on PRIMARY and, where it applies, on an EXAMPLE page. Each line is pass or f
 12. Open the report and generate it with one count and one crosstab.
 13. Snapshot: if the snapshot library can be reached, a PNG is produced; if not, the tool says so rather than failing silently.
 14. The three guide pages open, and the help links in the tool reach them. Then run the link check (7.6).
+15. Touch (phones and tablets): in a phone-sized, touch-enabled page, a tap on a dot opens the record; pressing and holding a dot, sliding it to another cell and letting go changes its fields exactly as in 5; holding and letting go in place opens the colour / shape menu; a swipe scrolls and changes nothing. `tools/checks/touch.js` does all of this; a real phone is still worth trying, because emulation cannot show how a phone's browser treats a long press.
 
 ### 7.4 Finding reproductions
 
@@ -363,7 +364,7 @@ Use this shape. Keep it factual; the reader will act on it without re-doing your
 ## Code health
 - Script parses: yes/no
 - Uncaught errors during run: none / <list>
-- Smoke test: <n>/14 passed — failures: <list>
+- Smoke test: <n>/15 passed — failures: <list>
 - Missing handlers / ids, unpaired markers, new unused functions: <list or "none">
 - PRIMARY vs EXAMPLE: <n> intended, <n> cosmetic, <n> drift — <list drift>
 

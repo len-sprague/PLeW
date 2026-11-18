@@ -62,7 +62,7 @@ After step 5 every record was back, all under the heading **a**. Hovering over t
 
 **Also visible here, fixed with A3:** after step 4 each panel draws 2 dots and its count reads **"2 of 3 items"**; after step 5, 1 dot and **"1 of 3 items"**. Before the fix for A3 the count read "3 items" throughout, because item counts ignored panel X / panel Y filters.
 
-**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 6787 and 6790), which skipped the row test when only one value was visible. The fix removes them.
+**Cause:** two `&& … .length > 1` conditions in `createpanelCell` (lines 7081 and 7084), which skipped the row test when only one value was visible. The fix removes them.
 
 ---
 
@@ -164,7 +164,7 @@ After step 2 the two remaining panels each draw all of their own records, so the
 
 The only trace of a filter was "1 of 2 values" beside the dimension in the Dimensions list, which is out of sight if the sidebar is collapsed and absent from a snapshot. With *Tone* on colour or shape instead of panel X, the panel counts did drop (to "2 items") but did not say out of how many. In step 5 the second panel reported an anchor that was not drawn.
 
-**Cause:** `renderVisualization` reported `data.length`, the number loaded, and `creategrid` counted a panel's records before its cells were filled, applying only the colour, shape and comment filters. The fix writes both counts after drawing, from the dots drawn: the header at the end of `renderVisualization` (line 6553), the panel count in `creategrid` (6652) after its cells are filled.
+**Cause:** `renderVisualization` reported `data.length`, the number loaded, and `creategrid` counted a panel's records before its cells were filled, applying only the colour, shape and comment filters. The fix writes both counts after drawing, from the dots drawn: the header at the end of `renderVisualization` (line 6847), the panel count in `creategrid` (6946) after its cells are filled.
 
 ---
 
@@ -208,7 +208,7 @@ ID,Group,note,desc::comment,desc::Tone
 
 The column has moved to the far right.
 
-**Cause:** `generateCSV` (line 4191) takes column order from the first row object, and `renameColumnKey` (line 5186) deletes and re-adds the key.
+**Cause:** `generateCSV` (line 4215) takes column order from the first row object, and `renameColumnKey` (line 5210) deletes and re-adds the key.
 
 ---
 
@@ -229,7 +229,7 @@ The column has moved to the far right.
 
 **Why it matters for PLeW's own files:** a comment typed with a line break is exported in exactly this form, so a file saved by PLeW can fail to load in PLeW. To see that route instead, load any file, open a record, type a two-line comment, download the CSV and load it again.
 
-**Cause:** `parseCSV` (line 4079) splits the text into lines before looking at quotes; `parseDelimitedLine` (line 4115) drops every quotation mark.
+**Cause:** `parseCSV` (line 4103) splits the text into lines before looking at quotes; `parseDelimitedLine` (line 4139) drops every quotation mark.
 
 ---
 
@@ -248,7 +248,7 @@ The column has moved to the far right.
 
 **What happens:** the legend now reads **Color: Canonical**, and its `0` is black as well.
 
-**Cause:** `customColorMap` is keyed by the value alone (lines 5097, 6181). Custom shapes behave the same way (line 5105).
+**Cause:** `customColorMap` is keyed by the value alone (lines 5121, 6475). Custom shapes behave the same way (line 5129).
 
 ---
 
@@ -281,7 +281,7 @@ Nothing in the legend or the picture says so.
 
 **What happens:** Korean stays teal, but Arabic turns from teal to red, Basque from red to yellow, and so on down the list. A picture made before the reorder and one made after use different colours for the same languages.
 
-**Cause:** `getColorForValue` / `getShapeForValue` (lines 5096–5110) pick by position in the value order, wrapping round.
+**Cause:** `getColorForValue` / `getShapeForValue` (lines 5120–5134) pick by position in the value order, wrapping round.
 
 ---
 
@@ -307,7 +307,7 @@ Nothing in the legend or the picture says so.
 
 *Size* is back on panel X. The hint above the list says "Use the dropdown to override", but any drag re-deals every placement from the top.
 
-**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5600).
+**Cause:** `handleDimDrop` calls `autoAssignEncodingsFromOrder()` (line 5624).
 
 ---
 

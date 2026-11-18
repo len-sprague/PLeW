@@ -115,6 +115,21 @@ Changed dots get a ring. Every change is:
 
 > **Two things that sound alike.** Clicking a swatch in the *legend* changes which colour stands for a value; your data is untouched. *Right-clicking a dot* moves that record to a different value; your data changes.
 
+### On a phone or tablet
+
+There is no mouse, so dots respond to the finger like this:
+
+| Do this | To get this |
+|---|---|
+| **Tap** a dot | The full record (as a click) |
+| **Press and hold** a dot for about half a second until it lifts and a larger copy appears above your finger, then **slide** it to another cell and let go | The dot moves there, exactly as when you drag it with a mouse: same changes, same ring, same **Undo** and **Change Log** |
+| **Press and hold** a dot, then let go **without moving** | The colour / shape menu (as a right-click) |
+| **Swipe** | Scrolls, as usual. A swipe that starts on a dot scrolls too, as long as you move before the dot lifts |
+
+While you hold a dot, the cell under your finger is outlined, and moving towards an edge of the screen scrolls the picture. To change your mind, let go outside the picture, or touch the screen with a second finger: nothing changes.
+
+> **Good to know.** Hover summaries and Shift+click comparison need a mouse and keyboard, and are not available by touch. The layout itself is not yet adapted to small screens: on a phone the floating buttons can cover part of the picture, and a dot underneath them cannot be reached until you scroll it clear.
+
 ### Comments and tags
 
 Open a record and type in the comment box. Dots with a comment get a purple ring.
@@ -167,6 +182,8 @@ The data and the setup are separate files. To pick up where you left off, load t
 | Shift+click | compare with (B) |
 | Drag dot | move to another category |
 | Right-click dot | change its colour/shape value |
+| Touch: hold dot, slide, let go | move to another category |
+| Touch: hold dot, let go in place | change its colour/shape value |
 | Drag ⋮ on a heading | reorder values |
 | B | sidebar |
 | Esc | close |
@@ -299,6 +316,27 @@ Read the [code map](01-code-map.md) first. The short version:
 7. Use the interface vocabulary in labels (design guide, principle 7).
 8. When the change is finished and reviewed, run the review procedure in [`tools/code-userguide-review.md`](../tools/code-userguide-review.md). It checks that the tool still works, finds every place in these documents that the change has made untrue, and updates the verification stamp. Put its report in the pull request.
 
+### Changing how long a dot must be held on a touch screen
+
+On phones and tablets a dot is picked up after the finger has rested on it for **450 milliseconds** (just under half a second). To change that:
+
+1. Open `layouts/index.html` and search for `TOUCH_LONG_PRESS_MS`. You will find this line, near the start of the block marked `FEATURE: touch-drag`:
+   ```js
+   const TOUCH_LONG_PRESS_MS = 450;
+   ```
+2. Change the number. It is in milliseconds: 1000 is one second. Around 300 feels quick, 450 is the default, 700 feels deliberate. Much below 300 and a slow tap may pick a dot up by mistake.
+3. Make **the same change** in `layouts/_default/example-viz.html` (the example pages).
+4. Change `HOLD` at the top of `tools/checks/touch.js` to the same number, so the automated touch checks hold and tap for the right length of time.
+5. Run `hugo server`, open the page on a phone, or in your desktop browser's device emulation (Chrome or Edge: F12, then the phone-and-tablet icon), and try a tap, a hold and a swipe.
+
+Three neighbouring lines can be adjusted the same way (again in both files):
+
+| Constant | Default | What it controls |
+|---|---|---|
+| `TOUCH_MOVE_TOLERANCE_PX` | 10 | How far, in pixels, the finger may drift during the hold and still count as holding still. Farther than this and the gesture is treated as a scroll |
+| `TOUCH_AUTOSCROLL_EDGE_PX` | 40 | How close, in pixels, to an edge the finger must be for the picture to scroll while a dot is held |
+| `TOUCH_GHOST_SIZE_PX` | 22 | The size of the copy of the dot that follows the finger |
+
 ### Checking your change by hand
 
 There are no automated tests yet. The review procedure above includes a fuller smoke test; at minimum:
@@ -306,6 +344,7 @@ There are no automated tests yet. The review procedure above includes a fuller s
 - Load `static/data/zoo.csv` in the editor; open the matching example page.
 - Place a dimension in each of the six placements; filter one value from each.
 - Drag a dot, right-click a dot, add a comment; undo all three; redo.
+- On a phone, or in the browser's device emulation: tap a dot (record opens), hold and slide a dot to another cell (it moves), hold and let go in place (colour / shape menu), swipe (the page scrolls).
 - Download the CSV, load it again: same number of records, anchors recognised.
 - Export the setup, reload the data, import the setup: same picture.
 - Take a dark and a light snapshot.

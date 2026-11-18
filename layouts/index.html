@@ -2586,6 +2586,30 @@
         .shape-selector-popup .shape-grid {
             gap: 6px;
         }
+
+        /* --- FEATURE: touch-drag (start) --- */
+        /* Phones and tablets: stop the browser's own press-and-hold
+           behaviour (link callout, text selection) on dots, so a hold
+           can pick the dot up instead. No effect on mouse use. */
+        .data-point {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* The copy of a held dot that follows the finger. Drawn above
+           the finger so it stays visible; --dot-size is set on it in
+           JavaScript so every shape is drawn at the larger size. */
+        .data-point.touch-drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 700;
+            transition: none;
+            margin: 0;
+            opacity: 0.9;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+        }
+        /* --- FEATURE: touch-drag (end) --- */
     </style>
 </head>
 <body>
@@ -5802,6 +5826,276 @@
             }
         }
         
+        // --- FEATURE: touch-drag (start) ---
+        // Phones and tablets. Press and hold a dot to pick it up, move it
+        // to another cell and let go there: the record is reclassified
+        // exactly as by a mouse drag. Press, hold and let go without moving:
+        // the colour / shape menu opens (the touch version of right-click).
+        // A quick tap still opens the record window; a swipe still scrolls.
+        // Only touch input reaches this code; the mouse drag above is
+        // unchanged. The drop goes through handleCellDrop, the function a
+        // mouse drop uses, so undo, the change log and the redraw are shared.
+
+        // How long, in milliseconds, a finger must rest on a dot before the
+        // dot is picked up. Change this one number to make the hold shorter
+        // or longer (250 = quick, 450 = default, 700 = slow).
+        const TOUCH_LONG_PRESS_MS = 450;
+        // How far, in pixels, the finger may drift during the hold and still
+        // count as holding still. Farther than this, the gesture is a scroll.
+        const TOUCH_MOVE_TOLERANCE_PX = 10;
+        // Width, in pixels, of the strip along each edge of a scrolling area
+        // where a held dot makes that area scroll.
+        const TOUCH_AUTOSCROLL_EDGE_PX = 40;
+        // Size, in pixels, of the copy of the dot that follows the finger.
+        const TOUCH_GHOST_SIZE_PX = 22;
+
+        // Each drawn cell's four values [grid X, grid Y, panel X, panel Y],
+        // recorded by createpanelCell so a touch drop can find them.
+        const touchDropCellValues = new WeakMap();
+        let touchDrag = null;                 // the press in progress, or null
+        let touchDragSuppressClickUntil = 0;  // swallow the click a held press may still produce
+
+        function touchDragFindTouch(list, id) {
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].identifier === id) return list[i];
+            }
+            return null;
+        }
+
+        function touchDragStart(e) {
+            if (touchDrag) {
+                // A second finger (pinch zoom) cancels the hold. A press left
+                // over from a gesture whose end never arrived is cleared.
+                touchDragCancel();
+                if (e.touches.length !== 1) return;
+            }
+            if (e.touches.length !== 1) return;
+            const target = e.target;
+            const point = target && target.closest ? target.closest('.data-point[data-row-index]') : null;
+            if (!point) return;
+            const rowIndex = Number(point.dataset.rowIndex);
+            if (!currentData || !currentData[rowIndex]) return;
+            const t = e.changedTouches[0];
+            touchDrag = {
+                rowIndex, point, target, id: t.identifier,
+                startX: t.clientX, startY: t.clientY, x: t.clientX, y: t.clientY,
+                active: false, moved: false, ghost: null, overCell: null, frame: 0,
+                wasDraggable: point.draggable,
+                timer: setTimeout(touchDragActivate, TOUCH_LONG_PRESS_MS)
+            };
+            // The rest of this gesture's events go to the element first
+            // touched; listening there means they arrive even if a redraw
+            // removes it from the page.
+            target.addEventListener('touchmove', touchDragMove, { passive: false });
+            target.addEventListener('touchend', touchDragEnd, { passive: false });
+            target.addEventListener('touchcancel', touchDragCancel);
+            // Keep the browser's own drag and drop out of the hold.
+            point.draggable = false;
+        }
+
+        function touchDragActivate() {
+            const d = touchDrag;
+            if (!d) return;
+            d.timer = null;
+            if (!d.point.isConnected || !currentData || !currentData[d.rowIndex]) {
+                touchDragCancel();
+                return;
+            }
+            d.active = true;
+            hideTooltip();
+            closeContextMenu();
+            d.point.classList.add('dragging');
+            const ghost = d.point.cloneNode(false);
+            ghost.removeAttribute('data-row-index');
+            ghost.classList.remove('dragging', 'selected', 'compare-b');
+            ghost.classList.add('touch-drag-ghost');
+            ghost.style.setProperty('--dot-size', TOUCH_GHOST_SIZE_PX + 'px');
+            document.body.appendChild(ghost);
+            d.ghost = ghost;
+            touchDragPlaceGhost();
+            // A short buzz where the phone supports it (not iPhone).
+            try {
+                if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) {
+                    navigator.vibrate(15);
+                }
+            } catch (_) { /* ignore */ }
+            d.frame = requestAnimationFrame(touchDragTick);
+        }
+
+        function touchDragPlaceGhost() {
+            const d = touchDrag;
+            if (!d || !d.ghost) return;
+            // Centred above the fingertip, so the finger does not hide it.
+            d.ghost.style.left = (d.x - TOUCH_GHOST_SIZE_PX / 2) + 'px';
+            d.ghost.style.top = (d.y - TOUCH_GHOST_SIZE_PX / 2 - 36) + 'px';
+        }
+
+        function touchDragMove(e) {
+            const d = touchDrag;
+            if (!d) return;
+            const t = touchDragFindTouch(e.changedTouches, d.id);
+            if (!t) return;
+            d.x = t.clientX;
+            d.y = t.clientY;
+            const far = Math.hypot(d.x - d.startX, d.y - d.startY) > TOUCH_MOVE_TOLERANCE_PX;
+            if (!d.active) {
+                // Moved before the hold was complete: this is a scroll.
+                if (far) touchDragCancel();
+                return;
+            }
+            if (e.cancelable) e.preventDefault();   // no scrolling while a dot is held
+            if (far) d.moved = true;
+            touchDragPlaceGhost();
+        }
+
+        function touchDragTick() {
+            const d = touchDrag;
+            if (!d || !d.active) return;
+            if (touchDragAutoScroll(d.x, d.y)) d.moved = true;
+            touchDragUpdateTarget();
+            d.frame = requestAnimationFrame(touchDragTick);
+        }
+
+        // The cell under the finger, highlighted once the dot has been moved.
+        function touchDragUpdateTarget() {
+            const d = touchDrag;
+            if (!d) return;
+            const el = document.elementFromPoint(d.x, d.y);
+            let cell = el && el.closest ? el.closest('.panel-cell') : null;
+            if (cell && !touchDropCellValues.has(cell)) cell = null;
+            if (!d.moved) cell = null;
+            if (cell !== d.overCell) {
+                if (d.overCell) d.overCell.classList.remove('drop-target');
+                if (cell) cell.classList.add('drop-target');
+                d.overCell = cell;
+            }
+        }
+
+        // Scroll whatever can scroll when the finger is near, or past, its
+        // edge: the scrolling areas under the finger, the grid and the areas
+        // around it, and the page. Returns true if anything scrolled.
+        function touchDragAutoScroll(x, y) {
+            const page = document.scrollingElement || document.documentElement;
+            const scrollers = [];
+            const addChain = (start) => {
+                for (let n = start; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+                    if (scrollers.includes(n)) continue;
+                    const cs = getComputedStyle(n);
+                    if ((/(auto|scroll)/.test(cs.overflowX) && n.scrollWidth > n.clientWidth) ||
+                        (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight)) {
+                        scrollers.push(n);
+                    }
+                }
+            };
+            addChain(document.elementFromPoint(x, y));
+            addChain(document.getElementById('vizContainer'));
+            scrollers.push(page);
+            const speed = (dist) => Math.ceil(14 * (TOUCH_AUTOSCROLL_EDGE_PX - Math.max(0, dist)) / TOUCH_AUTOSCROLL_EDGE_PX);
+            let scrolled = false;
+            for (const axis of ['x', 'y']) {
+                for (const n of scrollers) {
+                    const r = n === page
+                        ? { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }
+                        : n.getBoundingClientRect();
+                    // Only an area level with the finger scrolls along this axis.
+                    const across = axis === 'x' ? (y >= r.top && y <= r.bottom) : (x >= r.left && x <= r.right);
+                    if (!across) continue;
+                    const lo = axis === 'x' ? x - r.left : y - r.top;
+                    const hi = axis === 'x' ? r.right - x : r.bottom - y;
+                    let step = 0;
+                    if (lo < TOUCH_AUTOSCROLL_EDGE_PX && lo < hi) step = -speed(lo);
+                    else if (hi < TOUCH_AUTOSCROLL_EDGE_PX) step = speed(hi);
+                    if (!step) continue;
+                    const prop = axis === 'x' ? 'scrollLeft' : 'scrollTop';
+                    const before = n[prop];
+                    n[prop] = before + step;
+                    if (n[prop] !== before) { scrolled = true; break; }
+                }
+            }
+            return scrolled;
+        }
+
+        function touchDragEnd(e) {
+            const d = touchDrag;
+            if (!d) return;
+            const t = touchDragFindTouch(e.changedTouches, d.id);
+            if (!t) return;
+            if (!d.active) {
+                // A tap: the click that follows opens the record window as before.
+                touchDragCleanup();
+                return;
+            }
+            if (e.cancelable) e.preventDefault();   // no click after a hold
+            touchDragSuppressClickUntil = Date.now() + 400;
+            d.x = t.clientX;
+            d.y = t.clientY;
+            const rowIndex = d.rowIndex;
+            if (!d.moved) {
+                // Held and let go in place: the colour / shape menu.
+                touchDragCleanup();
+                showContextMenu({ preventDefault() {}, clientX: d.x, clientY: d.y }, rowIndex);
+                return;
+            }
+            touchDragUpdateTarget();
+            const cell = d.overCell;
+            touchDragCleanup();
+            if (!cell || !cell.isConnected) return;   // let go outside the grid: nothing changes
+            const vals = touchDropCellValues.get(cell);
+            draggedRowIndex = rowIndex;
+            try {
+                handleCellDrop({ preventDefault() {}, target: cell }, vals[0], vals[1], vals[2], vals[3]);
+            } finally {
+                draggedRowIndex = null;
+            }
+        }
+
+        function touchDragCancel() {
+            if (touchDrag && touchDrag.active) touchDragSuppressClickUntil = Date.now() + 400;
+            touchDragCleanup();
+        }
+
+        function touchDragCleanup() {
+            const d = touchDrag;
+            if (!d) return;
+            touchDrag = null;
+            if (d.timer) clearTimeout(d.timer);
+            if (d.frame) cancelAnimationFrame(d.frame);
+            if (d.ghost) d.ghost.remove();
+            if (d.overCell) d.overCell.classList.remove('drop-target');
+            d.target.removeEventListener('touchmove', touchDragMove, { passive: false });
+            d.target.removeEventListener('touchend', touchDragEnd, { passive: false });
+            d.target.removeEventListener('touchcancel', touchDragCancel);
+            d.point.classList.remove('dragging');
+            d.point.draggable = d.wasDraggable;
+        }
+
+        // Set up once, when the page loads.
+        (function () {
+            const container = document.getElementById('vizContainer');
+            container.addEventListener('touchstart', touchDragStart, { passive: true });
+            // iOS Safari only lets a touchmove listener stop scrolling if a
+            // non-passive one is already in place when the finger goes down.
+            container.addEventListener('touchmove', () => {}, { passive: false });
+            // While a dot is held, the browser's own press-and-hold menu
+            // (Android) and the dot's right-click menu are kept closed.
+            document.addEventListener('contextmenu', (e) => {
+                if (touchDrag || Date.now() < touchDragSuppressClickUntil) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+            // A click that a held press may still produce on the grid is
+            // ignored, so it does not open the record window as well.
+            document.addEventListener('click', (e) => {
+                if (Date.now() < touchDragSuppressClickUntil && container.contains(e.target)) {
+                    touchDragSuppressClickUntil = 0;
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        })();
+        // --- FEATURE: touch-drag (end) ---
+
         // ============================================================
         // COLOR CONTEXT MENU
         // ============================================================
@@ -6797,6 +7091,7 @@
             cell.addEventListener('dragenter', handleCellDragEnter);
             cell.addEventListener('dragleave', handleCellDragLeave);
             cell.addEventListener('drop', (e) => handleCellDrop(e, gridXVal, gridYVal, panelXVal, panelYVal));
+            touchDropCellValues.set(cell, [gridXVal, gridYVal, panelXVal, panelYVal]); // FEATURE: touch-drag
             
             let orderedData = cellData;
             if (clusterPoints && (encodings.color || encodings.shape)) {
